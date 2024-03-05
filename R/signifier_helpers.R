@@ -172,3 +172,6 @@ calculate_stone_9_zone = function(x, y) {
   return(zone)
 
 }
+
+
+

@@ -214,3 +214,41 @@ test_that("calculate_stone_9_zone() Calculates Zone with x and y values for ston
 test_that("calculate_stone_9_zone() Calculates Zone with x and y values for stone XLeft and YTop", {
   expect_equal(calculate_stone_9_zone(x = 0.32, y = 0.32), "Bottom_Left")
 })
+
+
+
+# This involves the signifierr object so not sure if it should be here.
+# The siny sigifier tree is used when there is anything nested such as triads and their anchors.
+# ToDo this should probably belong in the helpersr package when it is done so move there then.``
+build_shiny_signifier_tree <- function(types, keep_only_include) {
+
+  if (is.null(self$shiny_tree_objects)) {
+    temp_list <- vector("list", length = 2)
+    names(temp_list) <- c("triad", "dyad")
+    self$shiny_tree_objects <- temp_list
+  }
+
+  if (types == "all") { types = c("triad", "dyad")}
+
+  for (type in types) {
+
+    sig_ids <- self$get_signifier_ids_by_type(type, keep_only_include)
+    # start the shinyTree string
+    build_string <- 'structure( list('
+    k <- 0
+    for (sig_id in sig_ids) {
+      k <- k + 1
+      build_string <- paste0(build_string, paste0("`", private$wrap_text(self$get_signifier_title(sig_id), 30), "`"),
+                             '= structure(list(', paste0("`", private$wrap_text(self$get_anchor_text(sig_id, anchor = "left", removeHTML = TRUE), 25), "`"), ' = structure("anchor1", stinfo = "',
+                             sig_id, '"', ', stinfo1 = ', '"', self$get_anchor_ids(sig_id, delist = TRUE, anchor = "left"), '"),',
+                             ifelse(type == "triad", paste0(paste0("`", private$wrap_text(self$get_anchor_text(sig_id, anchor = "top", removeHTML = TRUE), 25), "`"), ' = structure("anchor2", stinfo = " ',
+                                                            sig_id, '"', ', stinfo1 = ', '"', self$get_anchor_ids(sig_id, delist = TRUE, anchor = "top"), '"),'), ""),
+                             paste0("`", private$wrap_text(self$get_anchor_text(sig_id, anchor = "right", removeHTML = TRUE), 25), "`"), ' = structure("anchor3", stinfo = " ',
+                             sig_id, '"', ', stinfo1 = ', '"', self$get_anchor_ids(sig_id, delist = TRUE, anchor = "right"), '")),',
+                             'stopened=TRUE', ')', ifelse(k < length(sig_ids), ",", "")
+      )
+    }
+    build_string <- paste0(build_string, '), stopened=TRUE)')
+    self$shiny_tree_objects[[type]] <- eval(parse(text = build_string))
+  }
+}
