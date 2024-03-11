@@ -17,6 +17,10 @@ clearHTML <- function(tString) {
   return(removeHTML(tString))
 }
 
+clearBetweenHTMLTags <- function(htmlString, repVal) {
+  return(gsub("<[^>]+>", repVal, htmlString))
+}
+
 clearDash <- function(htmlString) {
   return(gsub("-", "", htmlString))
 }

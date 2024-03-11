@@ -38,6 +38,7 @@ calculate_triad_zone <- function(top, left, right) {
   return(zone)
 }
 
+
 #' get a dyad value's zone
 #'
 #' @param left  percentage dyad left value (between 0 and 100).
@@ -174,4 +175,130 @@ calculate_stone_9_zone = function(x, y) {
 }
 
 
+calculate_triad_means <- function(data, sig_id, mean_type, framework_object) {
 
+  stopifnot(framework_object$get_signifier_type(sig_id) == "triad")
+  stopifnot(is.data.frame(data))
+  stopifnot(mean_type %in% c("geometric", "arithmetic"))
+
+  triad_col_names <- framework_object$get_triad_anchor_column_names(sig_id)
+
+  if (mean_type == "geometric") {
+    geom_mean <- data.frame(data.table::transpose(data.frame(compositions::clo(c(compositions::geometricmean(data[!is.na(data[[triad_col_names[["left"]]]]),
+                      triad_col_names[["left"]]]), compositions::geometricmean(data[!is.na(data[[triad_col_names[["top"]]]]),
+                      triad_col_names[["top"]]]), compositions::geometricmean(data[!is.na(data[[triad_col_names[["right"]]]]), triad_col_names[["right"]]])), total = 100))))
+    colnames(geom_mean) <- c("x", "y", "z")
+    left_mean <- round(geom_mean[[1]], digits = 0)
+    top_mean <- round(geom_mean[[2]], digits = 0)
+    right_mean <- round(geom_mean[[3]], digits = 0)
+
+  } else {
+    left_mean <- round(mean(data[!is.na(data[[triad_col_names[["left"]]]]), triad_col_names[["left"]]], na.rm = TRUE), digits = 0)
+    top_mean <- round(mean(data[!is.na(data[[triad_col_names[["top"]]]]), triad_col_names[["top"]]], na.rm = TRUE), digits = 0)
+    right_mean <- round(mean(data[!is.na(data[[triad_col_names[["right"]]]]), triad_col_names[["right"]]], na.rm = TRUE), digits = 0)
+  }
+
+  return(list(left_mean = left_mean, top_mean = top_mean, right_mean = right_mean))
+}
+
+get_anchor_titles <- function(sig_id, display_anchor_means, anchor_means, framework_object) {
+
+  left_title <- clearBetweenHTMLTags(paste(stringr::str_replace_all(framework_object$get_triad_left_anchor_text(sig_id), "&amp;", "&"),  ifelse(display_anchor_means,  paste("mu =", anchor_means[["left_mean"]]), "")), " ")
+  right_title <-  clearBetweenHTMLTags(paste(stringr::str_replace_all(framework_object$get_triad_right_anchor_text(sig_id), "&amp;", "&"), ifelse(display_anchor_means, paste("mu =", anchor_means[["right_mean"]]), "")), " ")
+  top_title <- clearBetweenHTMLTags(paste(stringr::str_replace_all(framework_object$get_triad_top_anchor_text(sig_id), "&amp;", "&"),  ifelse(display_anchor_means, paste("mu =", anchor_means[["top_mean"]]), "")), " ")
+
+
+  if (!(grepl("\n", left_title, fixed = TRUE)  || grepl("\n", right_title, fixed = TRUE))) {
+    if (stringr::str_detect(left_title, "\\s")) {
+      if (nchar(left_title) > 23) {
+        if (is.na(stringr::str_locate(stringr::str_sub(left_title, round(nchar(left_title) / 2, digits = 0), nchar(left_title)), " ")[[1]])) {
+          stringi::stri_sub(left_title, stringi::stri_locate_last_fixed(left_title, " ") + 1, 1) <- "\n"
+        } else {
+          stringi::stri_sub(left_title, stringr::str_locate(stringr::str_sub(left_title, round(nchar(left_title) / 2, digits = 0), nchar(left_title)), " ")[[1]] + round(nchar(left_title) / 2, digits = 0), 1) <- "\n"
+        }
+      }
+    }
+
+
+    if (stringr::str_detect(right_title, "\\s")) {
+      if (nchar(right_title) > 23) {
+        if (is.na(stringr::str_locate(stringr::str_sub(right_title, round(nchar(right_title) / 2, digits = 0), nchar(right_title)), " ")[[1]])) {
+          stringi::stri_sub(right_title, stringi::stri_locate_last_fixed(right_title, " ") + 1, 1) <- "\n"
+        } else {
+          stringi::stri_sub(right_title, stringr::str_locate(stringr::str_sub(right_title, round(nchar(right_title) / 2, digits = 0), nchar(right_title)), " ")[[1]] + round(nchar(right_title) / 2, digits = 0), 1) <- "\n"
+        }
+      }
+    }
+  }
+
+  return(list(left_title = left_title, right_title = right_title, top_title = top_title))
+
+  }
+
+get_anchor_size <- function (anchor_titles) {
+
+  left_title <- anchor_titles[["left_title"]]
+  right_title <-  anchor_titles[["right_title"]]
+  top_title <- anchor_titles[["top_title"]]
+
+  titleLength <- max(c(nchar(left_title), nchar(right_title)))
+
+  anchor_size <- 4.5
+  if (titleLength > 25) {
+    anchor_size <- 4.0
+  }
+  if (titleLength > 50) {
+    anchor_size <- 3.5
+  }
+  if (titleLength > 55) {
+    anchor_size <- 3.0
+  }
+  if (titleLength > 65) {
+    anchor_size <- 2.8
+  }
+  if (titleLength > 90) {
+    anchor_size <- 2.0
+  }
+
+  return(anchor_size)
+
+}
+
+get_graph_title_size <- function(title, title_size_multiplier = 1) {
+
+  title_size <- 18
+  if (is.null(title)) {return(title_size)}
+  if (nchar(title) > 55) {title_size <- 16 * title_size_multiplier}
+  if (nchar(title) > 65) {title_size <- 15 * title_size_multiplier}
+  if (nchar(title) > 80) {title_size <- 14 * title_size_multiplier}
+  if (nchar(title) > 95) {title_size <- 13 * title_size_multiplier}
+  if (nchar(title) > 120) {title_size <- 10 * title_size_multiplier}
+  return(title_size)
+}
+
+
+
+get_caption_values <- function(filtered_data, full_data, sig_id, framework_object) {
+
+  naAllowed <- framework_object$get_signifier_allow_na(sig_id)
+  numNADataPoints <- 0
+  numNADataPointsMu <- 0
+  if (naAllowed) {
+    colNAName <- framework_object$get_triad_na_column_name(sig_id)
+    if (colNAName %in% names(full_data)) {
+      numNADataPointsMu <- length(full_data[!is.na(full_data[,colNAName]),colNAName])
+      numNADataPoints <- length(filtered_data[!is.na(filtered_data[,colNAName]),colNAName])
+    }
+  }
+
+  colLeftName <- framework_object$get_triad_anchor_column_names(sig_id)[["left"]]
+  numDataPointsMu <- length(full_data[!is.na(full_data[,colLeftName]) , colLeftName])
+
+  numDataPoints <- length(filtered_data[!is.na(filtered_data[,colLeftName]) , colLeftName])
+
+  numNonEntries <- nrow(filtered_data) - (numDataPoints + numNADataPoints)
+  perToData <- round((numDataPoints / numDataPointsMu) * 100, digits = 0)
+
+  return(list(N = nrow(full_data),  numDataPointsMu = numDataPointsMu, numNADataPointsMu = numNADataPointsMu, numNonEntries = numNonEntries, numNADataPoints = numNADataPoints, perToData = perToData ))
+
+}
