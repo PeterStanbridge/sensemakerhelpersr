@@ -18,3 +18,5 @@ Imports:
     png,
     RColorBrewer,
     stringi
+URL: https://github.com/PeterStanbridge/sensemakerhelpersr
+BugReports: https://github.com/PeterStanbridge/sensemakerhelpersr/issues
