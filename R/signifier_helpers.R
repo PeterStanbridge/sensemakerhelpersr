@@ -1,5 +1,4 @@
 
-
 #' get a triad value's zone
 #'
 #' @param top percentage triad top value (between 0 and 100).
@@ -16,17 +15,12 @@
 #' calculate_triad_zone(t, l, r)
 calculate_triad_zone <- function(top, left, right) {
 
-
   if (any(is.na(c(top, left, right)))) {
     return(NA)
   }
-
   stopifnot(is.numeric(c(top,  left,  right)))
   stopifnot(sum(top, left, right, na.rm = TRUE) == 100) # na.rm strickly not necessary here
   stopifnot(all(c(top,  left,  right) >= 0 ) & all(c(top,  left,  right) <=  100))
-
-
-
   zone <- NULL
   if (left >= 60) {zone <- "L"}
   if (top >= 60) {zone <- "T"}
@@ -53,12 +47,9 @@ calculate_triad_zone <- function(top, left, right) {
 #' calculate_dyad_zone(l, r)
 calculate_dyad_zone <- function(left, right = 100 - left) {
 
-
   if (any(is.na(c(left, right)))) {
     return(NA)
   }
-
-
   stopifnot(is.numeric(c(left,  right)))
   stopifnot(sum(left, right, na.rm = TRUE) == 100) # na.rm not strickly needed here
   stopifnot(all(c(left,  right) >= 0 ) & all(c(left,  right) <=  100))
@@ -174,7 +165,6 @@ calculate_stone_9_zone = function(x, y) {
 
 }
 
-
 calculate_triad_means <- function(data, sig_id, mean_type, framework_object) {
 
   stopifnot(framework_object$get_signifier_type(sig_id) == "triad")
@@ -182,11 +172,21 @@ calculate_triad_means <- function(data, sig_id, mean_type, framework_object) {
   stopifnot(mean_type %in% c("geometric", "arithmetic"))
 
   triad_col_names <- framework_object$get_triad_anchor_column_names(sig_id)
+  print("triad col names")
+  print(triad_col_names)
 
   if (mean_type == "geometric") {
-    geom_mean <- data.frame(data.table::transpose(data.frame(compositions::clo(c(compositions::geometricmean(data[!is.na(data[[triad_col_names[["left"]]]]),
-                      triad_col_names[["left"]]]), compositions::geometricmean(data[!is.na(data[[triad_col_names[["top"]]]]),
-                      triad_col_names[["top"]]]), compositions::geometricmean(data[!is.na(data[[triad_col_names[["right"]]]]), triad_col_names[["right"]]])), total = 100))))
+
+    data_left <- ifelse(data[[triad_col_names[["left"]]]] == 0, 0.00001, data[[triad_col_names[["left"]]]])
+    data_top <- ifelse(data[[triad_col_names[["top"]]]] == 0, 0.00001, data[[triad_col_names[["top"]]]])
+    data_right <- ifelse(data[[triad_col_names[["right"]]]] == 0, 0.00001, data[[triad_col_names[["right"]]]])
+
+    geom_mean <- data.frame(data.table::transpose(data.frame(compositions::clo(c(compositions::geometricmean(data_left[!is.na(data_left)]),
+                                                             compositions::geometricmean(data_top[!is.na(data_top)]),
+                                                             compositions::geometricmean(data_right[!is.na(data_right)])), total = 100))))
+
+
+    print(paste("and geo-mean is", geom_mean))
     colnames(geom_mean) <- c("x", "y", "z")
     left_mean <- round(geom_mean[[1]], digits = 0)
     top_mean <- round(geom_mean[[2]], digits = 0)

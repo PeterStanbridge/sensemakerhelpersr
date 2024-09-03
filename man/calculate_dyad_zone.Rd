@@ -2,20 +2,20 @@
 % Please edit documentation in R/signifier_helpers.R
 \name{calculate_dyad_zone}
 \alias{calculate_dyad_zone}
-\title{get a dyad value's zone or stones x or y zone}
+\title{get a dyad value's zone}
 \usage{
 calculate_dyad_zone(left, right = 100 - left)
 }
 \arguments{
-\item{left}{percentage triad left value (between 0 and 100).}
+\item{left}{percentage dyad left value (between 0 and 100).}
 
-\item{right}{percentage triad right value (between 0 and 100). default 100 = left (enabling the pass of the left only)}
+\item{right}{percentage dyad right value (between 0 and 100). default 100 = left (enabling the pass of the left only)}
 }
 \value{
 A single character returning the zone
 }
 \description{
-get a dyad value's zone or stones x or y zone
+get a dyad value's zone
 }
 \examples{
 l <- 65
