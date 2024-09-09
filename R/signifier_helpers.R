@@ -172,8 +172,7 @@ calculate_triad_means <- function(data, sig_id, mean_type, framework_object) {
   stopifnot(mean_type %in% c("geometric", "arithmetic"))
 
   triad_col_names <- framework_object$get_triad_anchor_column_names(sig_id)
-  print("triad col names")
-  print(triad_col_names)
+
 
   if (mean_type == "geometric") {
 
@@ -185,23 +184,23 @@ calculate_triad_means <- function(data, sig_id, mean_type, framework_object) {
                                                              compositions::geometricmean(data_top[!is.na(data_top)]),
                                                              compositions::geometricmean(data_right[!is.na(data_right)])), total = 100))))
 
-
-    print(paste("and geo-mean is", geom_mean))
     colnames(geom_mean) <- c("x", "y", "z")
     left_mean <- round(geom_mean[[1]], digits = 0)
     top_mean <- round(geom_mean[[2]], digits = 0)
     right_mean <- round(geom_mean[[3]], digits = 0)
 
   } else {
+    if (mean_type == "arithmetic") {
     left_mean <- round(mean(data[!is.na(data[[triad_col_names[["left"]]]]), triad_col_names[["left"]]], na.rm = TRUE), digits = 0)
     top_mean <- round(mean(data[!is.na(data[[triad_col_names[["top"]]]]), triad_col_names[["top"]]], na.rm = TRUE), digits = 0)
     right_mean <- round(mean(data[!is.na(data[[triad_col_names[["right"]]]]), triad_col_names[["right"]]], na.rm = TRUE), digits = 0)
+    }
   }
 
   return(list(left_mean = left_mean, top_mean = top_mean, right_mean = right_mean))
 }
 
-get_anchor_titles <- function(sig_id, display_anchor_means, anchor_means, framework_object) {
+get_anchor_plot_titles <- function(sig_id, display_anchor_means, anchor_means, framework_object) {
 
   left_title <- clearBetweenHTMLTags(paste(stringr::str_replace_all(framework_object$get_triad_left_anchor_text(sig_id), "&amp;", "&"),  ifelse(display_anchor_means,  paste("mu =", anchor_means[["left_mean"]]), "")), " ")
   right_title <-  clearBetweenHTMLTags(paste(stringr::str_replace_all(framework_object$get_triad_right_anchor_text(sig_id), "&amp;", "&"), ifelse(display_anchor_means, paste("mu =", anchor_means[["right_mean"]]), "")), " ")
@@ -235,7 +234,7 @@ get_anchor_titles <- function(sig_id, display_anchor_means, anchor_means, framew
 
   }
 
-get_anchor_size <- function (anchor_titles) {
+get_anchor_plot_size <- function (anchor_titles) {
 
   left_title <- anchor_titles[["left_title"]]
   right_title <-  anchor_titles[["right_title"]]
