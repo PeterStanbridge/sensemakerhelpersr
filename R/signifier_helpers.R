@@ -202,9 +202,9 @@ calculate_triad_means <- function(data, sig_id, mean_type, framework_object) {
 
 get_anchor_plot_titles <- function(sig_id, display_anchor_means, anchor_means, framework_object) {
 
-  left_title <- clearBetweenHTMLTags(paste(stringr::str_replace_all(framework_object$get_triad_left_anchor_text(sig_id), "&amp;", "&"),  ifelse(display_anchor_means,  paste("mu =", anchor_means[["left_mean"]]), "")), " ")
-  right_title <-  clearBetweenHTMLTags(paste(stringr::str_replace_all(framework_object$get_triad_right_anchor_text(sig_id), "&amp;", "&"), ifelse(display_anchor_means, paste("mu =", anchor_means[["right_mean"]]), "")), " ")
-  top_title <- clearBetweenHTMLTags(paste(stringr::str_replace_all(framework_object$get_triad_top_anchor_text(sig_id), "&amp;", "&"),  ifelse(display_anchor_means, paste("mu =", anchor_means[["top_mean"]]), "")), " ")
+  left_title <- clearBetweenHTMLTags(paste(stringr::str_replace_all(framework_object$get_triad_left_anchor_text(sig_id), "&amp;", "&"),  ifelse(display_anchor_means,  paste("\U003BC", "=", anchor_means[["left_mean"]]), "")), " ")
+  right_title <-  clearBetweenHTMLTags(paste(stringr::str_replace_all(framework_object$get_triad_right_anchor_text(sig_id), "&amp;", "&"), ifelse(display_anchor_means, paste("\U003BC", "=", anchor_means[["right_mean"]]), "")), " ")
+  top_title <- clearBetweenHTMLTags(paste(stringr::str_replace_all(framework_object$get_triad_top_anchor_text(sig_id), "&amp;", "&"),  ifelse(display_anchor_means, paste("\U003BC","=", anchor_means[["top_mean"]]), "")), " ")
 
 
   if (!(grepl("\n", left_title, fixed = TRUE)  || grepl("\n", right_title, fixed = TRUE))) {

@@ -22,6 +22,7 @@ Imports:
     purrr,
     RColorBrewer,
     stringi,
-    tidyr
+    tidyr,
+    viridis
 URL: https://github.com/PeterStanbridge/sensemakerhelpersr
 BugReports: https://github.com/PeterStanbridge/sensemakerhelpersr/issues

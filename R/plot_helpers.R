@@ -87,7 +87,18 @@ get_triad_count_canvas <- function() {
 #' @param contour_size - default 0.5. The line size of the contour lines if contours set to TRUE.
 #' @param contour_colour - default "blue". The colour of the contour lines if counters set to TRUE. A Character string of any valid R colour format, such as hex values or colour names.
 #' @param brew_colour_select - default "Spectral". A character string with any valid RColorBrewer palette name.
-#' @param use_mcq_for_colours - default FALSE. Don'mt colour by MCQ
+#' @param colour_sig_id - default NULL, don't colour by a list signifier, otherwise the signifier id of the list to colour by.
+#' @param colour_vector - default NULL, a vector of valid R colour codes (alpha, hex etc.) of length the number of list items in the signifier id used for the colour.
+#' @param colour_package - default "RColorBrewer". Can also use "viridis". If the colour_vector is null then the plot function will assign values from the colour package.
+#' @param package_palette - default "Set1" for the RColorBrewer Set1 palette. values of "Dark2", "Set1", "Set2" or "Set3" recommended but others can also work. Viridis has "A" - "H".
+#' @param colour_direction - default 1. 1 for left to right colour selection from the palette, -1 for reverse.
+#' @param veridis_default_start - default 0, A value between 0-1 for start colour value in the selected viridis palette. Only applicable if "veridis" selected as the colour package.
+#' @param veridis_default_end - default 0.6. A value between 0-1 for end colour value in the selected viridis palette. Only applicable if "veridis" selected as the colour package.
+#' @param show_legend - default TRUE, show the colour legend if colour by list (MCQ). FALSE to remove the legend.
+#' @param legend_title_colour - default "black". The colour legend title. A Character string of any valid R colour format, such as hex values or colour names.
+#' @param legend_title_size - default 8. The size of the legend title.
+#' @param legend_text_colour - default "black". The colour legend text A Character string of any valid R colour format, such as hex values or colour names.
+#' @param legend_text_size - default 8. The size of the legend text.
 #' @returns A ggplot graph object of the triad.
 #' @export
 plot_triad <- function(filtered_data, full_data, sig_id, framework_object, dot_size = 0.6, dot_colour = "black",
@@ -96,7 +107,9 @@ plot_triad <- function(filtered_data, full_data, sig_id, framework_object, dot_s
                        display_anchor_means = FALSE, mean_type = "geometric", show_percentages = FALSE, show_totals = FALSE,  percentage_type = "Triad",
                        zone_font_size = 4, zone_display_colour = "black", zone_dots = FALSE, zone_dot_transparency = 0.25, display_stats_caption = TRUE, caption_size = 8, caption_colour = "black",
                        graph_title = NULL, title_colour = "black", title_size = 12, contours = FALSE, contour_fill = FALSE, fill_alpha = 0.5, fill_bins = 12,
-                       fill_legend = FALSE, contour_size = 0.5, contour_colour = "blue", brew_colour_select = "Spectral"
+                       fill_legend = FALSE, contour_size = 0.5, contour_colour = "blue", brew_colour_select = "Spectral", colour_sig_id = NULL, colour_vector = NULL,
+                       colour_package = "RColorBrewer", package_palette = "Set1", colour_direction = 1, viridis_default_start = 0, viridis_default_end = 0.6, show_legend = TRUE,
+                       legend_title_colour = "black", legend_title_size = 8, legend_text_colour = "black", legend_text_size = 8
 
 ) {
   # data frame (from CSV export) names for x and y values.
@@ -136,10 +149,41 @@ plot_triad <- function(filtered_data, full_data, sig_id, framework_object, dot_s
 
   # we are doing normal dot plot (that is not zone counts or percentages)
   if (!show_percentages & !show_totals) {
+    p <- p + ggplot2::annotation_custom(grid::rasterGrob(get_triad_standard_canvas(), width = ggplot2::unit(1.1, "npc"), height = ggplot2::unit(1.1, "npc")), 0.02, .98, 0.025, .866)
     # Do the point geom - i.e. plot the dots with passed colours, size and transparency plus the background image.
-    p <- p + ggplot2::geom_point(size = dot_size, colour = dot_colour, alpha = dot_transparency) +
-      ggplot2::annotation_custom(grid::rasterGrob(get_triad_standard_canvas(), width = ggplot2::unit(1.1, "npc"), height = ggplot2::unit(1.1, "npc")), 0.02, .98, 0.025, .866)
+    # if we are not doing list colouring
+    if (is.null(colour_sig_id)) {
+    p <- p + ggplot2::geom_point(size = dot_size, colour = dot_colour, alpha = dot_transparency)
 
+    } else {
+      # we are doing colouring by an MCQ (list)
+      # use the colour vector if it is provided
+      if (!is.null(colour_vector)) {
+      p = p +  ggplot2::geom_point(size = dot_size, alpha = dot_transparency, aes(colour = factor(!! sym(colour_sig_id)))) +
+          scale_color_manual(values = colour_vector,
+                             breaks = framework_object$get_list_items_ids(colour_sig_id),
+                             labels = framework_object$get_list_items_titles(colour_sig_id)) +  labs(color = framework_object$get_signifier_title(colour_sig_id))
+      } else {
+        # nothing provided for colours so use a palette
+        if (colour_package == "viridis") {
+          p = p +  ggplot2::geom_point(size = dot_size, alpha = dot_transparency, aes(colour = factor(!! sym(colour_sig_id)))) +
+                   viridis::scale_color_viridis(discrete = TRUE, option = package_palette, direction = colour_direction, begin = viridis_default_start, end = viridis_default_end,
+                               breaks = framework_object$get_list_items_ids(colour_sig_id),
+                               labels = framework_object$get_list_items_titles(colour_sig_id)) +  labs(color = framework_object$get_signifier_title(colour_sig_id))
+        } else {
+          if (colour_package == "RColorBrewer") {
+            p = p +  ggplot2::geom_point(size = dot_size, alpha = dot_transparency, aes(colour = factor(!! sym(colour_sig_id)))) +
+              scale_color_brewer(palette = package_palette, direction = colour_direction,
+                                           breaks = framework_object$get_list_items_ids(colour_sig_id),
+                                           labels = framework_object$get_list_items_titles(colour_sig_id)) +  labs(color = framework_object$get_signifier_title(colour_sig_id))
+          }
+        }
+      }
+      p <- p +  theme(legend.title = element_text(color = legend_title_colour, size = legend_title_size), legend.text = element_text(color = legend_text_colour, size = legend_text_size))
+     if (!show_legend) {
+       p <- p + ggplot2::theme(legend.position = "none")
+     }
+    }
     # opaque the dots not in the filter - this allows for a filtered plot to contain all the dots, the filtered out dots can have a different size and opacity and colour.
     if (opaque_filtered) {
       p <- p + ggplot2::geom_point(data = full_data[!full_data[["FragmentID"]] %in% filtered_data[["FragmentID"]],], size= opaque_filter_dot_size, colour = opaque_filter_dot_colour,  alpha = opaque_filter_dot_transparency)
@@ -227,13 +271,11 @@ plot_triad <- function(filtered_data, full_data, sig_id, framework_object, dot_s
                                              ifelse(caption_values[["numNonEntries"]] >0, paste("  Skipped = ", caption_values[["numNonEntries"]]), ""), "  filter n = ",
                                              caption_values[["numDataPoints"]], "  %age = ", paste0(caption_values[["perToData"]], "%"),
                                              ifelse(allow_na, paste0("  filter N/A = ", caption_values[["numNADataPoints"]]), ""),
-                                             " mu = L:", anchor_means[["left_mean"]], " T: ", anchor_means[["top_mean"]], " R: ",
+                                            " ",  "\U003BC",  " = L:", anchor_means[["left_mean"]], " T: ", anchor_means[["top_mean"]], " R: ",
                                              anchor_means[["right_mean"]])) +
       ggplot2::theme(plot.caption = ggplot2::element_text(family = "Times", size = caption_size, colour = caption_colour))
 
   }
-
   return(p)
-
 }
 
