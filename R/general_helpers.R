@@ -97,6 +97,16 @@ is_blank_null_na <- function(x) {
   return(FALSE)
 }
 
+clean_string_of_html <- function(htmlString) {
+  # x <- "a1~!@#$%^&*(){}_+:\"<>?,./;'[]-="
+  # str_replace_all(htmlString, "[[:punct:]]", " ")
+  # return(gsub(x, "", htmlString))
+  #return(gsub("/<.*?>", "", htmlString))
+  #return(str_replace_all(htmlString, "[^[:alnum:]_]", " "))
+  # return(gsub("<.*?>", " ", htmlString))
+  return(str_replace_all(gsub("<.*?>", " ", htmlString), "  ", " " ))
+}
+
 createBrewerColourArray <- function() {
   cs <- c("YlOrRd", "YlOrBl", "YlGnBu", "YlGn", "Reds", "RdPu", "Purples", "PuRd", "PuBuGn", "PuBu", "OrRd", "Oranges", "Greys", "Greens", "GbBu", "BuPu", "BuGn", "Blues", "Spectral", "RdYlGn", "RdYlBu", "RdGy", "RdBu", "PuOr", "PRGn", "PiYG", "BrBG")
   bins <- c(rep(9, each = 18), rep(11, each = 9))

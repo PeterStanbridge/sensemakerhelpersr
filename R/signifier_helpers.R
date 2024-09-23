@@ -165,7 +165,7 @@ calculate_stone_9_zone = function(x, y) {
 
 }
 
-calculate_triad_means <- function(data, sig_id, mean_type, framework_object) {
+calculate_triad_means <- function(data, sig_id, mean_type, framework_object, zero_logic = "small_value", for_ggtern = FALSE) {
 
   stopifnot(framework_object$get_signifier_type(sig_id) == "triad")
   stopifnot(is.data.frame(data))
@@ -176,18 +176,31 @@ calculate_triad_means <- function(data, sig_id, mean_type, framework_object) {
 
   if (mean_type == "geometric") {
 
+    if (zero_logic == "small_value") {
     data_left <- ifelse(data[[triad_col_names[["left"]]]] == 0, 0.00001, data[[triad_col_names[["left"]]]])
     data_top <- ifelse(data[[triad_col_names[["top"]]]] == 0, 0.00001, data[[triad_col_names[["top"]]]])
     data_right <- ifelse(data[[triad_col_names[["right"]]]] == 0, 0.00001, data[[triad_col_names[["right"]]]])
+    } else {
+      if (zero_logic == "remove") {
+        remain_data <- data %>% dplyr::filter(is.na(.data[[triad_col_names[["left"]]]]) | .data[[triad_col_names[["left"]]]] != 0 &
+                                                .data[[triad_col_names[["top"]]]] != 0 &
+                                                .data[[triad_col_names[["right"]]]] != 0)
+      }
+    }
 
     geom_mean <- data.frame(data.table::transpose(data.frame(compositions::clo(c(compositions::geometricmean(data_left[!is.na(data_left)]),
                                                              compositions::geometricmean(data_top[!is.na(data_top)]),
                                                              compositions::geometricmean(data_right[!is.na(data_right)])), total = 100))))
 
-    colnames(geom_mean) <- c("x", "y", "z")
+    if (for_ggtern) {
+      return(data.frame(x = round(geom_mean[[1]], digits = 0), y = round(geom_mean[[2]], digits = 0), z = round(geom_mean[[3]], digits = 0)))
+    } else {
     left_mean <- round(geom_mean[[1]], digits = 0)
     top_mean <- round(geom_mean[[2]], digits = 0)
     right_mean <- round(geom_mean[[3]], digits = 0)
+    return(list(left_mean = left_mean, top_mean = top_mean, right_mean = right_mean))
+    }
+
 
   } else {
     if (mean_type == "arithmetic") {
