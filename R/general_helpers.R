@@ -115,5 +115,52 @@ createBrewerColourArray <- function() {
   return(brewCols)
 }
 
+#' @description
+#' This function returns the standard "Very Positive", "Positive", "Neutral", "Negative", "Very Negative" sentiments based on the passed in text and stop words.
+#' @param data - A data frame that must contain the "FragmentID" column and "fragment" column (with this spelling/case) containing the text.
+#' @returns A data frame with the sentiments and counts to plot.
+#' @export
+apply_standard_emotions = function(data, remove_words) {
+
+  # Create a quanteda corpus
+  corpus_data <- quanteda::corpus(data, text_field = "fragment", docid_field = "FragmentID")
+
+  # Tokenize the corpus
+  tokens_data <- quanteda::tokens(corpus_data, remove_punct = TRUE, remove_symbols = TRUE)
+  tokens_data <- quanteda::tokens_remove(tokens_data, stopwords("en"))
+  tokens_data <- quanteda::tokens_remove(tokens_data, remove_words)
+  # Define the sentiment dictionary, e.g., Loughran-McDonald dictionary
+  sentiment_dict <- quanteda.sentiment::data_dictionary_LSD2015
+
+  # Apply the dictionary to perform polarity sentiment analysis
+  # Use dfm_lookup to match tokens against the sentiment dictionary
+  dfm_data <- quanteda::dfm(tokens_data)
+
+  # Apply sentiment scores based on the dictionary
+  sentiment_scores <- quanteda::dfm_lookup(dfm_data, dictionary = sentiment_dict)
+
+  # Compute the polarity score (positive - negative) for each document
+  sentiment_polarity <- sentiment_scores[, "positive"] - sentiment_scores[, "negative"]
+  sp <- as.vector(sentiment_polarity[,"positive"])
+  # Add sentiment polarity scores back to the original data
+  data_with_sentiment <- data %>%
+    mutate(sentiment_polarity = sp)
+
+ # full_data <- fwd$data$df1
+  #full_data_join <- dplyr::inner_join(full_data, data_with_sentiment, by = c(FragmentID =  "fragmentID"))
+
+  full_data_join <- data_with_sentiment %>% dplyr::mutate(sent_emotion = case_when(
+    sentiment_polarity >= 2  ~ "Very Positive",
+    sentiment_polarity > 0   ~ "Positive",
+    sentiment_polarity == 0  ~ "Neutral",
+    sentiment_polarity < 0   ~ "Negative",
+    sentiment_polarity <= -2 ~ "Very Negative"
+  ))
+  sentiment_summary <- full_data_join %>%
+    count(sent_emotion)
+  return(sentiment_summary)
+
+}
+
 
 
