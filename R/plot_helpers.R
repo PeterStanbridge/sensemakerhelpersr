@@ -280,69 +280,6 @@ plot_triad <- function(filtered_data, full_data, sig_id, framework_object, dot_s
 }
 
 
-plot_tern_triad <- function(filtered_data, full_data, sig_id, framework_object, dot_size = 0.5, dot_colour = "black", dot_transparency = 1, opaque_filtered = FALSE, opaque_filter_dot_size = 0.4,
-                            opaque_filter_dot_transparency = 0.5, opaque_filter_dot_colour = "blue", display_mean = TRUE, mean_colour = "blue", mean_shape = "circle", mean_zero_logic = "small_value", show_confidence_intervals = FALSE,
-                            confidence_intervals, colour_sig_id = NULL, colour_vector = NULL, colour_package = "RColorBrewer", package_palette = "Set1", colour_direction = 1, viridis_default_start = 0,
-                             viridis_default_end = 0.6, show_legend = TRUE, legend_title_colour = "black", legend_title_size = 8, legend_text_colour = "black", legend_text_size = 8) {
-  #
-  # get column names
-  col_names <- fwd$sm_framework$get_triad_compositional_column_names(sig_id)
-
-  # Get the anchor means.
-  # remove NA from the data
-  sig_id <- fwd$sm_framework$get_triad_ids()[[2]]
-  filter_data_no_na <- filtered_data %>% dplyr::filter(!is.na(!! sym(col_names[["left"]])))
-  full_data_no_na <- full_data %>% dplyr::filter(!is.na(!! sym(col_names[["left"]])))
-  anchor_means <- calculate_triad_means(filtered_data, sig_id, "geometric", framework_object, zero_logic = mean_zero_logic)
-
-  fwd$sm_framework$get_list_titles(sig_class = "signifier")
-  gender_id <- "7e8de9fa-1eac-4aef-95a8-7565e907eaeb"
-  gender_female_male <- c("92ae82dc-b6dd-4eed-81b7-809194893b90", "5dcc8b01-4807-4e4d-870f-5f656c8a761f" )
-  data_female <- filter_data_no_na %>% dplyr::filter(`7e8de9fa-1eac-4aef-95a8-7565e907eaeb` == "92ae82dc-b6dd-4eed-81b7-809194893b90")
-  data_male <- filter_data_no_na %>% dplyr::filter(`7e8de9fa-1eac-4aef-95a8-7565e907eaeb` == "5dcc8b01-4807-4e4d-870f-5f656c8a761f")
-  gender_colour <- c("male" = "red", "female" = "blue")
-
-
-  male_means <- calculate_triad_means(data_male, sig_id, "geometric", framework_object, zero_logic = mean_zero_logic, for_ggtern = TRUE)
-  female_means <- calculate_triad_means(data_female, sig_id, "geometric", framework_object, zero_logic = mean_zero_logic, for_ggtern = TRUE)
-
-  leftTitle <-  clean_string_of_html(str_replace_all(framework_object$get_triad_left_anchor_text(sig_id), "&amp;", "&"))
-  rightTitle <-  clean_string_of_html(str_replace_all(framework_object$get_triad_right_anchor_text(sig_id), "&amp;", "&"))
-  topTitle <-    clean_string_of_html(str_replace_all(framework_object$get_triad_top_anchor_text(sig_id), "&amp;", "&"))
-
-  ggtern::ggtern() + geom_point(data = data_male, aes(x = .data[[framework_object$get_triad_left_column_name(sig_id)]],
-                                                      y = .data[[framework_object$get_triad_top_column_name(sig_id)]],
-                                                      z = .data[[framework_object$get_triad_right_column_name(sig_id)]]), colour = "blue", size = .5) +
-    geom_point(data = male_means, aes(x = x, y = y, z = z), colour = "blue", size = 1, shape =  "circle", fill = "green") +
-                     ggtern::geom_confidence_tern(data = data_male, aes(x = .data[[framework_object$get_triad_left_column_name(sig_id)]],
-                                                                        y = .data[[framework_object$get_triad_top_column_name(sig_id)]],
-                                                                        z = .data[[framework_object$get_triad_right_column_name(sig_id)]]), breaks = 0.05, size = 1, colour = 'blue') +
-
-    geom_point(data = data_female, aes(x = .data[[framework_object$get_triad_left_column_name(sig_id)]],
-                                                        y = .data[[framework_object$get_triad_top_column_name(sig_id)]],
-                                                        z = .data[[framework_object$get_triad_right_column_name(sig_id)]]), colour = "red", size = .5) +
-    geom_point(data = female_means, aes(x = x, y = y, z = z), colour = "red", size = 1, shape =  "circle", fill = "green") +
-    ggtern::geom_confidence_tern(data = data_female, aes(x = .data[[framework_object$get_triad_left_column_name(sig_id)]],
-                                                       y = .data[[framework_object$get_triad_top_column_name(sig_id)]],
-                                                       z = .data[[framework_object$get_triad_right_column_name(sig_id)]]), breaks = 0.05, size = 1, colour = 'red') +
-    labs(title = wrap_text(framework_object$get_signifier_title(sig_id), tlength = 75)) +
-    ggtern::Llab(wrap_text(leftTitle, tlength = 45)) +
-    ggtern::Tlab(wrap_text(topTitle, tlength = 75)) +
-    ggtern::Rlab(wrap_text(rightTitle, tlength = 45))  +
-    theme(title = element_text(colour = "black", size = 10, family = "Helvetica")) +
-    theme(tern.axis.title.L = element_text(hjust=0, vjust=1, colour = "black", size = 10, family = "Helvetica")) +
-    theme(tern.axis.title.T = element_text(colour = "black", size = 10, family = "Helvetica"))  +
-    theme(tern.axis.title.R = element_text(hjust=1, vjust=1, colour = "black", size = 10, family = "Helvetica")) +
-    ggtern::theme_nogrid() +
-    ggtern::theme_hidelabels() +
-    ggtern::theme_hideticks() +
-    ggplot2::theme(tern.panel.expand = 0.40)  +
-    ggplot2::theme(plot.margin = margin(0, 0, 0, 0, "cm")) + theme(axis.title.x = element_blank(),  axis.title.y = element_blank())
-
-
-
-}
-
 
 #' @description
 #' Plot triad means of passed in data frame data and confidence intervals for comparison
@@ -446,6 +383,148 @@ plot_tern_means <- function(df_list, triad_id, data_titles, framework_object, co
 }
 
 
+#' @param graph_title - default. NULL. A title for the graph. if NULL the triad title will be used.
+#' @param title_colour - default "black". The colour of the graph title. A Character string of any valid R colour format, such as hex values or colour names.
+#' @param title_size - default 12. The size of the graph title.
+
+plot_tern_triad <- function(filtered_data, full_data, triad_id, framework_object, dot_size = 0.5, dot_colour = "black", dot_transparency = 1, opaque_filtered = FALSE, opaque_filter_dot_size = 0.4,
+                            opaque_filter_dot_transparency = 0.5, opaque_filter_dot_colour = "blue", ternAnchorLabelSizeDisplay = "default", ternAnchorLabelSizePrint = "default", ternTitleLabelSize = "default",
+                            show_mean = TRUE, mean_dot_size = 0.5, mean_colour = "blue", mean_shape = "circle", mean_zero_logic = "small_value", graph_title = NULL, title_colour = "black", title_size = 12,
+                            show_confidence_intervals = FALSE, confidence_interval_colour = "#0000FF", confidence_interval_Size = 0.55, confidence_intervals = 0.05, show_variance = FALSE, variance_colour = '#08E5F5',
+                            variance_transparency = 0.3, show_contours = FALSE, countour_size = 0.5, contour_colour = "blue", show_contour_fill = FALSE, fill_alpha = 0.5,
+                            show_fill_legend = FALSE, fill_bins = 10, fill_brewer_palette = "Spectral",
+                             colour_sig_id = NULL, colour_vector = NULL, colour_package = "RColorBrewer", package_palette = "Set1", colour_direction = 1, viridis_default_start = 0,
+                            viridis_default_end = 0.6, show_legend = TRUE, legend_title_colour = "black", legend_title_size = 8, legend_text_colour = "black", legend_text_size = 8, return_as_print = FALSE) {
+  #
+  # get column names
+  col_names <- framework_object$get_triad_compositional_column_names(triad_id)
+
+  # Get the anchor means.
+  # remove NA from the data
+  filter_data_no_na <- filtered_data %>% dplyr::filter(!is.na(!! sym(col_names[["left"]]))) %>% dplyr::filter(!! sym(framework_object$get_triad_left_column_name(triad_id)) > 0) %>%
+    dplyr::filter(!! sym(framework_object$get_triad_top_column_name(triad_id)) > 0) %>% dplyr::filter(!! sym(framework_object$get_triad_right_column_name(triad_id)) > 0)
+
+  full_data_no_na <- full_data %>% dplyr::filter(!is.na(!! sym(col_names[["left"]])))
+  anchor_means <- calculate_triad_means(filtered_data, triad_id, "geometric", framework_object, zero_logic = mean_zero_logic)
+  mean_df <- data.frame(x = anchor_means[["left_mean"]], y = anchor_means[["top_mean"]], z = anchor_means[["right_mean"]])
+
+  if (is.null(graph_title)) {
+    graph_title <- wrap_text(framework_object$get_signifier_title(triad_id), tlength = 75)
+  }
+  leftTitle <-  clean_string_of_html(str_replace_all(framework_object$get_triad_left_anchor_text(triad_id), "&amp;", "&"))
+  rightTitle <-  clean_string_of_html(str_replace_all(framework_object$get_triad_right_anchor_text(triad_id), "&amp;", "&"))
+  topTitle <-    clean_string_of_html(str_replace_all(framework_object$get_triad_top_anchor_text(triad_id), "&amp;", "&"))
+
+  # use auto layout if no manual layout commands
+  titles <- wrap_tern_title(leftTitle, rightTitle)
+  leftTitle <- titles[["left_title"]]
+  rightTitle <- titles[["right_title"]]
+
+  font_size <- get_tern_title_size(leftTitle, rightTitle, ternAnchorLabelSizeDisplay, ternAnchorLabelSizePrint, return_as_print)
+  title_size <- 12
+  if (ternTitleLabelSize != "default") {
+    title_size <- as.numeric(ternTitleLabelSize)
+  }
+
+  p <- ggtern::ggtern(data = filter_data_no_na, aes(x = .data[[framework_object$get_triad_left_column_name(triad_id)]],
+                                                    y = .data[[framework_object$get_triad_top_column_name(triad_id)]],
+                                                    z = .data[[framework_object$get_triad_right_column_name(triad_id)]]))
+  if (is.null(colour_sig_id)) {
+    p <- p + geom_point(colour = dot_colour, size = dot_size, alpha = dot_transparency)
+  } else {
+    # we are doing colouring by an MCQ (list)
+    # use the colour vector if it is provided
+    if (!is.null(colour_vector)) {
+      p = p +  ggplot2::geom_point(size = dot_size, alpha = dot_transparency, aes_string( colour = paste0("`", colour_sig_id, "`"))) +
+        scale_color_manual(values = colour_vector,
+                           breaks = framework_object$get_list_items_ids(colour_sig_id),
+                           labels = framework_object$get_list_items_titles(colour_sig_id)) +  labs(color = framework_object$get_signifier_title(colour_sig_id))
+    } else {
+      # nothing provided for colours so use a palette
+      if (colour_package == "viridis") {
+        p = p +  ggplot2::geom_point(size = dot_size, alpha = dot_transparency, aes_string( colour = paste0("`", colour_sig_id, "`"))) +
+          viridis::scale_color_viridis(discrete = TRUE, option = package_palette, direction = colour_direction, begin = viridis_default_start, end = viridis_default_end,
+                                       breaks = framework_object$get_list_items_ids(colour_sig_id),
+                                       labels = framework_object$get_list_items_titles(colour_sig_id)) +  labs(color = framework_object$get_signifier_title(colour_sig_id))
+      } else {
+        if (colour_package == "RColorBrewer") {
+
+          p = p +  ggplot2::geom_point(size = dot_size, alpha = dot_transparency, aes_string( colour = paste0("`", colour_sig_id, "`"))) +
+            scale_color_brewer(palette = package_palette, direction = colour_direction,
+                               breaks = framework_object$get_list_items_ids(colour_sig_id),
+                               labels = framework_object$get_list_items_titles(colour_sig_id)) +  labs(color = framework_object$get_signifier_title(colour_sig_id))
+        }
+      }
+    }
+    p <- p +  theme(legend.title = element_text(color = legend_title_colour, size = legend_title_size), legend.text = element_text(color = legend_text_colour, size = legend_text_size))
+    if (!show_legend) {
+      p <- p + ggplot2::theme(legend.position = "none")
+    }
+  }
+
+  p <- p + labs(title = graph_title) +
+    Llab(wrap_text(leftTitle, tlength = 45)) +
+    Tlab(wrap_text(topTitle, tlength = 75)) +
+    Rlab(wrap_text(rightTitle, tlength = 45)) +
+    theme(plot.title = element_text(colour = title_colour, size = title_size, family = "Helvetica", hjust = 0.5)) +
+    theme(tern.axis.title.L = element_text(hjust=0, vjust=1, colour = "black", size = font_size, family = "Helvetica")) +
+    theme(tern.axis.title.T = element_text(colour = "black", size = font_size, family = "Helvetica"))  +
+    theme(tern.axis.title.R = element_text(hjust=1, vjust=1, colour = "black", size = font_size, family = "Helvetica")) +
+    theme_nogrid() +
+    theme_hidelabels() +
+    theme_hideticks() +
+    theme(tern.panel.expand = 0.40)  +
+    theme(plot.margin = margin(0, 0, 0, 0, "cm")) + theme(axis.title.x = element_blank(),  axis.title.y = element_blank())
+
+  if (show_mean) {
+    p <- p + geom_point(data = mean_df, aes(x = x, y = y, z = z), colour = mean_colour, size = mean_dot_size, shape = ifelse(mean_shape == "circle", 21, 23), fill = mean_colour)
+  }
+
+  if (show_confidence_intervals) {
+    p <- p + geom_confidence_tern(breaks = confidence_intervals, size = confidence_interval_Size, colour = confidence_interval_colour)
+  }
+
+  if (show_variance) {
+    p <- p + ggtern::stat_mean_ellipse(geom='polygon', steps=500, fill= variance_colour, alpha = variance_transparency)
+  }
+
+
+  if (show_contour_fill) {
+    if (nrow(filter_data_no_na) > 10) {
+
+      ternFillBins <- RColorBrewer::brewer.pal.info[fill_brewer_palette,][["maxcolors"]]
+
+      p <- p + stat_density_tern(geom = 'polygon', contour = TRUE,
+                                 n  = 200, bdl = .0450,
+                                 aes_string(z = paste0("`", framework_object$get_triad_left_column_name(triad_id), "`"),
+                                            x = paste0("`", framework_object$get_triad_top_column_name(triad_id), "`"),
+                                            y = paste0("`", framework_object$get_triad_right_column_name(triad_id), "`"), fill  = "..level.."),
+                                 alpha = fill_alpha, colour = contour_colour, size = countour_size,
+                                 bins = fill_bins, show.legend = show_fill_legend) +
+        scale_fill_distiller(palette = fill_brewer_palette, direction = -1)
+    }
+  }
+
+  if (show_contours) {
+    if (nrow(filter_data_no_na) > 10) {
+      if (!show_contour_fill) {
+        p <- p + stat_density_tern(mapping = aes_string(z = paste0("`", framework_object$get_triad_left_column_name(triad_id), "`"),
+                                                        x = paste0("`", framework_object$get_triad_top_column_name(triad_id), "`"),
+                                                        y = paste0("`", framework_object$get_triad_right_column_name(triad_id), "`")),
+                                   bdl = .0450, n = 200, bins = 12, size = countour_size, colour = contour_colour)
+      }
+    }
+  }
+  if (return_as_print) {
+    return(print(p))
+  } else {
+
+    return(p)
+  }
+
+
+
+}
 
 
 
@@ -543,10 +622,6 @@ plotTernTriads <- function(tsettings, tprojectLabels, tnew_json, tSigID, data, c
   if (ternTitleLabelSize != "default") {
     title_size <- as.numeric(ternTitleLabelSize)
   }
-
-  #p <- ggtern::ggtern(data = DataSmooth, aes_string(x = paste0("`", getTriadLeftColName(tsettings, tprojectLabels, tSigID), "`"),
-  #                                                  y = paste0("`", getTriadTopColName(tsettings, tprojectLabels, tSigID), "`"),
-  #                                                  z = paste0("`", getTriadRightColName(tsettings, tprojectLabels, tSigID), "`"))) +
   p <- ggtern::ggtern(data = DataSmooth, aes_string(x = paste0("`", tnew_json$get_triad_left_column_name(tSigID), "`"),
                                                     y = paste0("`", tnew_json$get_triad_top_column_name(tSigID), "`"),
                                                     z = paste0("`", tnew_json$get_triad_right_column_name(tSigID), "`"))) +
@@ -622,5 +697,55 @@ plotTernTriads <- function(tsettings, tprojectLabels, tnew_json, tSigID, data, c
 
     return(p)
   }
+}
+
+
+get_tern_title_size = function(leftTitle, rightTitle, ternAnchorLabelSizeDisplay, ternAnchorLabelSizePrint, tPrintReturn) {
+
+  font_size <- 12
+  if (tPrintReturn) {
+    if (ternAnchorLabelSizeDisplay == "default") {
+      num_char <- max(nchar(leftTitle), nchar(rightTitle))
+      if (num_char > 35) {font_size <- 10}
+      if (num_char > 50) {font_size <- 9}
+      if (num_char > 60) {font_size <- 8}
+    } else {
+      font_size <- as.numeric(ternAnchorLabelSizeDisplay)
+    }
+  } else {
+    if (ternAnchorLabelSizePrint == "default") {
+      font_size <- font_size #+ 5
+    } else {
+      font_size <- as.numeric(ternAnchorLabelSizePrint)
+    }
+  }
+
+}
+
+wrap_tern_title <- function(leftTitle, rightTitle) {
+  if (!(grepl("\n", leftTitle, fixed = TRUE)  || grepl("\n", rightTitle, fixed = TRUE))) {
+    if (stringr::str_detect(leftTitle, "\\s")) {
+      if (nchar(leftTitle) > 19) {
+        if (is.na(stringr::str_locate(stringr::str_sub(leftTitle, round(nchar(leftTitle) / 2, digits = 0), nchar(leftTitle)), " ")[[1]])) {
+          stringi::stri_sub(leftTitle, stringi::stri_locate_last_fixed(leftTitle, " ") + 1, 1) <- "\n"
+        } else {
+          stri_sub(leftTitle, stringr::str_locate(stringr::str_sub(leftTitle, round(nchar(leftTitle) / 2, digits = 0), nchar(leftTitle)), " ")[[1]] + round(nchar(leftTitle) / 2, digits = 0), 1) <- "\n"
+        }
+      }
+    }
+
+
+    if (stringr::str_detect(rightTitle, "\\s")) {
+      if (nchar(rightTitle) > 23) {
+        if (is.na(stringr::str_locate(stringr::str_sub(rightTitle, round(nchar(rightTitle) / 2, digits = 0), nchar(rightTitle)), " ")[[1]])) {
+          stringi::stri_sub(rightTitle, stringi::stri_locate_last_fixed(rightTitle, " ") + 1, 1) <- "\n"
+        } else {
+          stri_sub(rightTitle, stringr::str_locate(stringr::str_sub(rightTitle, round(nchar(rightTitle) / 2, digits = 0), nchar(rightTitle)), " ")[[1]] + round(nchar(rightTitle) / 2, digits = 0), 1) <- "\n"
+        }
+      }
+    }
+  }
+
+  return(list(left_title = leftTitle, right_title = rightTitle))
 }
 
