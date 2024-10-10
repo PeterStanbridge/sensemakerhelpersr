@@ -162,5 +162,12 @@ apply_standard_emotions = function(data, remove_words) {
 
 }
 
-
-
+#' @description Determines whether colour characters are valid colour codes/names
+#' @param x A vector of colour codes/characters to test
+#' @export
+areColors <- function(x) {
+  sapply(x, function(X) {
+    tryCatch(is.matrix(col2rgb(X)),
+             error = function(e) FALSE)
+  })
+}

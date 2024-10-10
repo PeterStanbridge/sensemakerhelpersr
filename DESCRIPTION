@@ -16,6 +16,7 @@ Imports:
     data.table,
     dplyr,
     ggplot2,
+    grDevices,
     grid,
     magrittr,
     png,
@@ -25,8 +26,11 @@ Imports:
     quanteda.textplots,
     quanteda.textstats,
     RColorBrewer,
+    sentimentr,
     stringi,
+    syuzhet,
     tidyr,
+    tidytext,
     viridis
 URL: https://github.com/PeterStanbridge/sensemakerhelpersr
 BugReports: https://github.com/PeterStanbridge/sensemakerhelpersr/issues
