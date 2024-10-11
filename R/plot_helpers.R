@@ -881,8 +881,8 @@ plot_sentiment_bars <- function(sentiment_filters, freetexts_to_plot, data_objec
       stopifnot(trimws(freetexts_to_plot) != "")
     } else {
       if (class(freetexts_to_plot) == "data.frame") {
-        stopifnot(nrows(df) > 0)
-        stopifnot("id" %in% colnames(df))
+        stopifnot(nrow(freetexts_to_plot) > 0)
+        stopifnot("id" %in% colnames(freetexts_to_plot))
         freetexts_to_plot <- freetexts_to_plot[["id"]]
       }
     }
@@ -965,8 +965,8 @@ plot_sentiment_valence <- function(sentiment_filters, freetexts_to_plot, data_ob
       stopifnot(trimws(freetexts_to_plot) != "")
     } else {
       if (class(freetexts_to_plot) == "data.frame") {
-        stopifnot(nrows(df) > 0)
-        stopifnot("id" %in% colnames(df))
+        stopifnot(nrow(freetexts_to_plot) > 0)
+        stopifnot("id" %in% colnames(freetexts_to_plot))
         freetexts_to_plot <- freetexts_to_plot[["id"]]
       }
     }
@@ -1051,8 +1051,8 @@ plot_emotions_over_time <- function(sentiment_filters, freetexts_to_plot, data_o
       stopifnot(trimws(freetexts_to_plot) != "")
     } else {
       if (class(freetexts_to_plot) == "data.frame") {
-        stopifnot(nrows(df) > 0)
-        stopifnot("id" %in% colnames(df))
+        stopifnot(nrow(freetexts_to_plot) > 0)
+        stopifnot("id" %in% colnames(freetexts_to_plot))
         freetexts_to_plot <- freetexts_to_plot[["id"]]
       }
     }
@@ -1160,6 +1160,119 @@ plot_emotions_over_time <- function(sentiment_filters, freetexts_to_plot, data_o
   })
 
   return(out_results)
+
+}
+
+word_frequency_plot <- function(frequency_graph_pairs, freetexts_to_plot, data_object, use_stem = FALSE) {
+
+  stopifnot(all(class(data_object) %in% c("Data", "R6")))
+
+  # freetexts_to_plot can be either a vector of 1 or more free text ids, a file name of a csv file containing the freetext ids or a parsed version (data.frame)
+  if (stringr::str_ends(string = freetexts_to_plot, ".csv")) {
+    stopifnot(file.exists(freetexts_to_plot))
+    df <- read.csv(freetexts_to_plot, stringsAsFactors = FALSE)
+    stopifnot(nrow(df) > 0)
+    stopifnot("id" %in% colnames(df))
+    freetexts_to_plot <- df[["id"]]
+  } else {
+    if (class(freetexts_to_plot) == "character") {
+      stopifnot(trimws(freetexts_to_plot) != "")
+    } else {
+      if (class(freetexts_to_plot) == "data.frame") {
+        stopifnot(nrow(freetexts_to_plot) > 0)
+        stopifnot("id" %in% colnames(freetexts_to_plot))
+        freetexts_to_plot <- freetexts_to_plot[["id"]]
+      }
+    }
+  }
+
+
+  # so now we have our freetexts_to_plot as a vector of one or more characters - check that they are free texts
+  stopifnot(all(freetexts_to_plot %in% data_object$sm_framework$get_freetext_fragments()))
+
+  if (stringr::str_ends(string = frequency_graph_pairs, ".csv")) {
+    stopifnot(file.exists(frequency_graph_pairs))
+    df <- read.csv(frequency_graph_pairs, stringsAsFactors = FALSE)
+    stopifnot(nrow(df) > 0)
+    stopifnot(all(c("from_id", "to_id") %in% colnames(df)))
+    graph_pairs_from_ids <- df[["from_id"]]
+    graph_pairs_to_ids <- df[["to_id"]]
+  } else {
+    if (class(frequency_graph_pairs) == "data.frame") {
+      stopifnot(nrow(frequency_graph_pairs) > 0)
+      stopifnot(all(c("from_id", "to_id") %in% colnames(frequency_graph_pairs)))
+      graph_pairs_from_ids <- frequency_graph_pairs[["from_id"]]
+      graph_pairs_to_ids <- frequency_graph_pairs[["to_id"]]
+    }
+  }
+
+  # we create separate cleaned dataframes for the sentiment analysis so add if they are not already there
+  add_clean_freetext_to_data(data_object, freetexts_to_plot)
+
+  # todo - this might not work
+
+  stop_words <- tidytext::stop_words
+  remove_tibble <- tibble(word = data_object$stop_words, lexicon = rep_len("CUSTOM", length(data_object$stop_words)))
+
+
+  out_results <- vector("list", length = length(freetexts_to_plot))
+  names(out_results) <- freetexts_to_plot
+
+  purrr::walk(freetexts_to_plot, function(text_id) {
+
+
+    out_plots <- vector("list", length = length(graph_pairs_from_ids))
+    names(out_plots) <- paste0(graph_pairs_from_ids, "_", graph_pairs_to_ids)
+
+
+    purrr::walk2(graph_pairs_from_ids, graph_pairs_to_ids, function(from_id, to_id) {
+
+      data_from <- data_object$get_data_dataframe(from_id, as_tibble = TRUE)
+      data_to <- data_object$get_data_dataframe(to_id, as_tibble = TRUE)
+      data_clean <- data_object$get_data_dataframe(paste0("data_clean_", text_id), as_tibble = TRUE)
+      data_from_plot <- data_clean %>% dplyr::filter(FragmentID %in% data_from[["FragmentID"]])
+      data_to_plot <- data_clean %>% dplyr::filter(FragmentID %in% data_to[["FragmentID"]])
+
+      data_from_plot_corpus <- data_from_plot  %>%  tidytext::unnest_tokens(word, fragment) %>% dplyr::anti_join(dplyr::rows_append(stop_words, remove_tibble))
+
+      if (use_stem) {
+        data_from_plot_corpus <-  data_from_plot_corpus %>% mutate(word = SnowballC::wordStem(word))
+      }
+
+      data_to_plot_corpus <- data_to_plot  %>%  tidytext::unnest_tokens(word, fragment) %>% dplyr::anti_join(dplyr::rows_append(stop_words, remove_tibble))
+
+      if (use_stem) {
+        data_to_plot_corpus <-  data_to_plot_corpus %>% mutate(word = SnowballC::wordStem(word))
+      }
+
+      data_to_plot_combined <- dplyr::bind_rows(dplyr::mutate(data_from_plot_corpus, data_set = stringr::str_replace_all(from_id, "_", " ")),
+                                   dplyr::mutate(data_to_plot_corpus, data_set = stringr::str_replace_all(to_id, "_", " ")))
+
+       frequency <- data_to_plot_combined %>%
+        mutate(word = str_extract(word, "[a-z']+")) %>%
+        count(data_set, word) %>%
+        group_by(data_set) %>%
+        mutate(proportion = n / sum(n)) %>%
+        select(-n) %>%
+        spread(data_set, proportion)
+       #, color = abs(`Actively Use` - `Actively Not`)
+       out_plots[[paste0(from_id, "_", to_id)]] <<- ggplot(frequency, aes(x = .data[[stringr::str_replace_all(from_id, "_", " ")]], y = .data[[stringr::str_replace_all(to_id, "_", " ")]],
+                             color = abs(.data[[stringr::str_replace_all(from_id, "_", " ")]] - .data[[stringr::str_replace_all(to_id, "_", " ")]]))) +
+         geom_abline(color = "gray40", lty = 2) +
+         geom_jitter(alpha = 0.1, size = 2.4, width = 0.3, height = 0.3) +
+         geom_text(aes(label = word), check_overlap = TRUE, vjust = 1.5) +
+         scale_x_log10(labels = percent_format()) +
+         scale_y_log10(labels = percent_format()) +
+         scale_colour_gradient(limits = c(0, 0.001),
+                               low = "darkslategray4", high = "gray75") +
+         ggplot2::theme(legend.position = "none")
+
+    })
+
+    out_results[[text_id]] <<- out_plots
+
+  })
+return(out_results)
 
 }
 

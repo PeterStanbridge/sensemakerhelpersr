@@ -27,6 +27,8 @@ Imports:
     quanteda.textstats,
     RColorBrewer,
     sentimentr,
+    SnowballC,
+    stopwords,
     stringi,
     syuzhet,
     tidyr,
