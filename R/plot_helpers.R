@@ -215,7 +215,7 @@ plot_triad <- function(filtered_data, full_data, sig_id, framework_object, dot_s
       p <- p +  ggplot2::stat_density_2d(geom = "polygon", contour = TRUE,
                                          ggplot2::aes(fill = ggplot2::after_stat(level)), alpha = fill_transparency, colour = contour_colour, size = contour_size,
                                          bins = fill_bins, show.legend = fill_legend) +
-        ggplot2::scale_fill_distiller(palette = brew_colour_select, direction = -1)
+        ggplot2::scale_fill_distiller(palette =  RColorBrewer::brew_colour_select, direction = -1)
     }
 
   } else {
@@ -560,14 +560,14 @@ plot_tern_triad <- function(filtered_data, full_data, triad_id, framework_object
   col_names <- framework_object$get_triad_compositional_column_names(triad_id)
 
   # Get the anchor means.
-  # remove NA from the data
-  filter_data_no_na <- filtered_data %>% dplyr::filter(!is.na(!! sym(col_names[["left"]]))) %>% dplyr::filter(!! sym(framework_object$get_triad_left_column_name(triad_id)) > 0) %>%
-    dplyr::filter(!! sym(framework_object$get_triad_top_column_name(triad_id)) > 0) %>% dplyr::filter(!! sym(framework_object$get_triad_right_column_name(triad_id)) > 0)
+  # remove NA from the data and any values < 0 (extremely rare but some legacy)
+  data_clean <- filtered_data %>% dplyr::filter(!is.na(!! sym(col_names[["left"]]))) %>% dplyr::filter(!! sym(framework_object$get_triad_left_column_name(triad_id)) > 0) %>%
+   dplyr::filter(!! sym(framework_object$get_triad_top_column_name(triad_id)) > 0) %>% dplyr::filter(!! sym(framework_object$get_triad_right_column_name(triad_id)) > 0)
 
-  full_data_no_na <- full_data %>% dplyr::filter(!is.na(!! sym(col_names[["left"]]))) %>% dplyr::filter(!! sym(framework_object$get_triad_left_column_name(triad_id)) > 0) %>%
-    dplyr::filter(!! sym(framework_object$get_triad_top_column_name(triad_id)) > 0) %>% dplyr::filter(!! sym(framework_object$get_triad_right_column_name(triad_id)) > 0)
+  #full_data_no_na <- full_data %>% dplyr::filter(!is.na(!! sym(col_names[["left"]]))) %>% dplyr::filter(!! sym(framework_object$get_triad_left_column_name(triad_id)) > 0) %>%
+  #  dplyr::filter(!! sym(framework_object$get_triad_top_column_name(triad_id)) > 0) %>% dplyr::filter(!! sym(framework_object$get_triad_right_column_name(triad_id)) > 0)
 
-  anchor_means <- calculate_triad_means(filtered_data, triad_id, "geometric", framework_object, zero_logic = mean_zero_logic)
+  anchor_means <- calculate_triad_means(data_clean, triad_id, "geometric", framework_object, zero_logic = mean_zero_logic)
   mean_df <- data.frame(x = anchor_means[["left_mean"]], y = anchor_means[["top_mean"]], z = anchor_means[["right_mean"]])
 
   if (is.null(graph_title)) {
@@ -582,21 +582,29 @@ plot_tern_triad <- function(filtered_data, full_data, triad_id, framework_object
   leftTitle <- titles[["left_title"]]
   rightTitle <- titles[["right_title"]]
 
+
+  left_column_name <- col_names$left
+  top_column_name <-  col_names$top
+  right_column_name <- col_names$right
+
+
   font_size <- get_tern_title_size(leftTitle, rightTitle, anchor_label_size, anchor_label_size_print, return_as_print)
 
-  p <- ggtern::ggtern(data = filter_data_no_na, aes(x = .data[[framework_object$get_triad_left_column_name(triad_id)]],
-                                                    y = .data[[framework_object$get_triad_top_column_name(triad_id)]],
-                                                    z = .data[[framework_object$get_triad_right_column_name(triad_id)]]))
+  p <- ggtern::ggtern(data = data_clean, ggplot2::aes_string(x = paste0("`", left_column_name, "`"),
+                      y = paste0("`", top_column_name, "`"),
+                      z = paste0("`", right_column_name, "`")))
+
   if (is.null(colour_sig_id)) {
-    p <- p + geom_point(colour = dot_colour, size = dot_size, alpha = dot_transparency)
+    p <- p + ggplot2::geom_point(colour = dot_colour, size = dot_size, alpha = dot_transparency)
   } else {
     # we are doing colouring by an MCQ (list)
     # use the colour vector if it is provided
     if (!is.null(colour_vector)) {
       p = p +  ggplot2::geom_point(size = dot_size, alpha = dot_transparency, aes_string( colour = paste0("`", colour_sig_id, "`"))) +
-        scale_color_manual(values = colour_vector,
+        ggplot2::scale_color_manual(values = colour_vector,
                            breaks = framework_object$get_list_items_ids(colour_sig_id),
-                           labels = framework_object$get_list_items_titles(colour_sig_id)) +  labs(color = framework_object$get_signifier_title(colour_sig_id))
+                           labels = framework_object$get_list_items_titles(colour_sig_id)) +
+        ggplot2::labs(color = framework_object$get_signifier_title(colour_sig_id))
     } else {
       # nothing provided for colours so use a palette
       if (colour_package == "viridis") {
@@ -608,22 +616,24 @@ plot_tern_triad <- function(filtered_data, full_data, triad_id, framework_object
         if (colour_package == "RColorBrewer") {
 
           p = p +  ggplot2::geom_point(size = dot_size, alpha = dot_transparency, aes_string( colour = paste0("`", colour_sig_id, "`"))) +
-            scale_color_brewer(palette = package_palette, direction = colour_direction,
+            ggplot2::scale_color_brewer(palette = package_palette, direction = colour_direction,
                                breaks = framework_object$get_list_items_ids(colour_sig_id),
-                               labels = framework_object$get_list_items_titles(colour_sig_id)) +  labs(color = framework_object$get_signifier_title(colour_sig_id))
+                               labels = framework_object$get_list_items_titles(colour_sig_id)) +
+            ggplot2::labs(color = framework_object$get_signifier_title(colour_sig_id))
         }
       }
     }
-    p <- p +  theme(legend.title = element_text(color = legend_title_colour, size = legend_title_size), legend.text = element_text(color = legend_text_colour, size = legend_text_size))
+    p <- p +  ggplot2::theme(legend.title = element_text(color = legend_title_colour, size = legend_title_size), legend.text = element_text(color = legend_text_colour, size = legend_text_size))
+
     if (!show_colour_legend) {
       p <- p + ggplot2::theme(legend.position = "none")
     }
   }
 
-  p <- p + labs(title = graph_title) +
-    Llab(wrap_text(leftTitle, tlength = 45)) +
-    Tlab(wrap_text(topTitle, tlength = 75)) +
-    Rlab(wrap_text(rightTitle, tlength = 45)) +
+  p <- p + ggplot2::labs(title = graph_title) +
+    ggtern::Llab(wrap_text(leftTitle, tlength = 45)) +
+    ggtern::Tlab(wrap_text(topTitle, tlength = 75)) +
+    ggtern::Rlab(wrap_text(rightTitle, tlength = 45)) +
     theme(plot.title = element_text(colour = title_colour, size = title_size, family = "Helvetica", hjust = 0.5)) +
     theme(tern.axis.title.L = element_text(hjust=0, vjust=1, colour = "black", size = font_size, family = "Helvetica")) +
     theme(tern.axis.title.T = element_text(colour = "black", size = font_size, family = "Helvetica"))  +
@@ -639,7 +649,7 @@ plot_tern_triad <- function(filtered_data, full_data, triad_id, framework_object
   }
 
   if (show_confidence_intervals) {
-    p <- p + geom_confidence_tern(breaks = confidence_intervals, size = confidence_interval_Size, colour = confidence_interval_colour)
+    p <- p + ggtern::geom_confidence_tern(breaks = confidence_intervals, size = confidence_interval_Size, colour = confidence_interval_colour)
   }
 
   if (show_variance) {
@@ -648,33 +658,33 @@ plot_tern_triad <- function(filtered_data, full_data, triad_id, framework_object
 
 
   if (show_contour_fill) {
-    if (nrow(filter_data_no_na) > 10) {
-      fill_bins <- get_palette_colour_count(brew_colour_select)
-      p <- p + stat_density_tern(geom = 'polygon', contour = TRUE,
+    if (nrow(data_clean) > 10) {
+      fill_bins <- get_palette_colour_count(fill_brewer_palette)
+      p <- p + ggtern::stat_density_tern(geom = 'polygon', contour = TRUE,
                                  n  = 200, bdl = .0450,
-                                 aes_string(z = paste0("`", framework_object$get_triad_left_column_name(triad_id), "`"),
-                                            x = paste0("`", framework_object$get_triad_top_column_name(triad_id), "`"),
-                                            y = paste0("`", framework_object$get_triad_right_column_name(triad_id), "`"), fill  = "..level.."),
+                                 ggplot2::aes_string(z = paste0("`", left_column_name, "`"),
+                                            x = paste0("`", top_column_name, "`"),
+                                            y = paste0("`", right_column_name, "`"), fill  = "..level.."),
+                             #   ggtern::aes(x = .data[[left_column]], y = .data[[top_column]], z = .data[[right_column]], fill = ggplot2::after_stat(level)),
                                  alpha = fill_transparency, colour = contour_colour, size = countour_size,
                                  bins = fill_bins, show.legend = show_fill_legend) +
-        scale_fill_distiller(palette = fill_brewer_palette, direction = -1)
+        ggplot2::scale_fill_distiller(palette = fill_brewer_palette, direction = -1)
     }
   }
 
   if (show_contours) {
-    if (nrow(filter_data_no_na) > 10) {
+    if (nrow(data_clean) > 10) {
       if (!show_contour_fill) {
-        p <- p + stat_density_tern(mapping = aes_string(z = paste0("`", framework_object$get_triad_left_column_name(triad_id), "`"),
-                                                        x = paste0("`", framework_object$get_triad_top_column_name(triad_id), "`"),
-                                                        y = paste0("`", framework_object$get_triad_right_column_name(triad_id), "`")),
-                                   bdl = .0450, n = 200, bins = 12, size = countour_size, colour = contour_colour)
+        p <- p + ggtern::stat_density_tern(mapping = ggplot2::aes_string(x = paste0("`", left_column_name, "`"),
+                                                        y = paste0("`", top_column_name, "`"),
+                                                        z = paste0("`", right_column_name, "`")),
+                                           bdl = .0450, n = 200,  bins = 12, size = countour_size, colour = contour_colour)
       }
     }
   }
   if (return_as_print) {
     return(print(p))
   } else {
-
     return(p)
   }
 
@@ -713,7 +723,7 @@ wrap_tern_title <- function(leftTitle, rightTitle) {
         if (is.na(stringr::str_locate(stringr::str_sub(leftTitle, round(nchar(leftTitle) / 2, digits = 0), nchar(leftTitle)), " ")[[1]])) {
           stringi::stri_sub(leftTitle, stringi::stri_locate_last_fixed(leftTitle, " ") + 1, 1) <- "\n"
         } else {
-          stri_sub(leftTitle, stringr::str_locate(stringr::str_sub(leftTitle, round(nchar(leftTitle) / 2, digits = 0), nchar(leftTitle)), " ")[[1]] + round(nchar(leftTitle) / 2, digits = 0), 1) <- "\n"
+          stringi::stri_sub(leftTitle, stringr::str_locate(stringr::str_sub(leftTitle, round(nchar(leftTitle) / 2, digits = 0), nchar(leftTitle)), " ")[[1]] + round(nchar(leftTitle) / 2, digits = 0), 1) <- "\n"
         }
       }
     }
@@ -724,7 +734,7 @@ wrap_tern_title <- function(leftTitle, rightTitle) {
         if (is.na(stringr::str_locate(stringr::str_sub(rightTitle, round(nchar(rightTitle) / 2, digits = 0), nchar(rightTitle)), " ")[[1]])) {
           stringi::stri_sub(rightTitle, stringi::stri_locate_last_fixed(rightTitle, " ") + 1, 1) <- "\n"
         } else {
-          stri_sub(rightTitle, stringr::str_locate(stringr::str_sub(rightTitle, round(nchar(rightTitle) / 2, digits = 0), nchar(rightTitle)), " ")[[1]] + round(nchar(rightTitle) / 2, digits = 0), 1) <- "\n"
+          stringi::stri_sub(rightTitle, stringr::str_locate(stringr::str_sub(rightTitle, round(nchar(rightTitle) / 2, digits = 0), nchar(rightTitle)), " ")[[1]] + round(nchar(rightTitle) / 2, digits = 0), 1) <- "\n"
         }
       }
     }
