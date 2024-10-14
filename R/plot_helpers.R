@@ -172,7 +172,7 @@ plot_triad <- function(filtered_data, full_data, sig_id, framework_object, dot_s
     ggplot2::scale_y_continuous(limits=c(-.2, 1), breaks = seq(0,.866,by=.866)) +
     ggplot2::scale_x_continuous(limits=c(-.2, 1.2),breaks = seq(0,1,by=1)) + ggplot2::coord_fixed() +
     ggplot2::annotate("text", label = c(top_title, left_title , right_title), x =  c(.5, -.2, 1.2), y = c(1.00, -.1, -.1), hjust = c(.5, 0, 1), vjust = c(0,1,1), size= anchor_size, colour = title_colour) +
-    ggplot2::labs(title = paste(wrap_text(graph_title, tlength = 56), "\n", sep = "")) +
+    ggplot2::labs(title = paste(wrap_text(graph_title, wrap_length = 56), "\n", sep = "")) +
     ggplot2::theme(plot.title = ggplot2::element_text(size= title_size, face="bold.italic", hjust = 0.5, colour = title_colour))
 
 
@@ -485,9 +485,9 @@ plot_tern_means <- function(df_list, triad_id, data_titles, framework_object, co
 
 
   p <- p +  labs(title = title) +
-    ggtern::Llab(wrap_text(leftTitle, tlength = 45)) +
-    ggtern::Tlab(wrap_text(topTitle, tlength = 75)) +
-    ggtern::Rlab(wrap_text(rightTitle, tlength = 45))  +
+    ggtern::Llab(wrap_text(leftTitle, wrap_length = 45)) +
+    ggtern::Tlab(wrap_text(topTitle, wrap_length = 75)) +
+    ggtern::Rlab(wrap_text(rightTitle, wrap_length = 45))  +
     theme(plot.title = element_text(colour = title_colour, size = title_size, family = "Helvetica", hjust = 0.5)) +
     theme(tern.axis.title.L = element_text(hjust=0, vjust=1, colour = anchor_colour, size = anchor_size, family = "Helvetica")) +
     theme(tern.axis.title.T = element_text(colour = anchor_colour, size = anchor_size, family = "Helvetica"))  +
@@ -588,7 +588,7 @@ plot_tern_triad <- function(filtered_data, full_data, triad_id, framework_object
   mean_df <- data.frame(x = anchor_means[["left_mean"]], y = anchor_means[["top_mean"]], z = anchor_means[["right_mean"]])
 
   if (is.null(graph_title)) {
-    graph_title <- wrap_text(framework_object$get_signifier_title(triad_id), tlength = 75)
+    graph_title <- wrap_text(framework_object$get_signifier_title(triad_id), wrap_length = 75)
   }
   leftTitle <-  clean_string_of_html(str_replace_all(framework_object$get_triad_left_anchor_text(triad_id), "&amp;", "&"))
   rightTitle <-  clean_string_of_html(str_replace_all(framework_object$get_triad_right_anchor_text(triad_id), "&amp;", "&"))
@@ -648,9 +648,9 @@ plot_tern_triad <- function(filtered_data, full_data, triad_id, framework_object
   }
 
   p <- p + ggplot2::labs(title = graph_title) +
-    ggtern::Llab(wrap_text(leftTitle, tlength = 45)) +
-    ggtern::Tlab(wrap_text(topTitle, tlength = 75)) +
-    ggtern::Rlab(wrap_text(rightTitle, tlength = 45)) +
+    ggtern::Llab(wrap_text(leftTitle, wrap_length = 45)) +
+    ggtern::Tlab(wrap_text(topTitle, wrap_length = 75)) +
+    ggtern::Rlab(wrap_text(rightTitle, wrap_length = 45)) +
     theme(plot.title = element_text(colour = title_colour, size = title_size, family = "Helvetica", hjust = 0.5)) +
     theme(tern.axis.title.L = element_text(hjust=0, vjust=1, colour = "black", size = font_size, family = "Helvetica")) +
     theme(tern.axis.title.T = element_text(colour = "black", size = font_size, family = "Helvetica"))  +
