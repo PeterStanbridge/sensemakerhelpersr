@@ -1,16 +1,26 @@
+#' @title wrap a text string at a given length
+#' @param text_string - the string to be wrapped.
+#' @param wrap_length - Default 30, the position length for the text to be wrapped.
+#' @param replacement_value - A string to use as a replacement in the wrap break - i.e. instead of breaking.
+#' @return The wrapped text_string
 #' @export
-wrap_text <- function(ttext, tlength = 30, treplacement = "") {
-  ret_val <- stringr::str_wrap(ttext, width = tlength)
-  if (treplacement != "") {
-    ret_val <- stringr::str_replace_all(ret_val, "\\n", treplacement)
+wrap_text <- function(text_string, wrap_length = 30, replacement_value = "") {
+  ret_val <- stringr::str_wrap(text_string, width = wrap_length)
+  if (replacement_value != "") {
+    ret_val <- stringr::str_replace_all(ret_val, "\\n", replacement_value)
   }
   return(ret_val)
 }
 
-# generic remove html helper function
-removeHTML <- function(tString) {
-  ret_val <- gsub("<.*?>", " ", tString)
-  return(stringr::str_replace_all(ret_val, "  ", " "))
+#' @title generic remove html helper function
+#' @description
+#' Remove html string from an input string
+#' @param input_string - the string to remove html tags.
+#' @returns The string with any html removed.
+#' @export
+removeHTML <- function(input_string) {
+  ret_val <- gsub("<.*?>", " ", input_string)
+  return(stringr::str_replace_all(ret_val, "   ", " "))
 }
 
 clearHTML <- function(tString) {
@@ -21,79 +31,268 @@ clearBetweenHTMLTags <- function(htmlString, repVal) {
   return(gsub("<[^>]+>", repVal, htmlString))
 }
 
-clearDash <- function(htmlString) {
-  return(gsub("-", "", htmlString))
+#' @title remove dashes from a string
+#' @description
+#' Remove dashes from a string
+#' @param input_string - the string to remove dash.
+#' @param double_space_to_single - Default TRUE, will replace any remaining double space with a single space.
+#' @returns The string with dash removed.
+#' @export
+clearDash <- function(input_string, double_space_to_single = TRUE) {
+  ret_val <- gsub("-", "", input_string)
+  if (double_space_to_single) {
+    ret_val <- gsub("  ", " ", ret_val)
+  }
+  return(ret_val)
 }
 
-clearLongDash <- function(htmlString) {
-  return(gsub("–", "", htmlString))
+#' @title remove long dashes from a string
+#' @description
+#' Remove long dashes from a string
+#' @param input_string - the string to remove long dash.
+#' @param double_space_to_single - Default TRUE, will replace any remaining double space with a single space.
+#' @returns The string with long dash removed.
+#' @export
+clearLongDash <- function(input_string, double_space_to_single = TRUE) {
+  ret_val <- gsub("–", "", input_string)
+  if (double_space_to_single) {
+    ret_val <- gsub("  ", " ", ret_val)
+  }
+  return(ret_val)
 }
 
-clearPlus <- function(htmlString) {
-  return(gsub("\\+", "", htmlString))
+#' @title remove plus sign from a string
+#' @description
+#' remove plus sign from a string
+#' @param input_string - the string to remove plus sign.
+#' @param double_space_to_single - Default TRUE, will replace any remaining double space with a single space.
+#' @returns The string with plus sign removed.
+#' @export
+clearPlus <- function(input_string, double_space_to_single = TRUE) {
+  ret_val <- gsub("\\+", "", input_string)
+  if (double_space_to_single) {
+    ret_val <- gsub("  ", " ", ret_val)
+  }
+  return(ret_val)
 }
 
-clearBrackets <- function(htmlString) {
-  return(gsub("[()]", "", htmlString))
-}
-clearSpace <- function(htmlString) {
-  return(gsub(" ", "", htmlString))
-}
-clearComma <- function(htmlString) {
-  return(gsub(",", "", htmlString))
-}
-clearQuote <- function(htmlString) {
-  return(gsub("\\'", "", htmlString))
-}
-clearPoint <- function(htmlString) {
-  return(gsub("\\.", "", htmlString))
-}
-clearSemiColon <- function(htmlString) {
-  return(gsub(";", "", htmlString))
+#' @title remove brackets  from a string
+#' @description
+#' remove brackets  from a string
+#' @param input_string - the string to remove brackets.
+#' @param double_space_to_single - Default TRUE, will replace any remaining double space with a single space.
+#' @returns The string with brackets removed.
+#' @export
+clearBrackets <- function(input_string, double_space_to_single = TRUE) {
+  ret_val <- gsub("\\]", "", gsub("\\[", "", gsub("[()]", "", input_string)))
+  if (double_space_to_single) {
+    ret_val <- gsub("  ", " ", ret_val)
+  }
+  return(ret_val)
 }
 
-clearSlash <- function(htmlString) {
-  return(gsub("/", "", htmlString))
+#' @title remove spaces  from a string
+#' @description
+#' remove spaces  from a string
+#' @param input_string - the string to remove spaces.
+#' @param double_space_to_single - Default TRUE, will replace any remaining double space with a single space.
+#' @returns The string with spaces removed.
+#' @export
+clearSpace <- function(input_string, double_space_to_single = TRUE) {
+  ret_val <- gsub(" ", "", input_string)
+  if (double_space_to_single) {
+    ret_val <- gsub("  ", " ", ret_val)
+  }
+  return(ret_val)
 }
 
-clearColon <- function(htmlString) {
-  return(gsub(":", "", htmlString))
+#' @title remove commas  from a string
+#' @description
+#' remove commas  from a string
+#' @param input_string - the string to remove commas.
+#' @param double_space_to_single - Default TRUE, will replace any remaining double space with a single space.
+#' @returns The string with commas removed.
+#' @export
+clearComma <- function(input_string, double_space_to_single = TRUE) {
+  ret_val <- gsub(",", "", input_string)
+  if (double_space_to_single) {
+    ret_val <- gsub("  ", " ", ret_val)
+  }
+  return(ret_val)
 }
 
-clearApos <- function(htmlString) {
-  return(gsub("’", "", htmlString))
+#' @title remove single quotes  from a string
+#' @description
+#' remove single quotes  from a string
+#' @param input_string - the string to remove single quotes.
+#' @param double_space_to_single - Default TRUE, will replace any remaining double space with a single space.
+#' @returns The string with single quotes removed.
+#' @export
+clearQuote <- function(input_string, double_space_to_single = TRUE) {
+  ret_val <- gsub("\\'", "", input_string)
+  if (double_space_to_single) {
+    ret_val <- gsub("  ", " ", ret_val)
+  }
+  return(ret_val)
 }
 
-clearAmps <- function(htmlString) {
-  return(gsub("&", "", htmlString))
+#' @title remove points  from a string
+#' @description
+#' remove points  from a string
+#' @param input_string - the string to remove points.
+#' @param double_space_to_single - Default TRUE, will replace any remaining double space with a single space.
+#' @returns The string with points removed.
+#' @export
+clearPoint <- function(input_string, double_space_to_single = TRUE) {
+  ret_val <- gsub("\\.", "", input_string)
+  if (double_space_to_single) {
+    ret_val <- gsub("  ", " ", ret_val)
+  }
+  return(ret_val)
 }
 
-clearPer <- function(htmlString) {
-  return(gsub("%", "", htmlString))
-}
-clearCloseDots <- function(htmlString) {
-  return(gsub("…", "", htmlString))
+#' @title remove semi colons  from a string
+#' @description
+#' remove semicolons  from a string
+#' @param input_string - the string to remove semicolon.
+#' @param double_space_to_single - Default TRUE, will replace any remaining double space with a single space.
+#' @returns The string with semi colons removed.
+#' @export
+clearSemiColon <- function(input_string, double_space_to_single = TRUE) {
+  ret_val <- gsub(";", "", input_string)
+  if (double_space_to_single) {
+    ret_val <- gsub("  ", " ", ret_val)
+  }
+  return(ret_val)
 }
 
-clearAll <- function(htmlString) {
-  return(htmlString %>% clearHTML()  %>% clearDash()  %>% clearBrackets() %>% clearCloseDots()   %>% clearComma() %>% clearQuote() %>% clearPoint() %>% clearSemiColon() %>% clearSlash() %>% clearApos() %>% clearAmps() %>% clearPer() %>% clearLongDash() %>% clearPlus() %>% clearColon())
+#' @title remove forward slashes  from a string
+#' @description
+#' remove forward slashes  from a string
+#' @param input_string - the string to remove forward slashes.
+#' @param double_space_to_single - Default TRUE, will replace any remaining double space with a single space.
+#' @returns The string with forward slashes removed.
+#' @export
+clearSlash <- function(input_string, double_space_to_single = TRUE) {
+  ret_val <- gsub("/", "", input_string)
+  if (double_space_to_single) {
+    ret_val <- gsub("  ", " ", ret_val)
+  }
+  return(ret_val)
 }
 
-# gendric is not blank, null or na helper function.
+#' @title remove colons  from a string
+#' @description
+#' remove colons  from a string
+#' @param input_string - the string to remove colons.
+#' @param double_space_to_single - Default TRUE, will replace any remaining double space with a single space.
+#' @returns The string with colons removed.
+#' @export
+clearColon <- function(input_string, double_space_to_single = TRUE) {
+  ret_val <- gsub(":", "", input_string)
+  if (double_space_to_single) {
+    ret_val <- gsub("  ", " ", ret_val)
+  }
+  return(ret_val)
+}
+
+#' @title remove apostrophes  from a string
+#' @description
+#' remove apolstrophes  from a string
+#' @param input_string - the string to remove apostrophes.
+#' @param double_space_to_single - Default TRUE, will replace any remaining double space with a single space.
+#' @returns The string with apostrophes removed.
+#' @export
+clearApos <- function(input_string, double_space_to_single = TRUE) {
+  ret_val <- gsub("’", "", input_string)
+  if (double_space_to_single) {
+    ret_val <- gsub("  ", " ", ret_val)
+  }
+  return(ret_val)
+}
+
+#' @title remove ampersands  from a string
+#' @description
+#' remove ampersands  from a string
+#' @param input_string - the string to remove ampersands.
+#' @param double_space_to_single - Default TRUE, will replace any remaining double space with a single space.
+#' @returns The string with ampersands removed.
+#' @export
+clearAmps <- function(input_string, double_space_to_single = TRUE) {
+  ret_val <- gsub("&", "", input_string)
+  if (double_space_to_single) {
+    ret_val <- gsub("  ", " ", ret_val)
+  }
+  return(ret_val)
+}
+
+#' @title remove percentages  from a string
+#' @description
+#' remove percentages  from a string
+#' @param input_string - the string to remove percentages.
+#' @param double_space_to_single - Default TRUE, will replace any remaining double space with a single space.
+#' @returns The string with percentages removed.
+#' @export
+clearPer <- function(input_string, double_space_to_single = TRUE) {
+  ret_val <- gsub("%", "", input_string)
+  if (double_space_to_single) {
+    ret_val <- gsub("  ", " ", ret_val)
+  }
+  return(ret_val)
+}
+
+#' @title remove close triple dots  from a string
+#' @description
+#' remove close triple dots  from a string
+#' @param input_string - the string to remove close triple dots.
+#' @param double_space_to_single - Default TRUE, will replace any remaining double space with a single space.
+#' @returns The string with close triple dots removed.
+#' @export
+clearCloseDots <- function(input_string, double_space_to_single = TRUE) {
+  ret_val <- gsub("…", "", input_string)
+  if (double_space_to_single) {
+    ret_val <- gsub("  ", " ", ret_val)
+  }
+  return(ret_val)
+}
+
+#' @title remove all of the characters  from a string
+#' @description
+#' remove HTML, dash, brackets, close dots, commas, quotes, points, semicolons, forward slashes, apostrophes, ampersands, percentages, long dashes, plus and colons.
+#' @param input_string - the string to remove all the tags.
+#' @param double_space_to_single - Default TRUE, will replace any remaining double space with a single space.
+#' @returns The string with brackets removed.
+#' @export
+clearAll <- function(input_string, double_space_to_single = TRUE) {
+  return(input_string %>% clearHTML()  %>% clearDash()  %>% clearBrackets() %>% clearCloseDots()   %>% clearComma() %>% clearQuote() %>% clearPoint() %>% clearSemiColon() %>% clearSlash() %>% clearApos() %>%
+           clearAmps() %>% clearPer() %>% clearLongDash() %>% clearPlus() %>% clearColon())
+}
+
+#' @title generic is not blank, null or na helper function.
+#' @description
+#' Is a string NOT blank or null or NA
+#' @param x - the string to check
+#' @returns TRUE or FALSE - TRUE if the text is not NA, NULL or blank.
+#' @export
 is_not_blank_null_na <- function(x) {
-  if (length(x) == 0) {return(FALSE)}
+  if (length(trimws(x)) == 0) {return(FALSE)}
   if (is.null(x)) {return(FALSE)}
   if (is.na(x)) {return(FALSE)}
-  if (x == "") {return(FALSE)}
+  if (trimws(x) == "") {return(FALSE)}
   return(TRUE)
 }
 
-# gendric is  blank, null or na helper function.
+#' @title generic is  blank, null or na helper function.
+#' @description
+#' Is a string blank or null or NA
+#' @param x - the string to check
+#' @returns TRUE or FALSE - TRUE if the text is  NA, NULL or blank.
+#' @export
 is_blank_null_na <- function(x) {
-  if (length(x) == 0) {return(TRUE)}
+  if (length(trimws(x)) == 0) {return(TRUE)}
   if (is.null(x)) {return(TRUE)}
   if (is.na(x)) {return(TRUE)}
-  if (x == "") {return(TRUE)}
+  if (trimws(x) == "") {return(TRUE)}
   return(FALSE)
 }
 
@@ -115,6 +314,7 @@ createBrewerColourArray <- function() {
   return(brewCols)
 }
 
+#' @title apply standard emotions to data.
 #' @description
 #' This function returns the standard "Very Positive", "Positive", "Neutral", "Negative", "Very Negative" sentiments based on the passed in text and stop words.
 #' @param data - A data frame that must contain the "FragmentID" column and "fragment" column (with this spelling/case) containing the text.
@@ -162,6 +362,7 @@ apply_standard_emotions = function(data, remove_words) {
 
 }
 
+#' @title Is the colour code or name valid.
 #' @description Determines whether colour characters are valid colour codes/names
 #' @param x A vector of colour codes/characters to test
 #' @export

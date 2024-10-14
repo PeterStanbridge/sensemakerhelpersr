@@ -1,4 +1,5 @@
 
+#' @title Return the RColorBrewer palette names usable for heatmaps.
 #' @description
 #' A list of the available colour brewer palettes available for heat maps.
 #' @returns A character vector of available colour palette names.
@@ -6,6 +7,7 @@
 get_colour_palette_names <- function() {
   return(c("YlOrRd", "YlOrBl", "YlGnBu", "YlGn", "Reds", "RdPu", "Purples", "PuRd", "PuBuGn", "PuBu", "OrRd", "Oranges", "Greys", "Greens", "GbBu", "BuPu", "BuGn", "Blues", "Spectral", "RdYlGn", "RdYlBu", "RdGy", "RdBu", "PuOr", "PRGn", "PiYG", "BrBG"))
 }
+#' @title Return the RColorBrewer palette names usable for discrete colouring.
 #' @description
 #' A list of the available colour brewer palettes available for discrete plot colours.
 #' @returns A character vector of available colour palette names.
@@ -13,6 +15,8 @@ get_colour_palette_names <- function() {
 get_RColorBrewer_pal_names <- function() {
   return(c("Accent", "Dark2", "Paired", "Pastel1",  "Pastel2",  "Set1",  "Set2",  "Set3"))
 }
+
+#' @title Return the viridis palette names suitable for descrete plot colours.
 #' @description
 #' A list of the available viridis palettes available for discrete plot colours.
 #' @returns A character vector of available colour palette names.
@@ -21,6 +25,7 @@ get_viridis_palette_names <- function() {
   return(c("A", "B", "C", "D", "E", "F", "G", "H", "magma", "inferno", "plasma", "viridis", "cividis", "rocket", "mako", "turbo"))
 }
 
+#' @title Return the colour count (number of distinct colours) available from a given RColorBrewer palette.
 #' @description
 #' Get the number of colours a colour palette contains to help sort bin counts in heatmaps.
 #' @param brew_colour_name - the colour palette name
@@ -30,6 +35,8 @@ get_palette_colour_count <- function(brew_colour_name) {
   stopifnot(brew_colour_name %in% get_colour_palette_names())
   return(RColorBrewer::brewer.pal.info[brew_colour_name,][["maxcolors"]])
 }
+
+#' @title Get the standard triad canvas used as triad background in a ggplot x,y plot.
 #' @description
 #' Get standard triad canvas
 #' @returns The standard triad png file object
@@ -42,6 +49,7 @@ get_triad_standard_canvas <- function() {
   return(triad_standard_canvas)
 }
 
+#' @title Get the zone labeled triad canvas used as triad background in a ggplot x,y plot.
 #' @description
 #' Get triad zone labeled canvas as a useful annotation explaining zone labels.
 #' @returns The triad zone labeled canvas
@@ -54,8 +62,9 @@ get_triad_zone_canvas <- function() {
   return(triad_zone_canvas)
 }
 
+#' @title Get the zone labeled triad canvas used as triad background in a ggplot x,y zone count and percentage plot.
 #' @description
-#' Get zone demarcated triad canvas - used when slowing zone counts and percentages.
+#' Get zone demarcated triad canvas - used when showing zone counts and percentages.
 #' @returns The zone demarcated triad canvas
 #' @export
 get_triad_count_canvas <- function() {
@@ -66,6 +75,7 @@ get_triad_count_canvas <- function() {
   return(triad_count_canvas)
 }
 
+#' @title Plot a triad graph using the x and y columns.
 #' @description
 #'  Plot a SenseMaker® defined triad with ggplot (note requires the sensemakerframeworkr object)
 #' @param filtered_data - Must be supplied. Data frame that includes the triad x and y columns with filtered (if any) signifiers to plot.
@@ -93,7 +103,7 @@ get_triad_count_canvas <- function() {
 #' @param caption_colour - default "black". The colour of the caption if the display_stats_caption set to TRUE. A Character string of any valid R colour format, such as hex values or colour names.
 #' @param graph_title - default. NULL. A title for the graph. if NULL the triad title will be used.
 #' @param title_colour - default "black". The colour of the graph title. A Character string of any valid R colour format, such as hex values or colour names.
-#' @param title_size - default NULL. The size of the graph title. If NULL calculate anchor size otherwise use the passed in size.
+#' @param  - default NULL. The size of the graph title. If NULL calculate anchor size otherwise use the passed in size.
 #' @param anchor_size - default NULL. If NULL calculate anchor size otherwise use the passed in size.
 #' @param contours - default FALSE. The size of the graph anchor labels. If TRUE, probability contour lines will display in the graph. Uses a Gaussian Kernel Smoothing Density Estimation method.
 #' @param contour_fill - default FALSE. If TRUE, a heat map is displayed in the graph.
@@ -136,9 +146,9 @@ plot_triad <- function(filtered_data, full_data, sig_id, framework_object, dot_s
   # Get the anchor means.
   anchor_means <- calculate_triad_means(filtered_data, sig_id, mean_type, framework_object)
   # Anchor (Top, Left and Right) titles and calculate the size that would enable them to berst fit.
-  anchor_titles <- get_anchor_plot_titles(sig_id, display_anchor_means, anchor_means, framework_object)
+  anchor_titles <- get_triad_anchor_plot_titles(sig_id, display_anchor_means, anchor_means, framework_object)
   if (is.null(anchor_size)) {
-    anchor_size <- get_anchor_plot_size(anchor_titles)
+    anchor_size <- get_triad_anchor_plot_size(anchor_titles)
   }
   # pull out titles - makes code a little easier to read.
   left_title <- anchor_titles[["left_title"]]
@@ -298,6 +308,7 @@ plot_triad <- function(filtered_data, full_data, sig_id, framework_object, dot_s
   return(p)
 }
 
+#' @title Plot triad means for a list id.
 #' @description
 #' Plot triad means of passed in data frame data and confidence intervals for comparison - requires the sensemakerframeworkr object
 #'  description
@@ -372,6 +383,7 @@ plot_tern_means_by_list_id <- function(filtered_data, triad_id, list_id, framewo
 
 }
 
+#' @title Plot triad means for user supplied data queries.
 #' @description
 #' Plot triad means of passed in data frame data and confidence intervals for comparison - requires the sensemakerframeworkr object
 #'  description
@@ -499,7 +511,7 @@ plot_tern_means <- function(df_list, triad_id, data_titles, framework_object, co
 }
 
 
-
+#' @title Plot a triad graph using ggtern. Equivalent to the TernTriad tab in the Workbench.
 #' @description
 #' Plot triad using ggtern
 #' @param filtered_data - Must be supplied. Data frame that includes the triad x and y columns with filtered (if any) signifiers to plot.
@@ -748,9 +760,14 @@ wrap_tern_title <- function(leftTitle, rightTitle) {
   return(list(left_title = leftTitle, right_title = rightTitle))
 }
 
+#' @title Plot tern pair means based on data queries.
+#' @description
+#' This function plots the means and 5% confidence intervals for a list of triads.
+#' @param tern_pairs - A data frame with columns "from_id", "to_id", "from_colour" and "to_colour". The from and to ids are data queries stored in the data list (public field). The colours are valid R colour names or codes.
+#' @param framework_data - The framework sensemakerdata object.
+#' @param triads_to_plot - default NULL, A vector of triad ids to plot. If NULL all keep_only_include triads are plotted.
+#' @export
 produce_tern_pair_means_graphs <- function(tern_pairs, framework_data, triads_to_plot = NULL) {
-
-
 
   if (class(tern_pairs) == "character") {
     stopifnot(file.exists(tern_pairs))
@@ -806,7 +823,13 @@ produce_tern_pair_means_graphs <- function(tern_pairs, framework_data, triads_to
 
 }
 
-
+#' @title Plot keyness bar charts for pairs of data queries.
+#' @description
+#' This function plots a keyness indicator bar chart graph for pairs of data queries.
+#' @param keyness_pairs - A data frame with columns "from_id", "to_id", "from_colour" and "to_colour". The from and to ids are data queries stored in the data list (public field). The colours are valid R colour names or codes.
+#' @param data_object - The framework sensemakerdatar object.
+#' @param freetext_ids - default NULL, A vector of freetext signifier ids for textual data If NULL all freetext signifiers set as a fragment are plotted.
+#' @export
 produce_keyness_pair_graphs <- function(keyness_pairs, data_object, freetext_ids = NULL) {
 
 
@@ -881,7 +904,13 @@ produce_keyness_pair_graphs <- function(keyness_pairs, data_object, freetext_ids
   return(out_results)
 }
 
-
+#' @title Plot a bar chart of the sentiment content of the texted passed. .
+#' @description
+#' This function plots a bar chart of sentiments.
+#' @param sentiment_filters - A data frame or name of a csv file with columns id and title. The id column contains the names of data queries and the title column the names to use in the graph print.
+#' @param freetexts_to_plot - default NULL, A vector of freetext signifier ids for textual data If NULL all freetext signifiers set as a fragment are plotted.
+#' @param data_object - the sensemakerdatar object for the framwework.
+#' @export
 plot_sentiment_bars <- function(sentiment_filters, freetexts_to_plot, data_object) {
 
   # freetexts_to_plot can be either a vector of 1 or more free text ids, a file name of a csv file containing the freetext ids or a parsed version (data.frame)
@@ -966,6 +995,13 @@ plot_sentiment_bars <- function(sentiment_filters, freetexts_to_plot, data_objec
 
 }
 
+#' @title Plot a graph of the sentiment valence of the freetext ids passed to the function.
+#' @description
+#' This function plots a bar chart of sentiments.
+#' @param sentiment_filters - A data frame or name of a csv file with columns id and title. The id column contains the names of data queries and the title column the names to use in the graph print.
+#' @param freetexts_to_plot - default NULL, A vector of freetext signifier ids for textual data If NULL all freetext signifiers set as a fragment are plotted.
+#' @param data_object - the sensemakerdatar object for the framework.
+#' @export
 plot_sentiment_valence <- function(sentiment_filters, freetexts_to_plot, data_object) {
 
   # freetexts_to_plot can be either a vector of 1 or more free text ids, a file name of a csv file containing the freetext ids or a parsed version (data.frame)
@@ -1051,7 +1087,13 @@ plot_sentiment_valence <- function(sentiment_filters, freetexts_to_plot, data_ob
 
 }
 
-
+#' @title Plot a timed line graph of the sentiment emotions of the freetext ids passed to the function.
+#' @description
+#' This function plots a line graph over time of the sentiment emotions.
+#' @param sentiment_filters - A data frame or name of a csv file with columns id and title. The id column contains the names of data queries and the title column the names to use in the graph print.
+#' @param freetexts_to_plot - default NULL, A vector of freetext signifier ids for textual data If NULL all freetext signifiers set as a fragment are plotted.
+#' @param data_object - the sensemakerdatar object for the framework.
+#' @export
 plot_emotions_over_time <- function(sentiment_filters, freetexts_to_plot, data_object) {
 
   # freetexts_to_plot can be either a vector of 1 or more free text ids, a file name of a csv file containing the freetext ids or a parsed version (data.frame)
@@ -1178,6 +1220,14 @@ plot_emotions_over_time <- function(sentiment_filters, freetexts_to_plot, data_o
 
 }
 
+#' @title Plot a frequency graph of the words used between two different queries.
+#' @description
+#' Plot a frequency graph of the words used between two different queries.
+#' @param frequency_graph_pairs - A data frame or name of a csv file with columns "from_id" and "to_id" containing data query names.
+#' @param freetexts_to_plot - default NULL, A vector of freetext signifier ids for textual data If NULL all freetext signifiers set as a fragment are plotted.
+#' @param data_object - the sensemakerdatar object for the framework.
+#' @param use_stem - default NULL, If TRUE, the graph will accumulate stemmed word usage.
+#' @export
 word_frequency_plot <- function(frequency_graph_pairs, freetexts_to_plot, data_object, use_stem = FALSE) {
 
   stopifnot(all(class(data_object) %in% c("Data", "R6")))

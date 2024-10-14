@@ -96,7 +96,7 @@ calculate_stone_x_y_zone <- function(x) {
 #' get a stone value's 4 zone
 #'
 #' @param x  fraction stone x value.
-#'@param y  fraction stone y value.
+#' @param y  fraction stone y value.
 #' @returns A character string returning the zone
 #' @export
 #'
@@ -130,7 +130,7 @@ calculate_stone_4_zone = function(x, y) {
 #' get a stone value's 9 zone
 #'
 #' @param x  fraction stone x value.
-#'@param y  fraction stone y value.
+#' @param y  fraction stone y value.
 #' @returns A character string returning the zone
 #' @export
 #'
@@ -165,21 +165,31 @@ calculate_stone_9_zone = function(x, y) {
 
 }
 
-calculate_triad_means <- function(data, sig_id, mean_type, framework_object, zero_logic = "small_value", for_ggtern = FALSE) {
+#' @title Calculate triad means
+#' @description
+#' Calculate the triad means using specified approach
+#' @param data - The data containing the triad top, left and right columns. This can be the full data dataframe, provided the triad's 3 columns are present.
+#' @param triad_id - The signifier id of the triad to calculate means.
+#' @param mean_type - either "geometric" or "arithmetic".
+#' @param zero_logic - either "small_value" or "remove". Small value means to take a zero value and give it a very small replacement. Otherwise ignore this fragment.
+#' @param for_ggtern - Default FALSE, if true, the returned dataframe containing the mean is in a format ready to plot in ggtern.
+#' @returns The triad means as 3 values.
+#' @export
+calculate_triad_means <- function(data, triad_id, mean_type, framework_object, zero_logic = "small_value", for_ggtern = FALSE) {
 
-  stopifnot(framework_object$get_signifier_type(sig_id) == "triad")
+  stopifnot(framework_object$get_signifier_type(triad_id) == "triad")
   stopifnot(is.data.frame(data))
   stopifnot(mean_type %in% c("geometric", "arithmetic"))
 
-  triad_col_names <- framework_object$get_triad_anchor_column_names(sig_id)
+  triad_col_names <- framework_object$get_triad_anchor_column_names(triad_id)
 
 
   if (mean_type == "geometric") {
 
     if (zero_logic == "small_value") {
-    data_left <- ifelse(data[[triad_col_names[["left"]]]] == 0, 0.00001, data[[triad_col_names[["left"]]]])
-    data_top <- ifelse(data[[triad_col_names[["top"]]]] == 0, 0.00001, data[[triad_col_names[["top"]]]])
-    data_right <- ifelse(data[[triad_col_names[["right"]]]] == 0, 0.00001, data[[triad_col_names[["right"]]]])
+    data_left <- ifelse(data[[triad_col_names[["left"]]]] <= 0, 0.00001, data[[triad_col_names[["left"]]]])
+    data_top <- ifelse(data[[triad_col_names[["top"]]]] <= 0, 0.00001, data[[triad_col_names[["top"]]]])
+    data_right <- ifelse(data[[triad_col_names[["right"]]]] <= 0, 0.00001, data[[triad_col_names[["right"]]]])
     } else {
       if (zero_logic == "remove") {
         remain_data <- data %>% dplyr::filter(is.na(.data[[triad_col_names[["left"]]]]) | .data[[triad_col_names[["left"]]]] != 0 &
@@ -213,11 +223,18 @@ calculate_triad_means <- function(data, sig_id, mean_type, framework_object, zer
   return(list(left_mean = left_mean, top_mean = top_mean, right_mean = right_mean))
 }
 
-get_anchor_plot_titles <- function(sig_id, display_anchor_means, anchor_means, framework_object) {
+#' @title - Get the anchor titles to plot for a triad.
+#' @param triad_id - The signifier id of the triad.
+#' @param display_anchor_means - If TRUE, display the anchor means on the titles.
+#' @param anchor_means - the anchor means to display - obtained from the calculate_triad_means function.
+#' @param framework_object - the sensemakerframeworkr object associated with the triad.
+#' @returns A named list of the triad anchor titles.
+#' @export
+get_triad_anchor_plot_titles <- function(triad_id, display_anchor_means, anchor_means, framework_object) {
 
-  left_title <- clearBetweenHTMLTags(paste(stringr::str_replace_all(framework_object$get_triad_left_anchor_text(sig_id), "&amp;", "&"),  ifelse(display_anchor_means,  paste("\U003BC", "=", anchor_means[["left_mean"]]), "")), " ")
-  right_title <-  clearBetweenHTMLTags(paste(stringr::str_replace_all(framework_object$get_triad_right_anchor_text(sig_id), "&amp;", "&"), ifelse(display_anchor_means, paste("\U003BC", "=", anchor_means[["right_mean"]]), "")), " ")
-  top_title <- clearBetweenHTMLTags(paste(stringr::str_replace_all(framework_object$get_triad_top_anchor_text(sig_id), "&amp;", "&"),  ifelse(display_anchor_means, paste("\U003BC","=", anchor_means[["top_mean"]]), "")), " ")
+  left_title <- clearBetweenHTMLTags(paste(stringr::str_replace_all(framework_object$get_triad_left_anchor_text(triad_id), "&amp;", "&"),  ifelse(display_anchor_means,  paste("\U003BC", "=", anchor_means[["left_mean"]]), "")), " ")
+  right_title <-  clearBetweenHTMLTags(paste(stringr::str_replace_all(framework_object$get_triad_right_anchor_text(triad_id), "&amp;", "&"), ifelse(display_anchor_means, paste("\U003BC", "=", anchor_means[["right_mean"]]), "")), " ")
+  top_title <- clearBetweenHTMLTags(paste(stringr::str_replace_all(framework_object$get_triad_top_anchor_text(triad_id), "&amp;", "&"),  ifelse(display_anchor_means, paste("\U003BC","=", anchor_means[["top_mean"]]), "")), " ")
 
 
   if (!(grepl("\n", left_title, fixed = TRUE)  || grepl("\n", right_title, fixed = TRUE))) {
@@ -247,6 +264,12 @@ get_anchor_plot_titles <- function(sig_id, display_anchor_means, anchor_means, f
 
   }
 
+#' @title Get a size value for plotting the triad anchor titles
+#' @description
+#' This might be a useful function - it is used by the workbench and plot_triad function and its return values are appropriate for Workbench sized plots.
+#' @param anchor_titles - the named list of anchor plot titles obtained from the get_triad_anchor_plot_titles function.
+#' @returns An integer for the anchor plot size.
+#' @export
 get_anchor_plot_size <- function (anchor_titles) {
 
   left_title <- anchor_titles[["left_title"]]
@@ -276,6 +299,13 @@ get_anchor_plot_size <- function (anchor_titles) {
 
 }
 
+#' @title Get a size value for plotting the graph titles
+#' @description
+#' This might be a useful function - it is used by the workbench to size plot titles and useful for Workbench sized plot objects.
+#' @param title - A string containing the title.
+#' @param title_size_multiplier. A multiplier to expand or contract the retured size.
+#' @returns An integer for the title plot size.
+#' @export
 get_graph_title_size <- function(title, title_size_multiplier = 1) {
 
   title_size <- 18
@@ -289,7 +319,15 @@ get_graph_title_size <- function(title, title_size_multiplier = 1) {
 }
 
 
-
+#' @title Get the graph caption values
+#' @description
+#' Get a string containing the caption values from the passsed in dataset. This includes data count, N/A count, not responded count and so on.
+#' @param filtered_data - the data being graphed
+#' @param full_data - the full capture data set
+#' @param sig_id - the signifier id being plotted.
+#' @param framework_object, the sensemakerframeworkr object for the capture.
+#' @returns A string containing the caption values.
+#' @export
 get_caption_values <- function(filtered_data, full_data, sig_id, framework_object) {
 
   naAllowed <- framework_object$get_signifier_allow_na(sig_id)
