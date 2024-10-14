@@ -93,9 +93,9 @@ get_triad_count_canvas <- function() {
 #' @param caption_colour - default "black". The colour of the caption if the display_stats_caption set to TRUE. A Character string of any valid R colour format, such as hex values or colour names.
 #' @param graph_title - default. NULL. A title for the graph. if NULL the triad title will be used.
 #' @param title_colour - default "black". The colour of the graph title. A Character string of any valid R colour format, such as hex values or colour names.
-#' @param title_size - default 12. The size of the graph title.
+#' @param title_size - default NULL. The size of the graph title. If NULL calculate anchor size otherwise use the passed in size.
 #' @param anchor_size - default NULL. If NULL calculate anchor size otherwise use the passed in size.
-#' @param contours - default FALSE. If TRUE, probability contour lines will display in the graph. Uses a Gaussian Kernel Smoothing Density Estimation method.
+#' @param contours - default FALSE. The size of the graph anchor labels. If TRUE, probability contour lines will display in the graph. Uses a Gaussian Kernel Smoothing Density Estimation method.
 #' @param contour_fill - default FALSE. If TRUE, a heat map is displayed in the graph.
 #' @param fill_transparency - default 0.5. The transparency (alpha) value of the contour_fill if countour_fill set to TRUE.
 #' @param fill_legend - default FALSE. Display the fill legend for the counter fill if contour_fill set to TRUE.
@@ -121,7 +121,7 @@ plot_triad <- function(filtered_data, full_data, sig_id, framework_object, dot_s
                        opaque_filter_dot_transparency = 0.5, opaque_filter_dot_colour = "blue",
                        display_anchor_means = FALSE, mean_type = "geometric", show_percentages = FALSE, show_totals = FALSE,  percentage_type = "Triad",
                        zone_font_size = 4, zone_display_colour = "black", zone_dots = FALSE, zone_dot_transparency = 0.25, display_stats_caption = TRUE, caption_size = 8, caption_colour = "black",
-                       graph_title = NULL, title_colour = "black", title_size = 12, anchor_size = NULL, contours = FALSE, contour_fill = FALSE, fill_transparency = 0.5,
+                       graph_title = NULL, title_colour = "black", title_size = NULL, anchor_size = NULL, contours = FALSE, contour_fill = FALSE, fill_transparency = 0.5,
                        fill_legend = FALSE, contour_size = 0.5, contour_colour = "blue", brew_colour_select = "Spectral", colour_sig_id = NULL, colour_vector = NULL,
                        colour_package = "RColorBrewer", package_palette = "Set1", colour_direction = 1, viridis_default_start = 0, viridis_default_end = 0.6, show_colour_legend = TRUE,
                        legend_title_colour = "black", legend_title_size = 8, legend_text_colour = "black", legend_text_size = 8
@@ -149,7 +149,9 @@ plot_triad <- function(filtered_data, full_data, sig_id, framework_object, dot_s
     graph_title <- framework_object$get_signifier_title(sig_id)
   }
   # Calculate a size that will fit for this title.
-  title_size <- get_graph_title_size(graph_title)
+  if (is.null(title_size)) {
+    title_size <- get_graph_title_size(graph_title)
+  }
   # Caption values are the data counts.
   caption_values <- get_caption_values(filtered_data, full_data, sig_id, framework_object)
   # Start the plot with what we wil always do.
