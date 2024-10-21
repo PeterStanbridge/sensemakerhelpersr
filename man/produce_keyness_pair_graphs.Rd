@@ -4,14 +4,14 @@
 \alias{produce_keyness_pair_graphs}
 \title{Plot keyness bar charts for pairs of data queries.}
 \usage{
-produce_keyness_pair_graphs(keyness_pairs, data_object, freetext_ids = NULL)
+produce_keyness_pair_graphs(keyness_pairs, framework_data, freetext_ids = NULL)
 }
 \arguments{
 \item{keyness_pairs}{\itemize{
 \item A data frame with columns "from_id", "to_id", "from_colour" and "to_colour". The from and to ids are data queries stored in the data list (public field). The colours are valid R colour names or codes.
 }}
 
-\item{data_object}{\itemize{
+\item{framework_data}{\itemize{
 \item The framework sensemakerdatar object.
 }}
 

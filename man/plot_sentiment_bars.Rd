@@ -4,7 +4,7 @@
 \alias{plot_sentiment_bars}
 \title{Plot a bar chart of the sentiment content of the texted passed. .}
 \usage{
-plot_sentiment_bars(sentiment_filters, freetexts_to_plot, data_object)
+plot_sentiment_bars(sentiment_filters, freetexts_to_plot, framework_data)
 }
 \arguments{
 \item{sentiment_filters}{\itemize{
@@ -15,7 +15,7 @@ plot_sentiment_bars(sentiment_filters, freetexts_to_plot, data_object)
 \item default NULL, A vector of freetext signifier ids for textual data If NULL all freetext signifiers set as a fragment are plotted.
 }}
 
-\item{data_object}{\itemize{
+\item{framework_data}{\itemize{
 \item the sensemakerdatar object for the framwework.
 }}
 }

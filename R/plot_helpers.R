@@ -43,10 +43,12 @@ get_palette_colour_count <- function(brew_colour_name) {
 #' @export
 get_triad_standard_canvas <- function() {
   # if the image is not in the global envirionment add it
-  if (!exists("triad_standard_canvas", envir = .GlobalEnv)) {
-    assign("triad_standard_canvas", png::readPNG("./data/triad_standard.png"), envir = .GlobalEnv)
-  }
-  return(triad_standard_canvas)
+ # if (!exists("triad_standard_canvas", envir = .GlobalEnv)) {
+  #  assign("triad_standard_canvas", png::readPNG("./data/triad_standard.png"), envir = .GlobalEnv)
+  #}
+  #return(triad_standard_canvas)
+  triad_standard_canvas_name <- system.file("data", "triad_standard.png", package = "sensemakerhelpersr")
+  return(assign("triad_standard_canvas", png::readPNG(triad_standard_canvas_name), envir = .GlobalEnv))
 }
 
 #' @title Get the zone labeled triad canvas used as triad background in a ggplot x,y plot.
@@ -56,10 +58,12 @@ get_triad_standard_canvas <- function() {
 #' @export
 get_triad_zone_canvas <- function() {
   # if the image is not in the global envirionment add it
-  if (!exists("triad_zone_canvas", envir = .GlobalEnv)) {
-    assign("triad_zone_canvas", png::readPNG("./data/zone_zone.png"), envir = .GlobalEnv)
-  }
-  return(triad_zone_canvas)
+#  if (!exists("triad_zone_canvas", envir = .GlobalEnv)) {
+  #  assign("triad_zone_canvas", png::readPNG("./data/zone_zone.png"), envir = .GlobalEnv)
+ # }
+  #return(triad_zone_canvas)
+  triad_zone_canvas_name <- system.file("data", "zone_zone.png", package = "sensemakerhelpersr")
+  return(assign("triad_zone_canvas", png::readPNG(triad_zone_canvas_name), envir = .GlobalEnv))
 }
 
 #' @title Get the zone labeled triad canvas used as triad background in a ggplot x,y zone count and percentage plot.
@@ -69,10 +73,11 @@ get_triad_zone_canvas <- function() {
 #' @export
 get_triad_count_canvas <- function() {
   # if the image is not in the global envirionment add it
-  if (!exists("triad_count_canvas", envir = .GlobalEnv)) {
-    assign("triad_count_canvas", png::readPNG("./data/triad_zone.png"), envir = .GlobalEnv)
-  }
-  return(triad_count_canvas)
+ # if (!exists("triad_count_canvas", envir = .GlobalEnv)) {
+ #   assign("triad_count_canvas", png::readPNG("./data/triad_zone.png"), envir = .GlobalEnv)
+  #}
+  triad_count_canvas_name <- system.file("data", "triad_zone.png", package = "sensemakerhelpersr")
+  return(assign("triad_count_canvas", png::readPNG(triad_count_canvas_name), envir = .GlobalEnv))
 }
 
 #' @title Plot a triad graph using the x and y columns.
@@ -147,6 +152,7 @@ plot_triad <- function(filtered_data, full_data, sig_id, framework_object, dot_s
   anchor_means <- calculate_triad_means(filtered_data, sig_id, mean_type, framework_object)
   # Anchor (Top, Left and Right) titles and calculate the size that would enable them to berst fit.
   anchor_titles <- get_triad_anchor_plot_titles(sig_id, display_anchor_means, anchor_means, framework_object)
+
   if (is.null(anchor_size)) {
     anchor_size <- get_triad_anchor_plot_size(anchor_titles)
   }
@@ -655,14 +661,14 @@ plot_tern_triad <- function(filtered_data, full_data, triad_id, framework_object
     theme(tern.axis.title.L = element_text(hjust=0, vjust=1, colour = "black", size = font_size, family = "Helvetica")) +
     theme(tern.axis.title.T = element_text(colour = "black", size = font_size, family = "Helvetica"))  +
     theme(tern.axis.title.R = element_text(hjust=1, vjust=1, colour = "black", size = font_size, family = "Helvetica")) +
-    theme_nogrid() +
-    theme_hidelabels() +
-    theme_hideticks() +
-    theme(tern.panel.expand = 0.40)  +
-    theme(plot.margin = margin(0, 0, 0, 0, "cm")) + theme(axis.title.x = element_blank(),  axis.title.y = element_blank())
+    ggtern::theme_nogrid() +
+    ggtern::theme_hidelabels() +
+    ggtern::theme_hideticks() +
+    ggplot2::theme(tern.panel.expand = 0.40)  +
+    ggplot2::theme(plot.margin = margin(0, 0, 0, 0, "cm")) + theme(axis.title.x = element_blank(),  axis.title.y = element_blank())
 
   if (show_mean) {
-    p <- p + geom_point(data = mean_df, aes(x = x, y = y, z = z), colour = mean_colour, size = mean_size, shape = ifelse(mean_shape == "circle", 21, 23), fill = mean_colour)
+    p <- p + ggplot2::geom_point(data = mean_df, aes(x = x, y = y, z = z), colour = mean_colour, size = mean_size, shape = ifelse(mean_shape == "circle", 21, 23), fill = mean_colour)
   }
 
   if (show_confidence_intervals) {
@@ -827,10 +833,10 @@ produce_tern_pair_means_graphs <- function(tern_pairs, framework_data, triads_to
 #' @description
 #' This function plots a keyness indicator bar chart graph for pairs of data queries.
 #' @param keyness_pairs - A data frame with columns "from_id", "to_id", "from_colour" and "to_colour". The from and to ids are data queries stored in the data list (public field). The colours are valid R colour names or codes.
-#' @param data_object - The framework sensemakerdatar object.
+#' @param framework_data - The framework sensemakerdatar object.
 #' @param freetext_ids - default NULL, A vector of freetext signifier ids for textual data If NULL all freetext signifiers set as a fragment are plotted.
 #' @export
-produce_keyness_pair_graphs <- function(keyness_pairs, data_object, freetext_ids = NULL) {
+produce_keyness_pair_graphs <- function(keyness_pairs, framework_data, freetext_ids = NULL) {
 
 
   if (class(keyness_pairs) == "character") {
@@ -839,9 +845,9 @@ produce_keyness_pair_graphs <- function(keyness_pairs, data_object, freetext_ids
   }
 
   if (!is.null(freetext_ids)) {
-    stopifnot(all(freetext_ids %in% data_object$sm_framework$get_freetext_fragments()))
+    stopifnot(all(freetext_ids %in% framework_data$sm_framework$get_freetext_fragments()))
   } else {
-    freetext_ids <- data_object$sm_framework$get_freetext_fragments()
+    freetext_ids <- framework_data$sm_framework$get_freetext_fragments()
   }
 
   from_ids <- keyness_pairs[, "from_id"]
@@ -850,20 +856,20 @@ produce_keyness_pair_graphs <- function(keyness_pairs, data_object, freetext_ids
   to_colours <- keyness_pairs[, "to_colour"]
 
   filters_used <- unique(append(from_ids, to_ids))
-  stopifnot(all(filters_used %in% data_object$get_data_list_names()))
+  stopifnot(all(filters_used %in% framework_data$get_data_list_names()))
   stopifnot(all(areColors(from_colours)))
   stopifnot(all(areColors(to_colours)))
 
   # Add new data-frames that have the from and to values added and appended (bind_rows) for quanteda keyness processing ready.
   purrr::pwalk(list(from_ids, to_ids, from_colours, to_colours), function(from_id, to_id, from_colour, to_colour) {
     #tmp_from and with the quanteda keyness processing doc_var added then row-bind into a single data frame and add to the data list. Add colours to it too.
-    tmp_from <- data_object$data[[from_id]]
+    tmp_from <- framework_data$data[[from_id]]
     tmp_from[["doc_var"]] <- rep_len(x = from_id, length.out = nrow(tmp_from))
     tmp_from[["plot_col"]] <- rep_len(x = from_colour, length.out = nrow(tmp_from))
-    tmp_to <- data_object$data[[to_id]]
+    tmp_to <- framework_data$data[[to_id]]
     tmp_to[["doc_var"]] <- rep_len(x = to_id, length.out = nrow(tmp_to))
     tmp_to[["plot_col"]] <- rep_len(x = to_colour, length.out = nrow(tmp_to))
-    data_object$add_data_data_frame(dplyr::bind_rows(tmp_from, tmp_to), name = paste0(from_id, "_", to_id), add_to_export_list_names = TRUE)
+    framework_data$add_data_data_frame(dplyr::bind_rows(tmp_from, tmp_to), name = paste0(from_id, "_", to_id), add_to_export_list_names = TRUE)
   })
 
   out_results <- vector("list", length = length(from_ids))
@@ -877,18 +883,18 @@ produce_keyness_pair_graphs <- function(keyness_pairs, data_object, freetext_ids
 
     purrr::walk(freetext_ids, function(freetext_id) {
 
-      df <- data_object$data[[paste0(from_id, "_", to_id)]]
+      df <- framework_data$data[[paste0(from_id, "_", to_id)]]
       fragment_text_corpus <- quanteda::corpus(df[[freetext_id]], docvars = data.frame(doc_var = df[["doc_var"]]))
       tokens <- quanteda::tokens(fragment_text_corpus, remove_punct = TRUE, remove_symbols = TRUE, remove_numbers = TRUE,
                                  remove_url = TRUE, remove_separators = TRUE, split_hyphens = TRUE, split_tags = TRUE)
       fragment_token <- quanteda::tokens_wordstem(tokens)
 
-      fragment_token <- quanteda::tokens_remove(fragment_token, c(stopwords("english"), data_object$stop_words))
+      fragment_token <- quanteda::tokens_remove(fragment_token, c(quanteda::stopwords("english"), framework_data$stop_words))
 
       dtm <- quanteda::dfm(fragment_token, tolower = TRUE)
       dtm.trim <- quanteda::dfm_trim(dtm, min_termfreq = 3)
       keyness_doc_var <- quanteda.textstats::textstat_keyness(dtm.trim,
-                                                              docvars(fragment_text_corpus, "doc_var") == from_id,
+                                                              quanteda::docvars(fragment_text_corpus, "doc_var") == from_id,
                                                               sort = TRUE, measure = "chi2")
 
       out_plots[[freetext_id]] <<- quanteda.textplots::textplot_keyness(keyness_doc_var, color = c(from_colour, to_colour), show_reference = TRUE, show_legend = FALSE, margin = 0.05, n = 20L, min_count = 2L) +
@@ -909,11 +915,10 @@ produce_keyness_pair_graphs <- function(keyness_pairs, data_object, freetext_ids
 #' This function plots a bar chart of sentiments.
 #' @param sentiment_filters - A data frame or name of a csv file with columns id and title. The id column contains the names of data queries and the title column the names to use in the graph print.
 #' @param freetexts_to_plot - default NULL, A vector of freetext signifier ids for textual data If NULL all freetext signifiers set as a fragment are plotted.
-#' @param data_object - the sensemakerdatar object for the framwework.
+#' @param framework_data - the sensemakerdatar object for the framwework.
 #' @export
-plot_sentiment_bars <- function(sentiment_filters, freetexts_to_plot, data_object) {
+plot_sentiment_bars <- function(sentiment_filters, freetexts_to_plot, framework_data) {
 
-  # freetexts_to_plot can be either a vector of 1 or more free text ids, a file name of a csv file containing the freetext ids or a parsed version (data.frame)
   if (stringr::str_ends(string = freetexts_to_plot, ".csv")) {
     stopifnot(file.exists(freetexts_to_plot))
     df <- read.csv(freetexts_to_plot, stringsAsFactors = FALSE)
@@ -933,27 +938,28 @@ plot_sentiment_bars <- function(sentiment_filters, freetexts_to_plot, data_objec
   }
 
     # so now we have our freetexts_to_plot as a vector of one or more characters - check that they are free texts
-    stopifnot(all(freetexts_to_plot %in% data_object$sm_framework$get_freetext_fragments()))
+    stopifnot(all(freetexts_to_plot %in% framework_data$sm_framework$get_freetext_fragments()))
 
-    if (stringr::str_ends(string = sentiment_filters, ".csv")) {
-      stopifnot(file.exists(sentiment_filters))
-      df <- read.csv(sentiment_filters, stringsAsFactors = FALSE)
-      stopifnot(nrow(df) > 0)
-      stopifnot("id" %in% colnames(df))
-      stopifnot("title" %in% colnames(df))
-      sentiment_filters <- df[["id"]]
-      sentiment_titles <- df[["title"]]
-    } else {
-      stopifnot(sentiment_filters == "data.frame")
+    if (class(sentiment_filters) == "data.frame") {
       stopifnot(nrow(sentiment_filters) > 0)
       stopifnot("id" %in% colnames(sentiment_filters))
       stopifnot("title" %in% colnames(sentiment_filters))
-      sentiment_filters <- sentiment_filters[["id"]]
       sentiment_titles <- sentiment_filters[["title"]]
+      sentiment_filters <- sentiment_filters[["id"]]
+    } else {
+      if (stringr::str_ends(string = sentiment_filters, ".csv")) {
+        stopifnot(file.exists(sentiment_filters))
+        df <- read.csv(sentiment_filters, stringsAsFactors = FALSE)
+        stopifnot(nrow(df) > 0)
+        stopifnot("id" %in% colnames(df))
+        stopifnot("title" %in% colnames(df))
+        sentiment_filters <- df[["id"]]
+        sentiment_titles <- df[["title"]]
+      }
     }
 
     # we create separate cleaned dataframes for the sentiment analysis so add if they are not already there
-    add_clean_freetext_to_data(data_object, freetexts_to_plot)
+    add_clean_freetext_to_data(framework_data, freetexts_to_plot)
 
 
     out_results <- vector("list", length = length(freetexts_to_plot))
@@ -967,14 +973,14 @@ plot_sentiment_bars <- function(sentiment_filters, freetexts_to_plot, data_objec
 
       purrr::walk2(sentiment_filters, sentiment_titles, function(filter_id, filter_title) {
         # each data set - this is the data clean for this column filtered by the data filter in use
-        data_use <-  data_object$data[[paste0("data_clean_", frag_id)]] %>% dplyr::filter(.data[["FragmentID"]] %in% data_object$data[[filter_id]][["FragmentID"]])
+        data_use <-  framework_data$data[[paste0("data_clean_", frag_id)]] %>% dplyr::filter(.data[["FragmentID"]] %in% framework_data$data[[filter_id]][["FragmentID"]])
         # do the sentiment stuff
-        data_to_plot <- apply_standard_emotions(data_use, data_object$stop_words)
+        data_to_plot <- apply_standard_emotions(data_use, framework_data$stop_words)
         # plot
         out_plots[[filter_id]] <<- ggplot(data_to_plot, aes(x = sent_emotion, y = n, fill = sent_emotion)) +
                 geom_bar(stat = "identity") +
                 theme_minimal() +
-                labs(title = paste("Sentiment Distribution : ", data_object$sm_framework$get_signifier_title(frag_id), " : ", filter_title),
+                labs(title = paste("Sentiment Distribution : ", framework_data$sm_framework$get_signifier_title(frag_id), " : ", filter_title),
                      x = "Sentiment Category",
                      y = "Count") +
                 scale_fill_manual(values = c("Very Positive" = "darkgreen",
@@ -1000,9 +1006,9 @@ plot_sentiment_bars <- function(sentiment_filters, freetexts_to_plot, data_objec
 #' This function plots a bar chart of sentiments.
 #' @param sentiment_filters - A data frame or name of a csv file with columns id and title. The id column contains the names of data queries and the title column the names to use in the graph print.
 #' @param freetexts_to_plot - default NULL, A vector of freetext signifier ids for textual data If NULL all freetext signifiers set as a fragment are plotted.
-#' @param data_object - the sensemakerdatar object for the framework.
+#' @param framework_data - the sensemakerdatar object for the framework.
 #' @export
-plot_sentiment_valence <- function(sentiment_filters, freetexts_to_plot, data_object) {
+plot_sentiment_valence <- function(sentiment_filters, freetexts_to_plot, framework_data) {
 
   # freetexts_to_plot can be either a vector of 1 or more free text ids, a file name of a csv file containing the freetext ids or a parsed version (data.frame)
   if (stringr::str_ends(string = freetexts_to_plot, ".csv")) {
@@ -1024,27 +1030,28 @@ plot_sentiment_valence <- function(sentiment_filters, freetexts_to_plot, data_ob
   }
 
   # so now we have our freetexts_to_plot as a vector of one or more characters - check that they are free texts
-  stopifnot(all(freetexts_to_plot %in% data_object$sm_framework$get_freetext_fragments()))
+  stopifnot(all(freetexts_to_plot %in% framework_data$sm_framework$get_freetext_fragments()))
 
-  if (stringr::str_ends(string = sentiment_filters, ".csv")) {
-    stopifnot(file.exists(sentiment_filters))
-    df <- read.csv(sentiment_filters, stringsAsFactors = FALSE)
-    stopifnot(nrow(df) > 0)
-    stopifnot("id" %in% colnames(df))
-    stopifnot("title" %in% colnames(df))
-    sentiment_filters <- df[["id"]]
-    sentiment_titles <- df[["title"]]
-  } else {
-    stopifnot(sentiment_filters == "data.frame")
+  if (class(sentiment_filters) == "data.frame") {
     stopifnot(nrow(sentiment_filters) > 0)
     stopifnot("id" %in% colnames(sentiment_filters))
     stopifnot("title" %in% colnames(sentiment_filters))
-    sentiment_filters <- sentiment_filters[["id"]]
     sentiment_titles <- sentiment_filters[["title"]]
+    sentiment_filters <- sentiment_filters[["id"]]
+  } else {
+    if (stringr::str_ends(string = sentiment_filters, ".csv")) {
+      stopifnot(file.exists(sentiment_filters))
+      df <- read.csv(sentiment_filters, stringsAsFactors = FALSE)
+      stopifnot(nrow(df) > 0)
+      stopifnot("id" %in% colnames(df))
+      stopifnot("title" %in% colnames(df))
+      sentiment_filters <- df[["id"]]
+      sentiment_titles <- df[["title"]]
+    }
   }
 
   # we create separate cleaned dataframes for the sentiment analysis so add if they are not already there
-  add_clean_freetext_to_data(data_object, freetexts_to_plot)
+  add_clean_freetext_to_data(framework_data, freetexts_to_plot)
 
 
   out_results <- vector("list", length = length(freetexts_to_plot))
@@ -1058,7 +1065,7 @@ plot_sentiment_valence <- function(sentiment_filters, freetexts_to_plot, data_ob
 
     purrr::walk2(sentiment_filters, sentiment_titles, function(filter_id, filter_title) {
       # each data set - this is the data clean for this column filtered by the data filter in use
-      data_use <-  data_object$data[[paste0("data_clean_", frag_id)]] %>% dplyr::filter(.data[["FragmentID"]] %in% data_object$data[[filter_id]][["FragmentID"]])
+      data_use <-  framework_data$data[[paste0("data_clean_", frag_id)]] %>% dplyr::filter(.data[["FragmentID"]] %in% framework_data$data[[filter_id]][["FragmentID"]])
       # do the sentiment stuff
       text_column <- data_use[["fragment"]]
       # Create a corpus using quanteda
@@ -1066,12 +1073,12 @@ plot_sentiment_valence <- function(sentiment_filters, freetexts_to_plot, data_ob
       # Tokenize the text into sentences
       tokens <- quanteda::tokens(corpus, remove_punct = TRUE)
       # remove stop words
-      tokens <- quanteda::tokens_remove(tokens, c(stopwords("en"), data_object$stop_words))
+      tokens <- quanteda::tokens_remove(tokens, c(quanteda::stopwords("en"), framework_data$stop_words))
       # Perform sentiment analysis using sentimentr
       sentiment_scores <- sentimentr::sentiment(text_column)
 
       out_plots[[filter_id]] <<- ggplot2::ggplot(sentiment_scores, aes(x = sentiment)) + geom_density(colour = "blue", size = 1) +
-        labs(title = paste("Sentiment Density : ", data_object$sm_framework$get_signifier_title(frag_id), " : ", filter_title),
+        labs(title = paste("Sentiment Density : ", framework_data$sm_framework$get_signifier_title(frag_id), " : ", filter_title),
              x = "Sentiment Range",
              y = "") +
         ggplot2::labs(caption = paste("Data count = ", nrow(data_use))) +
@@ -1092,9 +1099,9 @@ plot_sentiment_valence <- function(sentiment_filters, freetexts_to_plot, data_ob
 #' This function plots a line graph over time of the sentiment emotions.
 #' @param sentiment_filters - A data frame or name of a csv file with columns id and title. The id column contains the names of data queries and the title column the names to use in the graph print.
 #' @param freetexts_to_plot - default NULL, A vector of freetext signifier ids for textual data If NULL all freetext signifiers set as a fragment are plotted.
-#' @param data_object - the sensemakerdatar object for the framework.
+#' @param framework_data - the sensemakerdatar object for the framework.
 #' @export
-plot_emotions_over_time <- function(sentiment_filters, freetexts_to_plot, data_object) {
+plot_emotions_over_time <- function(sentiment_filters, freetexts_to_plot, framework_data) {
 
   # freetexts_to_plot can be either a vector of 1 or more free text ids, a file name of a csv file containing the freetext ids or a parsed version (data.frame)
   if (stringr::str_ends(string = freetexts_to_plot, ".csv")) {
@@ -1116,27 +1123,29 @@ plot_emotions_over_time <- function(sentiment_filters, freetexts_to_plot, data_o
   }
 
   # so now we have our freetexts_to_plot as a vector of one or more characters - check that they are free texts
-  stopifnot(all(freetexts_to_plot %in% data_object$sm_framework$get_freetext_fragments()))
+  stopifnot(all(freetexts_to_plot %in% framework_data$sm_framework$get_freetext_fragments()))
 
-  if (stringr::str_ends(string = sentiment_filters, ".csv")) {
-    stopifnot(file.exists(sentiment_filters))
-    df <- read.csv(sentiment_filters, stringsAsFactors = FALSE)
-    stopifnot(nrow(df) > 0)
-    stopifnot("id" %in% colnames(df))
-    stopifnot("title" %in% colnames(df))
-    sentiment_filters <- df[["id"]]
-    sentiment_titles <- df[["title"]]
-  } else {
-    stopifnot(sentiment_filters == "data.frame")
+  if (class(sentiment_filters) == "data.frame") {
     stopifnot(nrow(sentiment_filters) > 0)
     stopifnot("id" %in% colnames(sentiment_filters))
     stopifnot("title" %in% colnames(sentiment_filters))
-    sentiment_filters <- sentiment_filters[["id"]]
     sentiment_titles <- sentiment_filters[["title"]]
+    sentiment_filters <- sentiment_filters[["id"]]
+  } else {
+    if (stringr::str_ends(string = sentiment_filters, ".csv")) {
+      stopifnot(file.exists(sentiment_filters))
+      df <- read.csv(sentiment_filters, stringsAsFactors = FALSE)
+      stopifnot(nrow(df) > 0)
+      stopifnot("id" %in% colnames(df))
+      stopifnot("title" %in% colnames(df))
+      sentiment_filters <- df[["id"]]
+      sentiment_titles <- df[["title"]]
+    }
   }
 
+
   # we create separate cleaned dataframes for the sentiment analysis so add if they are not already there
-  add_clean_freetext_to_data(data_object, freetexts_to_plot)
+  add_clean_freetext_to_data(framework_data, freetexts_to_plot)
 
 
   out_results <- vector("list", length = length(freetexts_to_plot))
@@ -1150,7 +1159,7 @@ plot_emotions_over_time <- function(sentiment_filters, freetexts_to_plot, data_o
 
     purrr::walk2(sentiment_filters, sentiment_titles, function(filter_id, filter_title) {
       # each data set - this is the data clean for this column filtered by the data filter in use
-      data_use <-   data_object$data[[paste0("data_clean_", frag_id)]] %>% dplyr::filter(.data[["FragmentID"]] %in% data_object$data[[filter_id]][["FragmentID"]]) %>% filter(!is.na(fragment))
+      data_use <-   framework_data$data[[paste0("data_clean_", frag_id)]] %>% dplyr::filter(.data[["FragmentID"]] %in% framework_data$data[[filter_id]][["FragmentID"]]) %>% filter(!is.na(fragment))
       # do the sentiment stuff
       text_column <- data_use[["fragment"]]
 
@@ -1201,7 +1210,7 @@ plot_emotions_over_time <- function(sentiment_filters, freetexts_to_plot, data_o
               geom_line(size=1) +
               geom_point(size=2) +  # Add points to the lines
               colScale +
-              labs(title= paste("%age of emotions over time : ", data_object$sm_framework$get_signifier_title(frag_id), " : ", filter_title),
+              labs(title= paste("%age of emotions over time : ", framework_data$sm_framework$get_signifier_title(frag_id), " : ", filter_title),
                    x="Time (Year-Month)", y="Percentage of Emotions") +
               scale_y_continuous(labels = scales::percent_format()) +
               theme_minimal() +
@@ -1225,12 +1234,12 @@ plot_emotions_over_time <- function(sentiment_filters, freetexts_to_plot, data_o
 #' Plot a frequency graph of the words used between two different queries.
 #' @param frequency_graph_pairs - A data frame or name of a csv file with columns "from_id" and "to_id" containing data query names.
 #' @param freetexts_to_plot - default NULL, A vector of freetext signifier ids for textual data If NULL all freetext signifiers set as a fragment are plotted.
-#' @param data_object - the sensemakerdatar object for the framework.
+#' @param framework_data - the sensemakerdatar object for the framework.
 #' @param use_stem - default NULL, If TRUE, the graph will accumulate stemmed word usage.
 #' @export
-word_frequency_plot <- function(frequency_graph_pairs, freetexts_to_plot, data_object, use_stem = FALSE) {
+word_frequency_plot <- function(frequency_graph_pairs, freetexts_to_plot, framework_data, use_stem = FALSE) {
 
-  stopifnot(all(class(data_object) %in% c("Data", "R6")))
+  stopifnot(all(class(framework_data) %in% c("Data", "R6")))
 
   # freetexts_to_plot can be either a vector of 1 or more free text ids, a file name of a csv file containing the freetext ids or a parsed version (data.frame)
   if (stringr::str_ends(string = freetexts_to_plot, ".csv")) {
@@ -1253,8 +1262,14 @@ word_frequency_plot <- function(frequency_graph_pairs, freetexts_to_plot, data_o
 
 
   # so now we have our freetexts_to_plot as a vector of one or more characters - check that they are free texts
-  stopifnot(all(freetexts_to_plot %in% data_object$sm_framework$get_freetext_fragments()))
+  stopifnot(all(freetexts_to_plot %in% framework_data$sm_framework$get_freetext_fragments()))
 
+  if (class(frequency_graph_pairs) == "data.frame") {
+    stopifnot(nrow(frequency_graph_pairs) > 0)
+    stopifnot(all(c("from_id", "to_id") %in% colnames(frequency_graph_pairs)))
+    graph_pairs_from_ids <- frequency_graph_pairs[["from_id"]]
+    graph_pairs_to_ids <- frequency_graph_pairs[["to_id"]]
+  } else {
   if (stringr::str_ends(string = frequency_graph_pairs, ".csv")) {
     stopifnot(file.exists(frequency_graph_pairs))
     df <- read.csv(frequency_graph_pairs, stringsAsFactors = FALSE)
@@ -1262,22 +1277,16 @@ word_frequency_plot <- function(frequency_graph_pairs, freetexts_to_plot, data_o
     stopifnot(all(c("from_id", "to_id") %in% colnames(df)))
     graph_pairs_from_ids <- df[["from_id"]]
     graph_pairs_to_ids <- df[["to_id"]]
-  } else {
-    if (class(frequency_graph_pairs) == "data.frame") {
-      stopifnot(nrow(frequency_graph_pairs) > 0)
-      stopifnot(all(c("from_id", "to_id") %in% colnames(frequency_graph_pairs)))
-      graph_pairs_from_ids <- frequency_graph_pairs[["from_id"]]
-      graph_pairs_to_ids <- frequency_graph_pairs[["to_id"]]
-    }
+  }
   }
 
   # we create separate cleaned dataframes for the sentiment analysis so add if they are not already there
-  add_clean_freetext_to_data(data_object, freetexts_to_plot)
+  add_clean_freetext_to_data(framework_data, freetexts_to_plot)
 
   # todo - this might not work
 
   stop_words <- tidytext::stop_words
-  remove_tibble <- tibble(word = data_object$stop_words, lexicon = rep_len("CUSTOM", length(data_object$stop_words)))
+  remove_tibble <- tibble(word = framework_data$stop_words, lexicon = rep_len("CUSTOM", length(framework_data$stop_words)))
 
 
   out_results <- vector("list", length = length(freetexts_to_plot))
@@ -1292,9 +1301,9 @@ word_frequency_plot <- function(frequency_graph_pairs, freetexts_to_plot, data_o
 
     purrr::walk2(graph_pairs_from_ids, graph_pairs_to_ids, function(from_id, to_id) {
 
-      data_from <- data_object$get_data_dataframe(from_id, as_tibble = TRUE)
-      data_to <- data_object$get_data_dataframe(to_id, as_tibble = TRUE)
-      data_clean <- data_object$get_data_dataframe(paste0("data_clean_", text_id), as_tibble = TRUE)
+      data_from <- framework_data$get_data_dataframe(from_id, as_tibble = TRUE)
+      data_to <- framework_data$get_data_dataframe(to_id, as_tibble = TRUE)
+      data_clean <- framework_data$get_data_dataframe(paste0("data_clean_", text_id), as_tibble = TRUE)
       data_from_plot <- data_clean %>% dplyr::filter(FragmentID %in% data_from[["FragmentID"]])
       data_to_plot <- data_clean %>% dplyr::filter(FragmentID %in% data_to[["FragmentID"]])
 
@@ -1326,8 +1335,8 @@ word_frequency_plot <- function(frequency_graph_pairs, freetexts_to_plot, data_o
          geom_abline(color = "gray40", lty = 2) +
          geom_jitter(alpha = 0.1, size = 2.4, width = 0.3, height = 0.3) +
          geom_text(aes(label = word), check_overlap = TRUE, vjust = 1.5) +
-         scale_x_log10(labels = percent_format()) +
-         scale_y_log10(labels = percent_format()) +
+         scale_x_log10(labels = scales::percent_format()) +
+         scale_y_log10(labels = scales::percent_format()) +
          scale_colour_gradient(limits = c(0, 0.001),
                                low = "darkslategray4", high = "gray75") +
          ggplot2::theme(legend.position = "none")
@@ -1341,11 +1350,11 @@ return(out_results)
 
 }
 
-add_clean_freetext_to_data <- function(data_object, freetexts_to_plot) {
+add_clean_freetext_to_data <- function(framework_data, freetexts_to_plot) {
 
   purrr::walk(freetexts_to_plot, function(x) {
-    if (!(paste0("data_clean_", x) %in% data_object$get_data_list_names())) {
-      data_object$add_data_data_frame((data_object$data$df1 %>% dplyr::select(fragment = all_of(x), "FragmentID", "EntryYrMth") %>% dplyr::filter(!is.na(fragment))),
+    if (!(paste0("data_clean_", x) %in% framework_data$get_data_list_names())) {
+      framework_data$add_data_data_frame((framework_data$data$df1 %>% dplyr::select(fragment = all_of(x), "FragmentID", "EntryYrMth") %>% dplyr::filter(!is.na(fragment))),
                                       name = paste0("data_clean_", x), add_to_export_list_names = TRUE)
     }
   })

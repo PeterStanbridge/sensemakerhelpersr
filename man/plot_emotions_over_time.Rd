@@ -4,7 +4,7 @@
 \alias{plot_emotions_over_time}
 \title{Plot a timed line graph of the sentiment emotions of the freetext ids passed to the function.}
 \usage{
-plot_emotions_over_time(sentiment_filters, freetexts_to_plot, data_object)
+plot_emotions_over_time(sentiment_filters, freetexts_to_plot, framework_data)
 }
 \arguments{
 \item{sentiment_filters}{\itemize{
@@ -15,7 +15,7 @@ plot_emotions_over_time(sentiment_filters, freetexts_to_plot, data_object)
 \item default NULL, A vector of freetext signifier ids for textual data If NULL all freetext signifiers set as a fragment are plotted.
 }}
 
-\item{data_object}{\itemize{
+\item{framework_data}{\itemize{
 \item the sensemakerdatar object for the framework.
 }}
 }

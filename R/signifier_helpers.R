@@ -270,7 +270,7 @@ get_triad_anchor_plot_titles <- function(triad_id, display_anchor_means, anchor_
 #' @param anchor_titles - the named list of anchor plot titles obtained from the get_triad_anchor_plot_titles function.
 #' @returns An integer for the anchor plot size.
 #' @export
-get_anchor_plot_size <- function (anchor_titles) {
+get_triad_anchor_plot_size <- function (anchor_titles) {
 
   left_title <- anchor_titles[["left_title"]]
   right_title <-  anchor_titles[["right_title"]]

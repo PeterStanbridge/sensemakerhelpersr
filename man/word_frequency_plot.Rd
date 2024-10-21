@@ -7,7 +7,7 @@
 word_frequency_plot(
   frequency_graph_pairs,
   freetexts_to_plot,
-  data_object,
+  framework_data,
   use_stem = FALSE
 )
 }
@@ -20,7 +20,7 @@ word_frequency_plot(
 \item default NULL, A vector of freetext signifier ids for textual data If NULL all freetext signifiers set as a fragment are plotted.
 }}
 
-\item{data_object}{\itemize{
+\item{framework_data}{\itemize{
 \item the sensemakerdatar object for the framework.
 }}
 
