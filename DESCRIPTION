@@ -35,5 +35,6 @@ Imports:
     tidyr,
     tidytext,
     viridis
+Remotes: quanteda/quanteda.sentiment
 URL: https://github.com/PeterStanbridge/sensemakerhelpersr
 BugReports: https://github.com/PeterStanbridge/sensemakerhelpersr/issues
