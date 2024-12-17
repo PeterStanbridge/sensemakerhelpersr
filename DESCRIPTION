@@ -16,10 +16,13 @@ Imports:
     compositions,
     data.table,
     dplyr,
+    energy,
     ggplot2,
     grDevices,
     grid,
+    Hotelling,
     magrittr,
+    npmv,
     png,
     purrr,
     quanteda,
@@ -34,6 +37,7 @@ Imports:
     syuzhet,
     tidyr,
     tidytext,
+    vegan,
     viridis
 Remotes: quanteda/quanteda.sentiment
 URL: https://github.com/PeterStanbridge/sensemakerhelpersr
