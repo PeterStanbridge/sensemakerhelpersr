@@ -21,7 +21,7 @@ get_avalable_tests <- function() {
 #' @returns An object of class "hotelling.test" with the hotelling T^2 test result.
 #' @export
 perform_hotelling <- function(data, control_var, non_parametric = TRUE, b_value = 1000) {
-  stopifnot(length(control_var == nrow(data)))
+  stopifnot(length(control_var) == nrow(data))
   stopifnot(is.logical(non_parametric))
   stopifnot(is.numeric(b_value))
   stopifnot(b_value > 0)
