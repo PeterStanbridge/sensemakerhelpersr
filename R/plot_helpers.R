@@ -785,7 +785,7 @@ produce_tern_pair_means_graphs <- function(tern_pairs, framework_data, triads_to
   from_colours <- tern_pairs[, "from_colour"]
   to_colours <- tern_pairs[, "to_colour"]
 
-  stopifnot(all(colnames(tern_pairs) %in% c("from_id", "to_id", "from_colour", "to_colour")))
+  stopifnot(all(c("from_id", "to_id", "from_colour", "to_colour") %in% colnames(tern_pairs)))
   filters_used <- unique(append(from_ids, to_ids))
   stopifnot(all(filters_used %in% framework_data$get_data_list_names()))
   stopifnot(all(areColors(from_colours)))
