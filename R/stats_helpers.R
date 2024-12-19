@@ -129,7 +129,7 @@ do_means_tests <- function(filters, means_tests, fwd, signifier_ids = NULL, sign
     stopifnot(file.exists(means_tests))
     means_tests <- read.csv("means_tests.csv", check.names = FALSE, stringsAsFactors = FALSE)
   }
-  stopifnot(all(c("from_id",	"to_id","name") %in% colnames(means_tests)))
+  stopifnot(all(c("from_id",	"to_id","from_title", "to_title") %in% colnames(means_tests)))
 
   if (is.character(filters)) {
     stopifnot(file.exists(filters))
@@ -148,10 +148,14 @@ do_means_tests <- function(filters, means_tests, fwd, signifier_ids = NULL, sign
     # This is the data frame we will be outputting the information we are interested in.
     stats_out <- test_result_structure()
 
-    purrr::walk2(means_tests$from_id, means_tests$to_id, function(from_dat, to_dat) {
+   # purrr::walk2(means_tests$from_id, means_tests$to_id, function(from_dat, to_dat) {
 
-      source1_title <- as.character(unname(filters |> dplyr::filter(name == from_dat) |> dplyr::select(title)))
-      source2_title <- as.character(unname(filters |> dplyr::filter(name == to_dat) |> dplyr::select(title)))
+      purrr::pwalk(list(means_tests$from_id, means_tests$to_id, means_tests$from_title, means_tests$to_title), function(from_dat, to_dat, source1_title, source2_title) {
+
+    #  source1_title <- as.character(unname(filters |> dplyr::filter(name == from_dat) |> dplyr::select(title)))
+     # source2_title <- as.character(unname(filters |> dplyr::filter(name == to_dat) |> dplyr::select(title)))
+    #  source1_title <- from_dat
+    #  source2_title <- to_dat
 
       work_df <- dplyr::bind_rows(fwd$data[[from_dat]], fwd$data[[to_dat]])
       stopifnot("source" %in% colnames(work_df))
@@ -167,7 +171,6 @@ do_means_tests <- function(filters, means_tests, fwd, signifier_ids = NULL, sign
       total_transformed <- compositions::ilr(sig_data[,col_number])
 
       test_results <- perform_required_test(total_transformed, sig_data$source, non_parametric, b_value, test_type, source1_title, source2_title)
-
       stats_out <<- dplyr::bind_rows(stats_out, test_results)
 
 
@@ -204,6 +207,7 @@ get_sig_stats_names <- function(id, fwd) {
 perform_required_test <- function(data, control_var, non_parametric, b_value, test_type, source1_title, source2_title) {
   call_function <- paste0("perform_", test_type)
   test_result <- do.call(call_function, args = list(data = data, control_var = control_var, non_parametric = non_parametric, b_value = b_value))
+  #print(paste(test_result$stat$statistic, " -- ", test_result$pval))
   call_function <- paste0("format_return_", test_type)
   formatted_test_result <- do.call(call_function, args = list(test_result = test_result, source1_title = source1_title, source2_title = source2_title))
   return(formatted_test_result)
