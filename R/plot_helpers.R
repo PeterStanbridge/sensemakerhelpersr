@@ -829,6 +829,73 @@ produce_tern_pair_means_graphs <- function(tern_pairs, framework_data, triads_to
 
 }
 
+
+#' @title Plot tern pair means based on data queries.
+#' @description
+#' This function plots the means and 5% confidence intervals for a list of triads.
+#' @param tern_pairs - A data frame with columns "from_id", "to_id", "from_colour" and "to_colour". The from and to ids are data queries stored in the data list (public field). The colours are valid R colour names or codes.
+#' @param framework_data - The framework sensemakerdata object.
+#' @param triads_to_plot - default NULL, A vector of triad ids to plot. If NULL all keep_only_include triads are plotted.
+#' @export
+produce_tern_pair_means_graphs_by_triad <- function(tern_pairs, framework_data, triads_to_plot = NULL) {
+
+  if (class(tern_pairs) == "character") {
+    stopifnot(file.exists(tern_pairs))
+    tern_pairs <- read.csv(tern_pairs, stringsAsFactors = FALSE)
+  }
+
+  from_ids <- tern_pairs[, "from_id"]
+  to_ids <- tern_pairs[, "to_id"]
+  from_colours <- tern_pairs[, "from_colour"]
+  to_colours <- tern_pairs[, "to_colour"]
+
+  stopifnot(all(c("from_id", "to_id", "from_colour", "to_colour") %in% colnames(tern_pairs)))
+  filters_used <- unique(append(from_ids, to_ids))
+  stopifnot(all(filters_used %in% framework_data$get_data_list_names()))
+  stopifnot(all(areColors(from_colours)))
+  stopifnot(all(areColors(to_colours)))
+
+  if (is.null(triads_to_plot)) {
+    triads_to_plot <- framework_data$sm_framework$get_triad_ids(keep_only_include = TRUE)
+  } else {
+    stopifnot(all(triads_to_plot %in% framework_data$sm_framework$get_triad_ids(keep_only_include = TRUE)))
+  }
+
+
+  out_results <- vector("list", length = length(from_ids))
+  names(out_results) <- paste0(from_ids, "_", to_ids)
+
+  purrr::walk(triads_to_plot, function(triad_id) {
+
+  purrr::pwalk(list(from_ids, to_ids, from_colours, to_colours), function(from_id, to_id, from_colour, to_colour) {
+
+    out_plots <- vector("list", length = length(triads_to_plot))
+    names(out_plots) <- triads_to_plot
+
+    df_list <- vector("list", length = 2)
+    names(df_list) <- c(from_id, to_id)
+    df_list[[1]] <- framework_data$data[[from_id]]
+    df_list[[2]] <- framework_data$data[[to_id]]
+    data_titles <- c(from_id, to_id)
+    colour_vector <- c(from_colour, to_colour)
+
+
+
+      out_plots[[triad_id]] <<- plot_tern_means(df_list = df_list, triad_id = triad_id, data_titles = data_titles,
+                                                framework_object = fwd$sm_framework, colour_vector = colour_vector, dot_size = .08, dot_transparency = .3,
+                                                confidence_size = 2)
+
+    })
+
+    out_results[[paste0(from_id, "_", to_id)]] <<- out_plots
+
+
+  })
+  return(out_results)
+
+}
+
+
 #' @title Plot keyness bar charts for pairs of data queries.
 #' @description
 #' This function plots a keyness indicator bar chart graph for pairs of data queries.
