@@ -867,10 +867,11 @@ produce_tern_pair_means_graphs_by_triad <- function(tern_pairs, framework_data, 
 
   purrr::walk(triads_to_plot, function(triad_id) {
 
-  purrr::pwalk(list(from_ids, to_ids, from_colours, to_colours), function(from_id, to_id, from_colour, to_colour) {
-
     out_plots <- vector("list", length = length(triads_to_plot))
     names(out_plots) <- triads_to_plot
+
+  purrr::pwalk(list(from_ids, to_ids, from_colours, to_colours), function(from_id, to_id, from_colour, to_colour) {
+
 
     df_list <- vector("list", length = 2)
     names(df_list) <- c(from_id, to_id)
@@ -881,13 +882,13 @@ produce_tern_pair_means_graphs_by_triad <- function(tern_pairs, framework_data, 
 
 
 
-      out_plots[[triad_id]] <<- plot_tern_means(df_list = df_list, triad_id = triad_id, data_titles = data_titles,
+      out_plots[[[paste0(from_id, "_", to_id)]] <<- plot_tern_means(df_list = df_list, triad_id = triad_id, data_titles = data_titles,
                                                 framework_object = fwd$sm_framework, colour_vector = colour_vector, dot_size = .08, dot_transparency = .3,
                                                 confidence_size = 2)
 
     })
 
-    out_results[[paste0(from_id, "_", to_id)]] <<- out_plots
+    out_results[triad_id]] <<- out_plots
 
 
   })
