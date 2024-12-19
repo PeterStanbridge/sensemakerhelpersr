@@ -882,13 +882,13 @@ produce_tern_pair_means_graphs_by_triad <- function(tern_pairs, framework_data, 
 
 
 
-      out_plots[[[paste0(from_id, "_", to_id)]] <<- plot_tern_means(df_list = df_list, triad_id = triad_id, data_titles = data_titles,
+    out_results[[paste0(from_id, "_", to_id)]] <<- out_plots <<- plot_tern_means(df_list = df_list, triad_id = triad_id, data_titles = data_titles,
                                                 framework_object = fwd$sm_framework, colour_vector = colour_vector, dot_size = .08, dot_transparency = .3,
                                                 confidence_size = 2)
 
     })
 
-    out_results[triad_id]] <<- out_plots
+    out_results[[triad_id]] <<- out_plots
 
 
   })
