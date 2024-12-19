@@ -862,13 +862,13 @@ produce_tern_pair_means_graphs_by_triad <- function(tern_pairs, framework_data, 
   }
 
 
-  out_results <- vector("list", length = length(from_ids))
-  names(out_results) <- paste0(from_ids, "_", to_ids)
+  out_results <- vector("list", length = length(triads_to_plot))
+  names(out_results) <- triads_to_plot
 
   purrr::walk(triads_to_plot, function(triad_id) {
+    out_plots <- vector("list", length = length(from_ids))
+    names(out_plots)<- paste0(from_ids, "_", to_ids)
 
-    out_plots <- vector("list", length = length(triads_to_plot))
-    names(out_plots) <- triads_to_plot
 
   purrr::pwalk(list(from_ids, to_ids, from_colours, to_colours), function(from_id, to_id, from_colour, to_colour) {
 
