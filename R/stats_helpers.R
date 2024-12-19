@@ -104,7 +104,7 @@ perform_adonis2 <- function(data, control_var, non_parametric = TRUE, b_value = 
 #' @description
 #' Do means tests on the data passed into the function.
 #' @param filters - filters from a filter file. Can be either the file name or the data frame created from it. It have columns (at least) of "name" and "title". Note that the actual filter file will also contain an expression column, an include column and colour column. The function is already expecting the filter to have been executed against the {sensemakerdatar} object. It is used here to pick up titles.
-#' @param means_tests - means tests from a means test file. Can be either the file name or the data frame created from it. It must have columns at least "from_data", "to_data" and "name". The from_data and to_data are names of data filters in the filter parameter.
+#' @param means_tests - means tests from a means test file. Can be either the file name or the data frame created from it. It must have columns at least "from_id", "to_id" and "name". The from_id and to_id are names of data filters in the filter parameter.
 #' @param fwd - The sensemakerdatar object for the framework being processed.
 #' @param signifier_ids - Default NULL otherwise the signifier ids of the signifiers to be processed. These should be either triad and/or dyad signifier ids. If NULL then the signifier types parameter must be entered.
 #' @param signifier_types - Default NULL otherwise the signifier types to be processed. Values should be either "triad", "dyad" or both. If NULL then the signifier ids parameter must be entered.
@@ -129,7 +129,7 @@ do_means_tests <- function(filters, means_tests, fwd, signifier_ids = NULL, sign
     stopifnot(file.exists(means_tests))
     means_tests <- read.csv("means_tests.csv", check.names = FALSE, stringsAsFactors = FALSE)
   }
-  stopifnot(all(c("from_data",	"to_data","name") %in% colnames(means_tests)))
+  stopifnot(all(c("from_id",	"to_id","name") %in% colnames(means_tests)))
 
   if (is.character(filters)) {
     stopifnot(file.exists(filters))
@@ -148,7 +148,7 @@ do_means_tests <- function(filters, means_tests, fwd, signifier_ids = NULL, sign
     # This is the data frame we will be outputting the information we are interested in.
     stats_out <- test_result_structure()
 
-    purrr::walk2(means_tests$from_data, means_tests$to_data, function(from_dat, to_dat) {
+    purrr::walk2(means_tests$from_id, means_tests$to_id, function(from_dat, to_dat) {
 
       source1_title <- as.character(unname(filters |> dplyr::filter(name == from_dat) |> dplyr::select(title)))
       source2_title <- as.character(unname(filters |> dplyr::filter(name == to_dat) |> dplyr::select(title)))
