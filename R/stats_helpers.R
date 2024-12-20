@@ -139,14 +139,14 @@ do_means_tests <- function(filters, means_tests, fwd, signifier_ids = NULL, sign
 
   k <- 0
 
-  result_list <- vector("list", length = length(signifier_ids))
+  result_list <<- vector("list", length = length(signifier_ids))
   names(result_list) <- signifier_ids
   purrr::walk(signifier_ids, function(sig_id) {
 
     sig_columns <-  fwd$sm_framework$get_anchor_compositional_column_names(sig_id, delist = TRUE)
 
     # This is the data frame we will be outputting the information we are interested in.
-    stats_out <- test_result_structure()
+    stats_out <<- test_result_structure()
 
    # purrr::walk2(means_tests$from_id, means_tests$to_id, function(from_dat, to_dat) {
 

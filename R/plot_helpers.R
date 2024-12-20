@@ -784,8 +784,10 @@ produce_tern_pair_means_graphs <- function(tern_pairs, framework_data, triads_to
   to_ids <- tern_pairs[, "to_id"]
   from_colours <- tern_pairs[, "from_colour"]
   to_colours <- tern_pairs[, "to_colour"]
+  from_titles <- tern_pairs[, "from_title"]
+  to_titles <- tern_pairs[, "to_title"]
 
-  stopifnot(all(c("from_id", "to_id", "from_colour", "to_colour") %in% colnames(tern_pairs)))
+  stopifnot(all(c("from_id", "to_id", "from_colour", "to_colour", "from_title", "to_title") %in% colnames(tern_pairs)))
   filters_used <- unique(append(from_ids, to_ids))
   stopifnot(all(filters_used %in% framework_data$get_data_list_names()))
   stopifnot(all(areColors(from_colours)))
@@ -799,18 +801,18 @@ produce_tern_pair_means_graphs <- function(tern_pairs, framework_data, triads_to
 
 
   out_results <- vector("list", length = length(from_ids))
-  names(out_results) <- paste0(from_ids, "_", to_ids)
+  names(out_results) <<- paste0(from_ids, "_", to_ids)
 
-  purrr::pwalk(list(from_ids, to_ids, from_colours, to_colours), function(from_id, to_id, from_colour, to_colour) {
+  purrr::pwalk(list(from_ids, to_ids, from_colours, to_colours, from_titles, to_titles), function(from_id, to_id, from_colour, to_colour, from_title, to_title) {
 
-    out_plots <- vector("list", length = length(triads_to_plot))
+    out_plots <<- vector("list", length = length(triads_to_plot))
     names(out_plots) <- triads_to_plot
 
     df_list <- vector("list", length = 2)
     names(df_list) <- c(from_id, to_id)
     df_list[[1]] <- framework_data$data[[from_id]]
     df_list[[2]] <- framework_data$data[[to_id]]
-    data_titles <- c(from_id, to_id)
+    data_titles <- c(from_title, to_title)
     colour_vector <- c(from_colour, to_colour)
 
     purrr::walk(triads_to_plot, function(triad_id) {
@@ -848,8 +850,10 @@ produce_tern_pair_means_graphs_by_triad <- function(tern_pairs, framework_data, 
   to_ids <- tern_pairs[, "to_id"]
   from_colours <- tern_pairs[, "from_colour"]
   to_colours <- tern_pairs[, "to_colour"]
+  from_titles <- tern_pairs[, "from_title"]
+  to_titles <- tern_pairs[, "to_title"]
 
-  stopifnot(all(c("from_id", "to_id", "from_colour", "to_colour") %in% colnames(tern_pairs)))
+  stopifnot(all(c("from_id", "to_id", "from_colour", "to_colour", "from_title", "to_title") %in% colnames(tern_pairs)))
   filters_used <- unique(append(from_ids, to_ids))
   stopifnot(all(filters_used %in% framework_data$get_data_list_names()))
   stopifnot(all(areColors(from_colours)))
@@ -862,7 +866,7 @@ produce_tern_pair_means_graphs_by_triad <- function(tern_pairs, framework_data, 
   }
 
 
-  out_results <- vector("list", length = length(triads_to_plot))
+  out_results <<- vector("list", length = length(triads_to_plot))
   names(out_results) <- triads_to_plot
 
   purrr::walk(triads_to_plot, function(triad_id) {
@@ -870,14 +874,14 @@ produce_tern_pair_means_graphs_by_triad <- function(tern_pairs, framework_data, 
     names(out_plots)<- paste0(from_ids, "_", to_ids)
 
 
-  purrr::pwalk(list(from_ids, to_ids, from_colours, to_colours), function(from_id, to_id, from_colour, to_colour) {
+  purrr::pwalk(list(from_ids, to_ids, from_colours, to_colours, from_titles, to_titles), function(from_id, to_id, from_colour, to_colour, from_title, to_title) {
 
 
     df_list <- vector("list", length = 2)
     names(df_list) <- c(from_id, to_id)
     df_list[[1]] <- framework_data$data[[from_id]]
     df_list[[2]] <- framework_data$data[[to_id]]
-    data_titles <- c(from_id, to_id)
+    data_titles <- c(from_title, to_title)
     colour_vector <- c(from_colour, to_colour)
 
 
@@ -940,13 +944,13 @@ produce_keyness_pair_graphs <- function(keyness_pairs, framework_data, freetext_
     framework_data$add_data_data_frame(dplyr::bind_rows(tmp_from, tmp_to), name = paste0(from_id, "_", to_id), add_to_export_list_names = TRUE)
   })
 
-  out_results <- vector("list", length = length(from_ids))
+  out_results <<- vector("list", length = length(from_ids))
   names(out_results) <- paste0(from_ids, "_", to_ids)
 
   # perform the keyness processing
   purrr::pwalk(list(from_ids, to_ids, from_colours, to_colours), function(from_id, to_id, from_colour, to_colour) {
 
-    out_plots <- vector("list", length = length(freetext_ids))
+    out_plots <<- vector("list", length = length(freetext_ids))
     names(out_plots) <- freetext_ids
 
     purrr::walk(freetext_ids, function(freetext_id) {
@@ -1030,13 +1034,13 @@ plot_sentiment_bars <- function(sentiment_filters, freetexts_to_plot, framework_
     add_clean_freetext_to_data(framework_data, freetexts_to_plot)
 
 
-    out_results <- vector("list", length = length(freetexts_to_plot))
+    out_results <<- vector("list", length = length(freetexts_to_plot))
     names(out_results) <- freetexts_to_plot
 
     purrr::walk(freetexts_to_plot, function(frag_id) {
       # each column
 
-      out_plots <- vector("list", length = length(sentiment_filters))
+      out_plots <<- vector("list", length = length(sentiment_filters))
       names(out_plots) <- sentiment_filters
 
       purrr::walk2(sentiment_filters, sentiment_titles, function(filter_id, filter_title) {
@@ -1122,13 +1126,13 @@ plot_sentiment_valence <- function(sentiment_filters, freetexts_to_plot, framewo
   add_clean_freetext_to_data(framework_data, freetexts_to_plot)
 
 
-  out_results <- vector("list", length = length(freetexts_to_plot))
+  out_results <<- vector("list", length = length(freetexts_to_plot))
   names(out_results) <- freetexts_to_plot
 
   purrr::walk(freetexts_to_plot, function(frag_id) {
     # each column
 
-    out_plots <- vector("list", length = length(sentiment_filters))
+    out_plots <<- vector("list", length = length(sentiment_filters))
     names(out_plots) <- sentiment_filters
 
     purrr::walk2(sentiment_filters, sentiment_titles, function(filter_id, filter_title) {
@@ -1216,13 +1220,13 @@ plot_emotions_over_time <- function(sentiment_filters, freetexts_to_plot, framew
   add_clean_freetext_to_data(framework_data, freetexts_to_plot)
 
 
-  out_results <- vector("list", length = length(freetexts_to_plot))
+  out_results <<- vector("list", length = length(freetexts_to_plot))
   names(out_results) <- freetexts_to_plot
 
   purrr::walk(freetexts_to_plot, function(frag_id) {
     # each column
 
-    out_plots <- vector("list", length = length(sentiment_filters))
+    out_plots <<- vector("list", length = length(sentiment_filters))
     names(out_plots) <- sentiment_filters
 
     purrr::walk2(sentiment_filters, sentiment_titles, function(filter_id, filter_title) {
@@ -1357,13 +1361,13 @@ word_frequency_plot <- function(frequency_graph_pairs, freetexts_to_plot, framew
   remove_tibble <- tibble(word = framework_data$stop_words, lexicon = rep_len("CUSTOM", length(framework_data$stop_words)))
 
 
-  out_results <- vector("list", length = length(freetexts_to_plot))
+  out_results <<- vector("list", length = length(freetexts_to_plot))
   names(out_results) <- freetexts_to_plot
 
   purrr::walk(freetexts_to_plot, function(text_id) {
 
 
-    out_plots <- vector("list", length = length(graph_pairs_from_ids))
+    out_plots <<- vector("list", length = length(graph_pairs_from_ids))
     names(out_plots) <- paste0(graph_pairs_from_ids, "_", graph_pairs_to_ids)
 
 
