@@ -101,6 +101,7 @@ perform_adonis2 <- function(data, control_var, non_parametric = TRUE, b_value = 
 
 # do means tests
 # Do means tests on data passed into the function.
+#' @title Do means tests
 #' @description
 #' Do means tests on the data passed into the function.
 #' @param filters - filters from a filter file. Can be either the file name or the data frame created from it. It have columns (at least) of "name" and "title". Note that the actual filter file will also contain an expression column, an include column and colour column. The function is already expecting the filter to have been executed against the {sensemakerdatar} object. It is used here to pick up titles.
@@ -225,3 +226,117 @@ format_return_hotelling <- function(test_result, source1_title, source2_title) {
                 Accept_Null = test_result$pval > 0.05)
   return(stats)
 }
+
+
+# do a correlation test on multi-select lists (mcqs)
+#' @title do a correlation test on multi-select lists (mcqs)
+#' @description
+#' This function will perform a correlation test (Pearson's) for passed in list ids (or all if NULL) and a set list of correlation pair filters based on filtered cohort definitions.
+#' @param correlation_pairs - The pairs of data filters to perform tests on. This can be either the file name or the data frame created from it or within the calling code. It must have columns at least "from_id", "to_id" where the ids are the names of the data frames held in the data list in the sensemakerdatar object.
+#' @param fwd - The sensemakerdatar object for the framework being processed.
+#' @param list_ids - Default NULL otherwise the signifier ids of the multi-select lists to be processed. If NULL then all the multiselect lists will be processed.
+#' @param test_type - default Pearson", but the only type currently supported.
+#' @returns Returns a list, the outer being one entry per correlation pair, the second being each multi-select list id, the third being each column in the dataset, and this list contains the test results, which are the observed data, the residuls, the residual squared, the p-value and the test result to reject the null hypothesis (TRUE, FALSE).
+#' @export
+calculate_multi_select_correlations <- function(correlation_pairs, fwd, list_ids = NULL, test_type = "Pearson") {
+
+  if (1 == 3) {
+    list_ids <- fwd$sm_framework$get_multiselect_list_ids()
+  }
+
+  stopifnot(is.character(test_type))
+  stopifnot(test_type %in% c("Pearson"))
+
+  if (!is.null(list_ids)) {
+    stopifnot(is.vector(list_ids))
+    stopifnot(all(list_ids %in% fwd$sm_framework$get_multiselect_list_ids()))
+  } else {
+    list_ids <- fwd$sm_framework$get_multiselect_list_ids()
+  }
+
+  if (is.character(correlation_pairs)) {
+    stopifnot(stringi::stri_endswith(str = correlation_pairs, fixed =  ".csv"))
+    stopifnot(file.exists(correlation_pairs))
+    correlation_pairs <- read.csv(correlation_pairs, check.names = FALSE, stringsAsFactors = FALSE)
+  } else {
+    print("we shouldn't be here")
+    stopifnot(is.data.frame(correlation_pairs))
+  }
+  stopifnot(all(colnames(correlation_pairs %in% c("from_id", "to_id"))))
+
+  # Get the multi-select list column names for each of the multi-select lists
+  ms_list_columns <- vector("list", length = length(list_ids))
+  names(ms_list_columns) <- list_ids
+
+  purrr::walk(names(ms_list_columns), ~ {ms_list_columns[[.x]] <<- fwd$sm_framework$get_list_column_mcq_names(.x, return_selected = TRUE)})
+
+  # the final retured correlation pairs list that will be returned from this routine
+  cp_results <- vector("list", length = nrow(correlation_pairs))
+  names(cp_results) <- paste0(correlation_pairs[, 1], "_", correlation_pairs[, 2])
+  # Go through each pair of correlation test filters to perform the test.
+
+  purrr::walk2(correlation_pairs[,1], correlation_pairs[,2], function(from_id, to_id) {
+
+    if (1 == 3) {
+      from_id <- correlation_pairs[1,1]
+      to_id <- correlation_pairs[1,2]
+    }
+
+    # Now for each list
+
+    # The muti-select list results returned as updated to the cp_reults list.
+    ms_results <- vector("list", length(length(list_ids)))
+    names(ms_results) <- list_ids
+
+    purrr::walk(names(ms_list_columns), function(list_id) {
+      if (1 == 3) {
+        list_id <- names(ms_list_columns)[[1]]
+      }
+      col_names <- append(ms_list_columns[[list_id]], "source")
+      all_data <-  dplyr::bind_rows(fwd$data[[from_id]], fwd$data[[to_id]]) |> dplyr::select(all_of(col_names))
+
+      col_results <- vector("list", length = length(colnames(all_data)) - 1)
+      names(col_results) <- colnames(all_data)[1:length(colnames(all_data)) - 1]
+
+      purrr::walk(colnames(all_data)[1:length(colnames(all_data)) - 1], ~ {
+
+        if (1 == 3) {
+          x <- colnames(all_data)[[1]]
+          tbl <- table(all_data[[x]], all_data$source)
+        }
+
+        # column returned results - a list with entries 1. the data table, 2, the residual table, 3, the residual square table, 4 the p-value, 5 pass-fail boolean
+        test_results <- vector("list", length = 5)
+        names(test_results) <- c("data", "residuals", "residuals_sqr", "p-value", "test_result")
+
+        tbl <- table(all_data[[.x]], all_data$source)
+
+
+        if (test_type == "Pearson") {
+          chi_square_test <- chisq.test(tbl)
+          test_results[["data"]] <- chi_square_test$observed
+          test_results[["residuals"]] <- chi_square_test$residuals
+          test_results[["residuals_sqr"]] <- chi_square_test$residuals^2
+          test_results[["p-value"]] <- chi_square_test$p.value
+          test_results[["test_result"]] <- chi_square_test$p.value < 0.05
+        } else {
+          # fisher_test <- fisher.test(tbl)
+        }
+
+        col_results[[.x]] <<- test_results
+
+      })
+
+      ms_results[[list_id]] <<- col_results
+
+    })
+
+    cp_results[[paste0(from_id, "_", to_id)]] <<- ms_results
+
+  })
+
+  return(cp_results)
+
+
+}
+
