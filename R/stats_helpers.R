@@ -306,19 +306,30 @@ calculate_multi_select_correlations <- function(correlation_pairs, fwd, list_ids
         }
 
         # column returned results - a list with entries 1. the data table, 2, the residual table, 3, the residual square table, 4 the p-value, 5 pass-fail boolean
-        test_results <<- vector("list", length = 5)
-        names(test_results) <- c("data", "residuals", "residuals_sqr", "p-value", "test_result")
-
+        test_results <<- vector("list", length = 7)
+        names(test_results) <- c("data", "expected", "residuals", "residuals_sqr", "p-value", "test_result", "used_p_simulation")
+        # we are going non-parametric if over 20% of the count values are less than 5
         tbl <- table(all_data[[.x]], all_data$source)
+        tbl_values <- as.vector(tbl)
+        len_values <- length(tbl_values)
+        count_less_5 <- tbl_values[tbl_values < 5]
+        per_less_5 <- round((count_less_5/len_values) * 100, digits = 0) >= 20
 
 
         if (test_type == "Pearson") {
-          chi_square_test <- chisq.test(tbl)
+          if (per_less_5) {
+            chi_square_test <- chisq.test(tbl, simulate.p.value = TRUE, B = 5000, correct = FALSE)
+          } else {
+            chi_square_test <- chisq.test(tbl)
+          }
+
           test_results[["data"]] <- chi_square_test$observed
+          test_results[["expected"]] <- chi_square_test$observed
           test_results[["residuals"]] <- round(chi_square_test$residuals, digits = 3)
           test_results[["residuals_sqr"]] <- round(chi_square_test$residuals^2, digits = 3)
           test_results[["p-value"]] <- round(chi_square_test$p.value, digits = 4)
           test_results[["test_result"]] <- chi_square_test$p.value < 0.05
+          test_results[["used_p_simulation"]] <- per_less_5
         } else {
           # fisher_test <- fisher.test(tbl)
         }
