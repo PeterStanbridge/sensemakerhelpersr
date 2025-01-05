@@ -265,13 +265,13 @@ calculate_multi_select_correlations <- function(correlation_pairs, fwd, list_ids
   stopifnot(all(colnames(correlation_pairs %in% c("from_id", "to_id"))))
 
   # Get the multi-select list column names for each of the multi-select lists
-  ms_list_columns <- vector("list", length = length(list_ids))
+  ms_list_columns <<- vector("list", length = length(list_ids))
   names(ms_list_columns) <- list_ids
 
   purrr::walk(names(ms_list_columns), ~ {ms_list_columns[[.x]] <<- fwd$sm_framework$get_list_column_mcq_names(.x, return_selected = TRUE)})
 
   # the final retured correlation pairs list that will be returned from this routine
-  cp_results <- vector("list", length = nrow(correlation_pairs))
+  cp_results <<- vector("list", length = nrow(correlation_pairs))
   names(cp_results) <- paste0(correlation_pairs[, 1], "_", correlation_pairs[, 2])
   # Go through each pair of correlation test filters to perform the test.
 
@@ -285,7 +285,7 @@ calculate_multi_select_correlations <- function(correlation_pairs, fwd, list_ids
     # Now for each list
 
     # The muti-select list results returned as updated to the cp_reults list.
-    ms_results <- vector("list", length(length(list_ids)))
+    ms_results <<- vector("list", length(length(list_ids)))
     names(ms_results) <- list_ids
 
     purrr::walk(names(ms_list_columns), function(list_id) {
@@ -295,7 +295,7 @@ calculate_multi_select_correlations <- function(correlation_pairs, fwd, list_ids
       col_names <- append(ms_list_columns[[list_id]], "source")
       all_data <-  dplyr::bind_rows(fwd$data[[from_id]], fwd$data[[to_id]]) |> dplyr::select(all_of(col_names))
 
-      col_results <- vector("list", length = length(colnames(all_data)) - 1)
+      col_results <<- vector("list", length = length(colnames(all_data)) - 1)
       names(col_results) <- colnames(all_data)[1:length(colnames(all_data)) - 1]
 
       purrr::walk(colnames(all_data)[1:length(colnames(all_data)) - 1], ~ {
@@ -306,7 +306,7 @@ calculate_multi_select_correlations <- function(correlation_pairs, fwd, list_ids
         }
 
         # column returned results - a list with entries 1. the data table, 2, the residual table, 3, the residual square table, 4 the p-value, 5 pass-fail boolean
-        test_results <- vector("list", length = 5)
+        test_results <<- vector("list", length = 5)
         names(test_results) <- c("data", "residuals", "residuals_sqr", "p-value", "test_result")
 
         tbl <- table(all_data[[.x]], all_data$source)
