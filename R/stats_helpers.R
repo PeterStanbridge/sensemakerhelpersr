@@ -315,9 +315,9 @@ calculate_multi_select_correlations <- function(correlation_pairs, fwd, list_ids
         if (test_type == "Pearson") {
           chi_square_test <- chisq.test(tbl)
           test_results[["data"]] <- chi_square_test$observed
-          test_results[["residuals"]] <- chi_square_test$residuals
-          test_results[["residuals_sqr"]] <- chi_square_test$residuals^2
-          test_results[["p-value"]] <- chi_square_test$p.value
+          test_results[["residuals"]] <- round(chi_square_test$residuals, digits = 3)
+          test_results[["residuals_sqr"]] <- round(chi_square_test$residuals^2, digits = 3)
+          test_results[["p-value"]] <- round(chi_square_test$p.value, digits = 4)
           test_results[["test_result"]] <- chi_square_test$p.value < 0.05
         } else {
           # fisher_test <- fisher.test(tbl)
