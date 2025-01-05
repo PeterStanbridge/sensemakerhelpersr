@@ -29,7 +29,7 @@ calculate_multi_select_correlations(
 }}
 }
 \value{
-Returns a list, the outer being one entry per correlation pair, the second being each multi-select list id, the third being each column in the dataset, and this list contains the test results, which are the observed data, the residuls, the residual squared, the p-value and the test result to reject the null hypothesis (TRUE, FALSE).
+Returns a list, the outer being one entry per correlation pair, the second being each multi-select list id, the third being each column in the dataset, and this list contains the test result list. This list has entries names "data", "expected", "residuals", "residuals_sqr", "p-value", "test_result", "used_p_simulation".
 }
 \description{
 This function will perform a correlation test (Pearson's) for passed in list ids (or all if NULL) and a set list of correlation pair filters based on filtered cohort definitions.

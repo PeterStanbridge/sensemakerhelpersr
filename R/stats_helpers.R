@@ -236,7 +236,7 @@ format_return_hotelling <- function(test_result, source1_title, source2_title) {
 #' @param fwd - The sensemakerdatar object for the framework being processed.
 #' @param list_ids - Default NULL otherwise the signifier ids of the multi-select lists to be processed. If NULL then all the multiselect lists will be processed.
 #' @param test_type - default Pearson", but the only type currently supported.
-#' @returns Returns a list, the outer being one entry per correlation pair, the second being each multi-select list id, the third being each column in the dataset, and this list contains the test results, which are the observed data, the residuls, the residual squared, the p-value and the test result to reject the null hypothesis (TRUE, FALSE).
+#' @returns Returns a list, the outer being one entry per correlation pair, the second being each multi-select list id, the third being each column in the dataset, and this list contains the test result list. This list has entries names "data", "expected", "residuals", "residuals_sqr", "p-value", "test_result", "used_p_simulation".
 #' @export
 calculate_multi_select_correlations <- function(correlation_pairs, fwd, list_ids = NULL, test_type = "Pearson") {
 
@@ -312,7 +312,7 @@ calculate_multi_select_correlations <- function(correlation_pairs, fwd, list_ids
         tbl <- table(all_data[[.x]], all_data$source)
         tbl_values <- as.vector(tbl)
         len_values <- length(tbl_values)
-        count_less_5 <- tbl_values[tbl_values < 5]
+        count_less_5 <- length(tbl_values[tbl_values < 5])
         per_less_5 <- round((count_less_5/len_values) * 100, digits = 0) >= 20
 
 
