@@ -665,7 +665,7 @@ plot_tern_triad <- function(filtered_data, full_data, triad_id, framework_object
     ggtern::theme_hidelabels() +
     ggtern::theme_hideticks() +
     ggplot2::theme(tern.panel.expand = 0.40)  +
-    ggplot2::theme(plot.margin = margin(0, 0, 0, 0, "cm")) + theme(axis.title.x = element_blank(),  axis.title.y = element_blank())
+    ggplot2::theme(plot.margin = margin(0, 0, -10, 0, "cm")) + theme(axis.title.x = element_blank(),  axis.title.y = element_blank())
 
   if (show_mean) {
     p <- p + ggplot2::geom_point(data = mean_df, aes(x = x, y = y, z = z), colour = mean_colour, size = mean_size, shape = ifelse(mean_shape == "circle", 21, 23), fill = mean_colour)
