@@ -25,7 +25,7 @@ plot_tern_triad(
   mean_zero_logic = "small_value",
   graph_title = NULL,
   title_colour = "black",
-  title_size = 12,
+  title_size = NULL,
   show_confidence_intervals = FALSE,
   confidence_interval_colour = "blue",
   confidence_interval_Size = 0.55,
@@ -52,7 +52,8 @@ plot_tern_triad(
   legend_title_size = 8,
   legend_text_colour = "black",
   legend_text_size = 8,
-  return_as_print = FALSE
+  return_as_print = FALSE,
+  put_title_in_top = FALSE
 )
 }
 \arguments{
@@ -137,7 +138,7 @@ plot_tern_triad(
 }}
 
 \item{title_size}{\itemize{
-\item default 12, the size of the graph title.
+\item default NULL, the size of the graph title.
 }}
 
 \item{show_confidence_intervals}{= default FALSE, if TRUE, show confidence intervals in the graph.}
@@ -244,6 +245,10 @@ plot_tern_triad(
 
 \item{return_as_print}{\itemize{
 \item default FALSE, returns the ggtern object otherwise a print of the object.
+}}
+
+\item{put_title_in_top}{\itemize{
+\item default FALSE, if TRUE will place the graph title 2 lines above the triad top. This will reduce the space between the title and the top label.
 }}
 }
 \value{

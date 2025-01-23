@@ -303,7 +303,7 @@ clean_string_of_html <- function(htmlString) {
   #return(gsub("/<.*?>", "", htmlString))
   #return(str_replace_all(htmlString, "[^[:alnum:]_]", " "))
   # return(gsub("<.*?>", " ", htmlString))
-  return(str_replace_all(gsub("<.*?>", " ", htmlString), "  ", " " ))
+  return(stringr::str_replace_all(gsub("<.*?>", " ", htmlString), "  ", " " ))
 }
 
 createBrewerColourArray <- function() {
