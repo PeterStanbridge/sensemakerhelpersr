@@ -259,7 +259,6 @@ calculate_multi_select_correlations <- function(correlation_pairs, fwd, list_ids
     stopifnot(file.exists(correlation_pairs))
     correlation_pairs <- read.csv(correlation_pairs, check.names = FALSE, stringsAsFactors = FALSE)
   } else {
-    print("we shouldn't be here")
     stopifnot(is.data.frame(correlation_pairs))
   }
   stopifnot(all(colnames(correlation_pairs %in% c("from_id", "to_id"))))
@@ -329,6 +328,8 @@ calculate_multi_select_correlations <- function(correlation_pairs, fwd, list_ids
           test_results[["residuals_sqr"]] <- round(chi_square_test$residuals^2, digits = 3)
           test_results[["p-value"]] <- round(chi_square_test$p.value, digits = 4)
           test_results[["test_result"]] <- chi_square_test$p.value < 0.05
+          count_less_5 <- length(tbl_values[tbl_values < 5])
+          per_less_5 <- round((count_less_5/len_values) * 100, digits = 0) >= 20
           test_results[["used_p_simulation"]] <- per_less_5
         } else {
           # fisher_test <- fisher.test(tbl)
@@ -350,9 +351,130 @@ calculate_multi_select_correlations <- function(correlation_pairs, fwd, list_ids
 
 }
 
-get_shape_correlations <- function() {
+
+# get the correlation data by from and to signifier type
+#' @title Get the correlation data for signifiers of a from and to signifier type
+#' @description
+#' This function will perform goodness of fit tests and return the results for each signifier combination of the from and to signifier types. For lists, these will be only the single select signifier mcqs and the date columns.
+#' The actual tests are performed on the zone and region categorical columns for triads, dyads and stones.
+#' @param df - The data to perform the tests - this is a data frame containing at least all the columns needed for the signifier types passed in. .
+#' @param fw - The framework definition object.
+#' @param from_type - Either "list" or one of the shape types ("dyad", "triad", "stones").
+#' @param to_type - Either "list" or one of the shape types ("dyad", "triad", "stones").
+#' @returns Returns a named list. ids_to_output contains the dataframe of signifier id pairs included in the output. sig_residuals a list of length the number of correlation pairs, It contains the "data", "expected", "residuals", "residuals_sqr", "p-value".
+#' @export
+get_correlations_by_type <- function(df, fw, from_type, to_type) {
+
+  stopifnot(from_type %in% c("list", fw$get_shape_signifier_types()))
+  stopifnot(to_type %in% c("list", fw$get_shape_signifier_types()))
+  # The correlation columns will be coming from lists - e.g. dyad type will use the zone mcq equivalent columns for correlations.
+  all_list_ids <- fw$get_list_ids()
+
+  from_ids  <- fw$get_signifier_ids_by_type(from_type, sig_class = "signifier")
+  to_ids  <- fw$get_signifier_ids_by_type(to_type, sig_class = "signifier")
+
+  # If the from type is a shape type, then get the actual columns for the analysis
+
+  if (from_type %in% fw$get_shape_signifier_types()) {
+    # get those list signifier ids that have the same start string as the shape signifier ids
+    from_col_ids <- unlist(purrr::imap(purrr::map(from_ids, ~ {stringr::str_starts(all_list_ids, .x)}), ~ {all_list_ids[purrr::map(from_ids, ~ {stringr::str_starts(all_list_ids, .x)})[[.y]]]}))
+  } else {
+    from_col_ids <- setdiff(fw$get_single_select_list_ids(sig_class = c("signifier", "date")), "EntryYrMthDay")
+    dte_cols <- setdiff(fw$get_single_select_list_ids(sig_class = c("date")), "EntryYrMthDay")
+    purrr::walk(dte_cols, ~ {df[[.x]] <<- as.character(df[[.x]])})
+  }
+
+  if (to_type %in% fw$get_shape_signifier_types()) {
+    # get those list signifier ids that have the same start string as the shape signifier ids
+    to_col_ids <- unlist(purrr::imap(purrr::map(to_ids, ~ {stringr::str_starts(all_list_ids, .x)}), ~ {all_list_ids[purrr::map(to_ids, ~ {stringr::str_starts(all_list_ids, .x)})[[.y]]]}))
+  } else {
+    to_col_ids <- setdiff(fw$get_single_select_list_ids(sig_class = c("signifier", "date")), "EntryYrMthDay")
+    dte_cols <- setdiff(fw$get_single_select_list_ids(sig_class = c("date")), "EntryYrMthDay")
+    purrr::walk(dte_cols, ~ {df[[.x]] <<- as.character(df[[.x]])})
+  }
+
+  if (from_type != to_type) {
+    ids_to_output <- data.frame(tidyr::crossing(from_col_ids, to_col_ids))
+  } else {
+    ids_to_output <- data.frame(t(utils::combn(from_col_ids, m = 2)))
+  }
+
+  colnames(ids_to_output) <- c("from", "to")
+
+  sig_residuals <- purrr::map2(ids_to_output[["from"]], ids_to_output[["to"]], ~ {get_residuals(df, fw, .x, .y)})
+
+  from_ids <- unlist(purrr::map(ids_to_output[["from"]], ~ {stringr::str_split_i(.x, pattern = "_", i = 1)}))
+   to_ids <- unlist(purrr::map(ids_to_output[["to"]], ~ {stringr::str_split_i(.x, pattern = "_", i = 1)}))
+   names(sig_residuals) <- paste0(from_ids, "_", to_ids)
+   ids_out <- data.frame(from = from_ids, to = to_ids)
+    return(list(sig_residuals = sig_residuals, ids_to_output = ids_out))
+
+}
 
 
+# Calculate the goodness of test residual for a from and to column for a from and to types.
+#' @title Get the correlation data for signifiers of a from and to signifier type
+#' @description
+#' This function will perform goodness of fit tests and return the results for each signifier combination of the from and to signifier types. For lists, these will be only the single select signifier mcqs and the date columns.
+#' The actual tests are performed on the zone and region categorical columns for triads, dyads and stones.
+#' @param df - The data to perform the tests - this is a data frame containing at least all the columns needed for the signifier types passed in. .
+#' @param fw - The framework definition object.
+#' @param from_col - The from data column name in data frame df for correlation calculation
+#' @param to_col - The to data column name in data frame df for correlation calculation. Must not be the same as from_col
+#' @returns Returns a named list.containing the residual calculations. z, zsqr  the data count matrix, expected value matrix, p_value and test_result accept null hypothesis TRUE or FALSE.
+#' @export
+get_residuals <- function(df, fw, from_col, to_col ) {
 
+  from_id <- stringr::str_split_i(from_col, pattern = "_", i = 1)
+  to_id <- stringr::str_split_i(to_col, pattern = "_", i = 1)
 
+  from_type <- fw$get_signifier_type_by_id(from_id)
+  to_type <- fw$get_signifier_type_by_id(to_id)
+
+  filterString <- paste0("!is.na(", paste0("`", from_col, "`"), ") & !is.na(", paste0("`", to_col, "`"), ") & ",
+                         paste0("`", from_col, "`"), " != 'NA' & ", paste0("`", to_col, "`"), " != 'NA'", " & ",
+                         paste0("`", from_col, "`"), "!=   '' & ", paste0("`", to_col, "`"), " !=   ''")
+  filterStringExpression <- parse(text = filterString)
+  # we have to have more than two options left on removing the NAs etc in order to do the test properly - i.e get a proper table of residuals.
+  t1a <- df |> dplyr::filter(eval(filterStringExpression))  |> dplyr::select(all_of(c(from_col, to_col)))
+
+  if (nrow(t1a) == 0) {return(list(z = NULL, zsqr = NULL, data = NULL, p_value = NULL))}
+  if (length(unique(t1a[[1]])) < 2 | length(unique(t1a[[2]])) < 2) {return(list(z = NULL, zsqr = NULL, data = NULL, p_value = NULL))}
+
+  colnames(t1a)[[1]] <- fwd$sm_framework$get_signifier_title(from_id)
+  colnames(t1a)[[2]] <- fwd$sm_framework$get_signifier_title(to_id)
+
+  # For list pull out titles to replace keys
+  if (from_type == "list") {
+    t1a[, 1] <- unlist(unname(purrr::map(t1a[, 1], ~ {fw$get_list_item_title(from_id, .x)})))
+  }
+  if (to_type == "list") {
+    t1a[, 2] <- unlist(unname(purrr::map(t1a[, 2], ~ {fw$get_list_item_title(to_id, .x)})))
+  }
+
+  t1 <- as.array(table(t1a))
+  df2 <- as.data.frame(plyr::adply(t1, c(1,2)))
+  df2[["V1"]] <- as.numeric(df2[["V1"]])
+
+  udfStats <-matrix(unlist(df2),dim(df2));
+  dataTabMatrix <- xtabs(as.numeric(udfStats[,3]) ~ udfStats[,1]+udfStats[,2],df2)
+
+  chiTest <- chisq.test(dataTabMatrix)
+
+  dta <- chiTest$observed
+  colnames(dta) <- colnames(t1)
+  rownames(dta) <- rownames(t1)
+  expected <- round(chiTest$expected, digits = 0)
+  colnames(expected) <- colnames(t1)
+  rownames(expected) <- rownames(t1)
+  z <- round(chiTest$residuals, digits = 3)
+  colnames(z) <- colnames(t1)
+  rownames(z) <- rownames(t1)
+  zsqr <- round(chiTest$residuals^2, digits = 3)
+  colnames(zsqr) <- colnames(t1)
+  rownames(zsqr) <- rownames(t1)
+  p_value <- round(chiTest$p.value, digits = 4)
+  test_result <- chiTest$p.value < 0.05
+
+  return(list(z = z, zsqr = zsqr, data = dta, expected = expected, p_value = p_value, test_result = test_result))
 }
