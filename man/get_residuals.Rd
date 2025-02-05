@@ -4,7 +4,7 @@
 \alias{get_residuals}
 \title{Get the correlation data for signifiers of a from and to signifier type}
 \usage{
-get_residuals(df, fw, from_col, to_col)
+get_residuals(df, fw, from_col, to_col, round_digits = 0)
 }
 \arguments{
 \item{df}{\itemize{
@@ -21,6 +21,10 @@ get_residuals(df, fw, from_col, to_col)
 
 \item{to_col}{\itemize{
 \item The to data column name in data frame df for correlation calculation. Must not be the same as from_col
+}}
+
+\item{round_digits}{\itemize{
+\item default 0, z, z^2, expected value table rounding digits.
 }}
 }
 \value{

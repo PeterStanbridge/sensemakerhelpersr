@@ -4,7 +4,7 @@
 \alias{get_correlations_by_type}
 \title{Get the correlation data for signifiers of a from and to signifier type}
 \usage{
-get_correlations_by_type(df, fw, from_type, to_type)
+get_correlations_by_type(df, fw, from_type, to_type, round_digits = 0)
 }
 \arguments{
 \item{df}{\itemize{
@@ -21,6 +21,10 @@ get_correlations_by_type(df, fw, from_type, to_type)
 
 \item{to_type}{\itemize{
 \item Either "list" or one of the shape types ("dyad", "triad", "stones").
+}}
+
+\item{round_digits}{\itemize{
+\item default 0, z, z^2, expected value table rounding digits.
 }}
 }
 \value{

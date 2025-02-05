@@ -361,9 +361,10 @@ calculate_multi_select_correlations <- function(correlation_pairs, fwd, list_ids
 #' @param fw - The framework definition object.
 #' @param from_type - Either "list" or one of the shape types ("dyad", "triad", "stones").
 #' @param to_type - Either "list" or one of the shape types ("dyad", "triad", "stones").
+#' @param round_digits - default 0, z, z^2, expected value table rounding digits.
 #' @returns Returns a named list. ids_to_output contains the dataframe of signifier id pairs included in the output. sig_residuals a list of length the number of correlation pairs, It contains the "data", "expected", "residuals", "residuals_sqr", "p-value".
 #' @export
-get_correlations_by_type <- function(df, fw, from_type, to_type) {
+get_correlations_by_type <- function(df, fw, from_type, to_type, round_digits = 0) {
 
   stopifnot(from_type %in% c("list", fw$get_shape_signifier_types()))
   stopifnot(to_type %in% c("list", fw$get_shape_signifier_types()))
@@ -401,11 +402,11 @@ get_correlations_by_type <- function(df, fw, from_type, to_type) {
 
   colnames(ids_to_output) <- c("from", "to")
 
-  sig_residuals <- purrr::map2(ids_to_output[["from"]], ids_to_output[["to"]], ~ {get_residuals(df, fw, .x, .y)})
-
+  sig_residuals <- purrr::map2(ids_to_output[["from"]], ids_to_output[["to"]], ~ {get_residuals(df, fw, .x, .y, round_digits)})
+  names(sig_residuals) <- paste0(ids_to_output[["from"]], "_", ids_to_output[["to"]])
   from_ids <- unlist(purrr::map(ids_to_output[["from"]], ~ {stringr::str_split_i(.x, pattern = "_", i = 1)}))
    to_ids <- unlist(purrr::map(ids_to_output[["to"]], ~ {stringr::str_split_i(.x, pattern = "_", i = 1)}))
-   names(sig_residuals) <- paste0(from_ids, "_", to_ids)
+
    ids_out <- data.frame(from = from_ids, to = to_ids)
     return(list(sig_residuals = sig_residuals, ids_to_output = ids_out))
 
@@ -421,9 +422,10 @@ get_correlations_by_type <- function(df, fw, from_type, to_type) {
 #' @param fw - The framework definition object.
 #' @param from_col - The from data column name in data frame df for correlation calculation
 #' @param to_col - The to data column name in data frame df for correlation calculation. Must not be the same as from_col
+#' @param round_digits - default 0, z, z^2, expected value table rounding digits.
 #' @returns Returns a named list.containing the residual calculations. z, zsqr  the data count matrix, expected value matrix, p_value and test_result accept null hypothesis TRUE or FALSE.
 #' @export
-get_residuals <- function(df, fw, from_col, to_col ) {
+get_residuals <- function(df, fw, from_col, to_col, round_digits = 0) {
 
   from_id <- stringr::str_split_i(from_col, pattern = "_", i = 1)
   to_id <- stringr::str_split_i(to_col, pattern = "_", i = 1)
@@ -459,22 +461,21 @@ get_residuals <- function(df, fw, from_col, to_col ) {
   udfStats <-matrix(unlist(df2),dim(df2));
   dataTabMatrix <- xtabs(as.numeric(udfStats[,3]) ~ udfStats[,1]+udfStats[,2],df2)
 
-  chiTest <- chisq.test(dataTabMatrix)
+  chiTest <- chisq.test(dataTabMatrix, simulate.p.value = TRUE)
 
   dta <- chiTest$observed
   colnames(dta) <- colnames(t1)
   rownames(dta) <- rownames(t1)
-  expected <- round(chiTest$expected, digits = 0)
+  expected <- round(chiTest$expected, digits = round_digits)
   colnames(expected) <- colnames(t1)
   rownames(expected) <- rownames(t1)
-  z <- round(chiTest$residuals, digits = 3)
+  z <- round(chiTest$stdres, digits = round_digits)
   colnames(z) <- colnames(t1)
   rownames(z) <- rownames(t1)
-  zsqr <- round(chiTest$residuals^2, digits = 3)
+  zsqr <- round(chiTest$stdres^2, digits = round_digits)
   colnames(zsqr) <- colnames(t1)
   rownames(zsqr) <- rownames(t1)
   p_value <- round(chiTest$p.value, digits = 4)
   test_result <- chiTest$p.value < 0.05
-
   return(list(z = z, zsqr = zsqr, data = dta, expected = expected, p_value = p_value, test_result = test_result))
 }
