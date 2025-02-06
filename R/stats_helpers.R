@@ -362,9 +362,11 @@ calculate_multi_select_correlations <- function(correlation_pairs, fwd, list_ids
 #' @param from_type - Either "list" or one of the shape types ("dyad", "triad", "stones").
 #' @param to_type - Either "list" or one of the shape types ("dyad", "triad", "stones").
 #' @param round_digits - default 0, z, z^2, expected value table rounding digits.
+#' @param residual_threshold - default 4, the threshold for residual calculation on residual squared values.
+#' @param p_threshold - default 0.05, the p-value threshold for null hypothesis test.
 #' @returns Returns a named list. ids_to_output contains the dataframe of signifier id pairs included in the output. sig_residuals a list of length the number of correlation pairs, It contains the "data", "expected", "residuals", "residuals_sqr", "p-value".
 #' @export
-get_correlations_by_type <- function(df, fw, from_type, to_type, round_digits = 0) {
+get_correlations_by_type <- function(df, fw, from_type, to_type, round_digits = 0, residual_threshold = 4, p_threshold = 0.05) {
 
   stopifnot(from_type %in% c("list", fw$get_shape_signifier_types()))
   stopifnot(to_type %in% c("list", fw$get_shape_signifier_types()))
@@ -402,7 +404,7 @@ get_correlations_by_type <- function(df, fw, from_type, to_type, round_digits = 
 
   colnames(ids_to_output) <- c("from", "to")
 
-  sig_residuals <- purrr::map2(ids_to_output[["from"]], ids_to_output[["to"]], ~ {get_residuals(df, fw, .x, .y, round_digits)})
+  sig_residuals <- purrr::map2(ids_to_output[["from"]], ids_to_output[["to"]], ~ {get_residuals(df, fw, .x, .y, round_digits, residual_threshold, p_threshold)})
   names(sig_residuals) <- paste0(ids_to_output[["from"]], "_", ids_to_output[["to"]])
   from_ids <- unlist(purrr::map(ids_to_output[["from"]], ~ {stringr::str_split_i(.x, pattern = "_", i = 1)}))
    to_ids <- unlist(purrr::map(ids_to_output[["to"]], ~ {stringr::str_split_i(.x, pattern = "_", i = 1)}))
@@ -423,9 +425,11 @@ get_correlations_by_type <- function(df, fw, from_type, to_type, round_digits = 
 #' @param from_col - The from data column name in data frame df for correlation calculation
 #' @param to_col - The to data column name in data frame df for correlation calculation. Must not be the same as from_col
 #' @param round_digits - default 0, z, z^2, expected value table rounding digits.
+#' @param residual_threshold - default 4, the threshold for residual calculation on residual squared values.
+#' @param p_threshold - default 0.05, the p-value threshold for null hypothesis test.
 #' @returns Returns a named list.containing the residual calculations. z, zsqr  the data count matrix, expected value matrix, p_value and test_result accept null hypothesis TRUE or FALSE.
 #' @export
-get_residuals <- function(df, fw, from_col, to_col, round_digits = 0) {
+get_residuals <- function(df, fw, from_col, to_col, round_digits = 0, residual_threshold = 4, p_threshold = 0.05) {
 
   from_id <- stringr::str_split_i(from_col, pattern = "_", i = 1)
   to_id <- stringr::str_split_i(to_col, pattern = "_", i = 1)
@@ -476,6 +480,20 @@ get_residuals <- function(df, fw, from_col, to_col, round_digits = 0) {
   colnames(zsqr) <- colnames(t1)
   rownames(zsqr) <- rownames(t1)
   p_value <- round(chiTest$p.value, digits = 4)
-  test_result <- chiTest$p.value < 0.05
-  return(list(z = z, zsqr = zsqr, data = dta, expected = expected, p_value = p_value, test_result = test_result))
+  test_result <- chiTest$p.value < p_threshold
+
+  test_results_sqr <- data.frame(row_val = character(0), col_val = character(0), residual_sqr = numeric(), type = character(0))
+
+  for (i in seq_along(rownames(zsqr))) {
+
+    for (j in seq_along(colnames(zsqr)))
+
+      if (zsqr[i, j] >= residual_threshold) {
+        temp_df_sqr <- data.frame(row_val = rownames(zsqr)[[i]], col_val = colnames(zsqr)[[j]], residual_sqr = zsqr[i, j], type = ifelse(z[i, j] < 0, "Negative", "Positive"))
+        test_results_sqr <- dplyr::bind_rows(test_results_sqr, temp_df_sqr)
+      }
+
+  }
+
+  return(list(z = z, zsqr = zsqr, data = dta, expected = expected, p_value = p_value, test_result = test_result, test_result_detail = test_results_sqr))
 }

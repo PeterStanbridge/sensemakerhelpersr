@@ -4,7 +4,15 @@
 \alias{get_residuals}
 \title{Get the correlation data for signifiers of a from and to signifier type}
 \usage{
-get_residuals(df, fw, from_col, to_col, round_digits = 0)
+get_residuals(
+  df,
+  fw,
+  from_col,
+  to_col,
+  round_digits = 0,
+  residual_threshold = 4,
+  p_threshold = 0.05
+)
 }
 \arguments{
 \item{df}{\itemize{
@@ -25,6 +33,14 @@ get_residuals(df, fw, from_col, to_col, round_digits = 0)
 
 \item{round_digits}{\itemize{
 \item default 0, z, z^2, expected value table rounding digits.
+}}
+
+\item{residual_threshold}{\itemize{
+\item default 4, the threshold for residual calculation on residual squared values.
+}}
+
+\item{p_threshold}{\itemize{
+\item default 0.05, the p-value threshold for null hypothesis test.
 }}
 }
 \value{
