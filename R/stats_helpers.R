@@ -208,7 +208,7 @@ get_sig_stats_names <- function(id, fwd) {
 perform_required_test <- function(data, control_var, non_parametric, b_value, test_type, source1_title, source2_title) {
   call_function <- paste0("perform_", test_type)
   test_result <- do.call(call_function, args = list(data = data, control_var = control_var, non_parametric = non_parametric, b_value = b_value))
-  #print(paste(test_result$stat$statistic, " -- ", test_result$pval))
+
   call_function <- paste0("format_return_", test_type)
   formatted_test_result <- do.call(call_function, args = list(test_result = test_result, source1_title = source1_title, source2_title = source2_title))
   return(formatted_test_result)
@@ -447,14 +447,14 @@ get_residuals <- function(df, fw, from_col, to_col, round_digits = 0, residual_t
   if (nrow(t1a) == 0) {return(list(z = NULL, zsqr = NULL, data = NULL, p_value = NULL))}
   if (length(unique(t1a[[1]])) < 2 | length(unique(t1a[[2]])) < 2) {return(list(z = NULL, zsqr = NULL, data = NULL, p_value = NULL))}
 
-  colnames(t1a)[[1]] <- fwd$sm_framework$get_signifier_title(from_id)
-  colnames(t1a)[[2]] <- fwd$sm_framework$get_signifier_title(to_id)
+  colnames(t1a)[[1]] <- fw$get_signifier_title(from_id)
+  colnames(t1a)[[2]] <- fw$get_signifier_title(to_id)
 
   # For list pull out titles to replace keys
-  if (from_type == "list") {
+  if (from_type == "list" && fw$get_list_max_responses(from_id) == 1) {
     t1a[, 1] <- unlist(unname(purrr::map(t1a[, 1], ~ {fw$get_list_item_title(from_id, .x)})))
   }
-  if (to_type == "list") {
+  if (to_type == "list" && fw$get_list_max_responses(to_id) == 1) {
     t1a[, 2] <- unlist(unname(purrr::map(t1a[, 2], ~ {fw$get_list_item_title(to_id, .x)})))
   }
 
@@ -486,12 +486,16 @@ get_residuals <- function(df, fw, from_col, to_col, round_digits = 0, residual_t
 
   for (i in seq_along(rownames(zsqr))) {
 
-    for (j in seq_along(colnames(zsqr)))
-
+    for (j in seq_along(colnames(zsqr))) {
+      # zero columns or rows can come out as NaN so if this is so, make zero
+      if (is.nan(zsqr[i, j])) {
+        zsqr[i, j] <- 0
+      }
       if (zsqr[i, j] >= residual_threshold) {
         temp_df_sqr <- data.frame(row_val = rownames(zsqr)[[i]], col_val = colnames(zsqr)[[j]], residual_sqr = zsqr[i, j], type = ifelse(z[i, j] < 0, "Negative", "Positive"))
         test_results_sqr <- dplyr::bind_rows(test_results_sqr, temp_df_sqr)
       }
+    }
 
   }
 
