@@ -554,7 +554,7 @@ plot_tern_means <- function(df_list, triad_id, data_titles, framework_object, co
 
   p <- ggtern::ggtern()
 
-  col_names <- fwd$sm_framework$get_triad_compositional_column_names(triad_id)
+  col_names <- framework_object$sm_framework$get_triad_compositional_column_names(triad_id)
   title <- clean_string_of_html(stringr::str_replace_all(framework_object$get_signifier_title(triad_id), "&amp;", "&"))
   leftTitle <-  clean_string_of_html(stringr::str_replace_all(framework_object$get_triad_left_anchor_text(triad_id), "&amp;", "&"))
   rightTitle <-  clean_string_of_html(stringr::str_replace_all(framework_object$get_triad_right_anchor_text(triad_id), "&amp;", "&"))
@@ -942,7 +942,7 @@ produce_tern_pair_means_graphs <- function(tern_pairs, framework_data, triads_to
     purrr::walk(triads_to_plot, function(triad_id) {
 
       out_plots[[triad_id]] <<- plot_tern_means(df_list = df_list, triad_id = triad_id, data_titles = data_titles,
-                                                framework_object = fwd$sm_framework, colour_vector = colour_vector, dot_size = .08, dot_transparency = .3,
+                                                framework_object = framework_object$sm_framework, colour_vector = colour_vector, dot_size = .08, dot_transparency = .3,
                                                 confidence_size = 2)
 
     })
@@ -1011,7 +1011,7 @@ produce_tern_pair_means_graphs_by_triad <- function(tern_pairs, framework_data, 
 
 
     out_plots[[paste0(from_id, "_", to_id)]] <<- plot_tern_means(df_list = df_list, triad_id = triad_id, data_titles = data_titles,
-                                                framework_object = fwd$sm_framework, colour_vector = colour_vector, dot_size = .08, dot_transparency = .3,
+                                                framework_object = framework_object$sm_framework, colour_vector = colour_vector, dot_size = .08, dot_transparency = .3,
                                                 confidence_size = 2)
 
     })
