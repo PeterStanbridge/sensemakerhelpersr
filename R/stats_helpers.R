@@ -431,8 +431,16 @@ get_correlations_by_type <- function(df, fw, from_type, to_type, round_digits = 
 #' @export
 get_residuals <- function(df, fw, from_col, to_col, round_digits = 0, residual_threshold = 4, p_threshold = 0.05) {
 
-  from_id <- stringr::str_split_i(from_col, pattern = "_", i = 1)
-  to_id <- stringr::str_split_i(to_col, pattern = "_", i = 1)
+  if (!(from_col %in% fw$get_all_signifier_ids())) {
+    from_id <- stringr::str_split_i(from_col, pattern = "_", i = 1)
+  } else {
+    from_id <- from_col
+  }
+  if (!(to_col %in% fw$get_all_signifier_ids())) {
+    to_id <- stringr::str_split_i(to_col, pattern = "_", i = 1)
+  } else {
+    to_id <- to_col
+  }
 
   from_type <- fw$get_signifier_type_by_id(from_id)
   to_type <- fw$get_signifier_type_by_id(to_id)
