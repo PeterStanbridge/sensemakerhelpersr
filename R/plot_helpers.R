@@ -553,7 +553,6 @@ plot_tern_means <- function(df_list, triad_id, data_titles, framework_object, co
   # if the colour array empty then get colour array to be the brewer etc.
 
   p <- ggtern::ggtern()
-
   col_names <- framework_object$get_triad_compositional_column_names(triad_id)
   title <- clean_string_of_html(stringr::str_replace_all(framework_object$get_signifier_title(triad_id), "&amp;", "&"))
   leftTitle <-  clean_string_of_html(stringr::str_replace_all(framework_object$get_triad_left_anchor_text(triad_id), "&amp;", "&"))
@@ -582,20 +581,23 @@ plot_tern_means <- function(df_list, triad_id, data_titles, framework_object, co
       dplyr::filter(!! rlang::sym(framework_object$get_triad_top_column_name(triad_id)) > 0) %>% dplyr::filter(!! rlang::sym(framework_object$get_triad_right_column_name(triad_id)) > 0)
     # calculate the mean
     data_means <- calculate_triad_means(plot_data, triad_id, "geometric", framework_object, zero_logic = mean_zero_logic, for_ggtern = TRUE)
-
     plot_data[["col_by"]] <- rep_len(data_titles[[i]], length.out = nrow(plot_data))
+    p <- p + geom_point(data = plot_data, aes_string(x = paste0("`", framework_object$get_triad_left_column_name(triad_id), "`"),
+                                                     y = paste0("`", framework_object$get_triad_top_column_name(triad_id), "`"),
+                                                     z = paste0("`", framework_object$get_triad_right_column_name(triad_id), "`"), colour = "col_by"), size = dot_size, alpha = dot_transparency)
 
-    p <- p + geom_point(data = plot_data, aes(x = .data[[framework_object$get_triad_left_column_name(triad_id)]],
-                                              y = .data[[framework_object$get_triad_top_column_name(triad_id)]],
-                                              z = .data[[framework_object$get_triad_right_column_name(triad_id)]], colour = col_by), size = dot_size, alpha = dot_transparency)
     if (show_mean) {
       p <- p + geom_point(data = data_means, ggtern::aes(x = x, y = y, z = z), colour = mean_colour[[i]], size = mean_size, shape =
                             ifelse(is.null(mean_shape), "circle", mean_shape[[i]]), fill = ifelse(!is.null(mean_colour), mean_colour[[i]],  colour_vector[[i]]))
     }
+
     if (show_confidence_intervals) {
-      p <- p +   ggtern::geom_confidence_tern(data = plot_data, aes(x = .data[[framework_object$get_triad_left_column_name(triad_id)]],
-                                                                    y = .data[[framework_object$get_triad_top_column_name(triad_id)]],
-                                                                    z = .data[[framework_object$get_triad_right_column_name(triad_id)]], colour = col_by), breaks = confidence_value, size = confidence_size)
+
+       p <- p +   ggtern::geom_confidence_tern(data = plot_data, aes_string(x = paste0("`", framework_object$get_triad_left_column_name(triad_id), "`"),
+                                                                            y = paste0("`", framework_object$get_triad_top_column_name(triad_id), "`"),
+                                                                            z = paste0("`", framework_object$get_triad_right_column_name(triad_id), "`"),
+                                                                    colour = 'col_by', inherit.aes = FALSE),
+                                              breaks = confidence_value, size = confidence_size)
     }
 
 
