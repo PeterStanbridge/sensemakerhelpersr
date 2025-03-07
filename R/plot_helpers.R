@@ -554,7 +554,7 @@ plot_tern_means <- function(df_list, triad_id, data_titles, framework_object, co
 
   p <- ggtern::ggtern()
 
-  col_names <- framework_object$sm_framework$get_triad_compositional_column_names(triad_id)
+  col_names <- framework_object$get_triad_compositional_column_names(triad_id)
   title <- clean_string_of_html(stringr::str_replace_all(framework_object$get_signifier_title(triad_id), "&amp;", "&"))
   leftTitle <-  clean_string_of_html(stringr::str_replace_all(framework_object$get_triad_left_anchor_text(triad_id), "&amp;", "&"))
   rightTitle <-  clean_string_of_html(stringr::str_replace_all(framework_object$get_triad_right_anchor_text(triad_id), "&amp;", "&"))
