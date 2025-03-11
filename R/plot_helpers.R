@@ -1034,8 +1034,13 @@ produce_tern_pair_means_graphs_by_triad <- function(tern_pairs, framework_data, 
 #' @param framework_data - The framework sensemakerdatar object.
 #' @param freetext_ids - default NULL, A vector of freetext signifier ids for textual data If NULL all freetext signifiers set as a fragment are plotted.
 #' @export
-produce_keyness_pair_graphs <- function(keyness_pairs, framework_data, freetext_ids = NULL) {
+produce_keyness_pair_graphs <- function(keyness_pairs, framework_data, freetext_ids = NULL, languages = "en") {
 
+  if (!(all(languages == "en") & !exists("isoLanguages"))) {
+    isoLanguages <- read.csv("data/isocodes.csv",  sep = ",", stringsAsFactors = FALSE, encoding = 'UTF-8', na.strings = "")
+  }
+
+  stopifnot(all(languages %in% isoLanguages[["Code"]]))
 
   if (class(keyness_pairs) == "character") {
     stopifnot(file.exists(keyness_pairs))
@@ -1085,7 +1090,8 @@ produce_keyness_pair_graphs <- function(keyness_pairs, framework_data, freetext_
       fragment_text_corpus <- quanteda::corpus(df[[freetext_id]], docvars = data.frame(doc_var = df[["doc_var"]]))
       tokens <- quanteda::tokens(fragment_text_corpus, remove_punct = TRUE, remove_symbols = TRUE, remove_numbers = TRUE,
                                  remove_url = TRUE, remove_separators = TRUE, split_hyphens = TRUE, split_tags = TRUE)
-      fragment_token <- quanteda::tokens_wordstem(tokens)
+
+      purrr::walk(languages, ~ {fragment_token <<- quanteda::tokens_wordstem(tokens, language = .x)} )
 
       fragment_token <- quanteda::tokens_remove(fragment_token, c(quanteda::stopwords("english"), framework_data$stop_words))
 
