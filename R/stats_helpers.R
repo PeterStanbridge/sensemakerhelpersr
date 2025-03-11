@@ -509,3 +509,41 @@ get_residuals <- function(df, fw, from_col, to_col, round_digits = 0, residual_t
 
   return(list(z = z, zsqr = zsqr, data = dta, expected = expected, p_value = p_value, test_result = test_result, test_result_detail = test_results_sqr))
 }
+
+
+# Build a corpus from a list of character data.
+#' @title Build a corpus from a list of character data
+#' @description
+#' This function uses the library quanteda to create a token list (stemmed and unstemmed both with stop words removed), the document term matrix and the trimmed document term matrix.
+#' The data is returned as a list of lists.
+#' @param df - The data frame to create the corpus from - must include columns named in freetext_id and doc_var parameters.
+#' @param framework_data - The framework data object.
+#' @param freetext_id - The freetext column name containing the text to create the corpus from
+#' @param doc_var - The column name to use as the document variable.
+#' @returns Returns a named list of tokens_stem (the stemmed tokens with stop words removed), tokens_unstem (the unstemmed tokens with stop words removed), dtm (the document term matrix not trimmed) and dtm_trim, the document term matrix trimmed to the min_term_freq value.
+#' @export
+build_corpus <- function(df, framework_data,  freetext_id, doc_var, min_term_freq = 3) {
+
+  stopifnot(doc_var %in% colnames(df))
+  stopifnot(freetext_id %in% colnames(df))
+  stopifnot(is.numeric(min_term_freq))
+  stopifnot(length(min_term_freq) == 1)
+  stopifnot(min_term_freq > 2)
+
+  fragment_text_corpus <- quanteda::corpus(df[[freetext_id]], docvars = data.frame(doc_var = df[[doc_var]]))
+  tokens <- quanteda::tokens(fragment_text_corpus, remove_punct = TRUE, remove_symbols = TRUE, remove_numbers = TRUE,
+                             remove_url = TRUE, remove_separators = TRUE, split_hyphens = TRUE, split_tags = TRUE)
+
+  purrr::walk(languages, ~ {fragment_token <<- quanteda::tokens_wordstem(tokens, language = .x)} )
+
+  purrr::walk(languages, ~ {fragment_token <<- quanteda::tokens_remove(fragment_token, quanteda::stopwords(.x))})
+
+  purrr::walk(languages, ~ {fragment_token_unstemmed <<- quanteda::tokens_remove(tokens, quanteda::stopwords(.x))})
+
+  fragment_token <- quanteda::tokens_remove(fragment_token, framework_data$stop_words)
+
+  dtm <- quanteda::dfm(fragment_token, tolower = TRUE)
+  dtm.trim <- quanteda::dfm_trim(dtm, min_termfreq = 3)
+
+  return(list(tokens_stem = fragment_token, tokens_unstem = fragment_token_unstemmed, dtm = dtm, dtm_trim = dtm.trim))
+}

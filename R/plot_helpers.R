@@ -1109,6 +1109,7 @@ produce_keyness_pair_graphs <- function(keyness_pairs, framework_data, freetext_
       purrr::walk(languages, ~ {fragment_token <<- quanteda::tokens_wordstem(tokens, language = .x)} )
 
       purrr::walk(languages, ~ {fragment_token <<- quanteda::tokens_remove(fragment_token, quanteda::stopwords(.x))})
+
       fragment_token <- quanteda::tokens_remove(fragment_token, framework_data$stop_words)
 
       dtm <- quanteda::dfm(fragment_token, tolower = TRUE)
