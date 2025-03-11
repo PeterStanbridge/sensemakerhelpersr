@@ -522,13 +522,19 @@ get_residuals <- function(df, fw, from_col, to_col, round_digits = 0, residual_t
 #' @param doc_var - The column name to use as the document variable.
 #' @returns Returns a named list of tokens_stem (the stemmed tokens with stop words removed), tokens_unstem (the unstemmed tokens with stop words removed), dtm (the document term matrix not trimmed) and dtm_trim, the document term matrix trimmed to the min_term_freq value.
 #' @export
-build_corpus <- function(df, framework_data,  freetext_id, doc_var, min_term_freq = 3) {
+build_corpus <- function(df, framework_data,  freetext_id, doc_var, min_term_freq = 3, languages = "en") {
 
   stopifnot(doc_var %in% colnames(df))
   stopifnot(freetext_id %in% colnames(df))
   stopifnot(is.numeric(min_term_freq))
   stopifnot(length(min_term_freq) == 1)
   stopifnot(min_term_freq > 2)
+
+  if (!(all(languages == "en") & !exists("isoLanguages"))) {
+    get_iso_codes()
+    stopifnot(all(languages %in% isoLanguages[["Code"]]))
+  }
+
 
   fragment_text_corpus <- quanteda::corpus(df[[freetext_id]], docvars = data.frame(doc_var = df[[doc_var]]))
   tokens <- quanteda::tokens(fragment_text_corpus, remove_punct = TRUE, remove_symbols = TRUE, remove_numbers = TRUE,
