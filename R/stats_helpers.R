@@ -553,3 +553,67 @@ build_corpus <- function(df, framework_data,  freetext_id, doc_var, min_term_fre
 
   return(list(tokens_stem = fragment_token, tokens_unstem = fragment_token_unstemmed, dtm = dtm, dtm_trim = dtm.trim))
 }
+
+# Build a pairs data frame - one data frame binding rows from two data frames. .
+#' @title Build a set of pairs data frames - one data frame binding rows from two data frames.
+#' @description
+#' This function takes a dataframe of pairs definitions from existing data frames and creates new paired data frames.
+#' @param framework_data - The framework data object.
+#' @param pairs_definitions - A data frame that must have at least two columns, one with name "from_id" the other "to_id" which are both data frame names in framework_data$data
+#' @param doc_var - Default "none", indicating the document variable name to give each dataset being paired. This will add a new column to the resultant data frame whose values indicate which data frame it came from. Used in many stats functions like keyness indicators. "none" means leave the data frame as per the originals. "auto" means use the from and to ids as the doc variable. Otherwise a data frame with from_var and to_var column names with the same number of rows as the pairs_definitions data frame.
+#' @param plot_col - Default "none", indicating the document variable colours to use in any pair graphing. This will add a new column to the resultant data frame whose values indicate which colour to use. Used in many stats functions like keyness indicators. "none" means leave the data frame as per the originals. "auto" means use the from and to colours as the doc colours Otherwise a data frame with from_col and to_col column names with the same number of rows as the pairs_definitions data frame.
+#' @returns Returns a named list of tokens_stem (the stemmed tokens with stop words removed), tokens_unstem (the unstemmed tokens with stop words removed), dtm (the document term matrix not trimmed) and dtm_trim, the document term matrix trimmed to the min_term_freq value.
+#' @export
+build_pair_datasets <- function(framework_data, pairs_definitions, doc_var = "none", plot_col = "none") {
+
+  if (is.data.frame(doc_var)) {
+    stopifnot(all(c("from_var", "to_var") %in% colnames(doc_var)))
+    stopifnot(all(doc_var[["from_var"]] %in% framework_data$get_data_list_names(export_only = TRUE)))
+    stopifnot(all(doc_var[["to_var"]] %in% framework_data$get_data_list_names(export_only = TRUE)))
+  } else {
+    stopifnot(is.character(doc_var))
+    stopifnot(length(doc_var) == 1)
+    stopifnot(doc_var %in% c("none", "auto"))
+    if (doc_var == "auto") {
+      stopifnot(all(c("from_id", "to_id") %in% colnames(pairs_definitions)))
+      stopifnot(all(pairs_definitions[["from_id"]] %in% framework_data$get_data_list_names(export_only = TRUE)))
+      stopifnot(all(pairs_definitions[["to_id"]] %in% framework_data$get_data_list_names(export_only = TRUE)))
+      doc_var <- data.frame(from_var = pairs_definitions[["from_id"]], to_var =  pairs_definitions[["to_id"]])
+    }
+  }
+
+  if (is.data.frame(plot_col)) {
+    stopifnot(all(c("from_col", "to_col") %in% colnames(plot_col)))
+    stopifnot(all(areColors(plot_col[["from_col"]])))
+    stopifnot(all(areColors(plot_col[["to_col"]])))
+
+  } else {
+    stopifnot(is.character(plot_col))
+    stopifnot(length(plot_col) == 1)
+    stopifnot(plot_col %in% c("none", "auto"))
+    if (doc_var == "auto") {
+      stopifnot(all(c("from_colour", "to_colour") %in% colnames(pairs_definitions)))
+      stopifnot(all(areColors(pairs_definitions[["from_colour"]])))
+      stopifnot(all(areColors(pairs_definitions[["to_colour"]])))
+      plot_col <- data.frame(from_col = pairs_definitions[["from_colour"]], to_col =  pairs_definitions[["to_colour"]])
+    }
+  }
+
+
+  from_ids <- pairs_definitions[, "from_id"]
+  to_ids <- pairs_definitions[, "to_id"]
+  from_colours <- pairs_definitions[, "from_colour"]
+  to_colours <- pairs_definitions[, "to_colour"]
+  filters_used <- unique(append(from_ids, to_ids))
+  purrr::pwalk(list(from_ids, to_ids, from_colours, to_colours), function(from_id, to_id, from_colour, to_colour) {
+    #tmp_from and with the quanteda keyness processing doc_var added then row-bind into a single data frame and add to the data list. Add colours to it too.
+    tmp_from <- framework_data$data[[from_id]]
+    tmp_from[["doc_var"]] <- rep_len(x = from_id, length.out = nrow(tmp_from))
+    tmp_from[["plot_col"]] <- rep_len(x = from_colour, length.out = nrow(tmp_from))
+    tmp_to <- framework_data$data[[to_id]]
+    tmp_to[["doc_var"]] <- rep_len(x = to_id, length.out = nrow(tmp_to))
+    tmp_to[["plot_col"]] <- rep_len(x = to_colour, length.out = nrow(tmp_to))
+    framework_data$add_data_data_frame(dplyr::bind_rows(tmp_from, tmp_to), name = paste0(from_id, "_", to_id), add_to_export_list_names = TRUE)
+  })
+
+}
