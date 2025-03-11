@@ -51,6 +51,20 @@ get_triad_standard_canvas <- function() {
   return(assign("triad_standard_canvas", png::readPNG(triad_standard_canvas_name), envir = .GlobalEnv))
 }
 
+#' @title Get the supported iso codes and place in a data frame.
+#' @description
+#' Get iso codes supported in the application (particularly for word stemming)
+#' @returns The iso codes in a data frame
+#' @export
+get_iso_codes <- function() {
+  # if the image is not in the global envirionment add it
+  # if (!exists("triad_standard_canvas", envir = .GlobalEnv)) {
+  #  assign("triad_standard_canvas", png::readPNG("./data/triad_standard.png"), envir = .GlobalEnv)
+  #} isoLanguages <- read.csv("data/isocodes.csv",  sep = ",", stringsAsFactors = FALSE, encoding = 'UTF-8', na.strings = "")
+  #return(triad_standard_canvas)
+  iso_codes <- system.file("data", "isocodes.csv", package = "sensemakerhelpersr")
+  return(assign("isoLanguages", read.csv(iso_codes,  sep = ",", stringsAsFactors = FALSE, encoding = 'UTF-8', na.strings = ""), envir = .GlobalEnv))
+}
 #' @title Get the zone labeled triad canvas used as triad background in a ggplot x,y plot.
 #' @description
 #' Get triad zone labeled canvas as a useful annotation explaining zone labels.
@@ -1037,7 +1051,7 @@ produce_tern_pair_means_graphs_by_triad <- function(tern_pairs, framework_data, 
 produce_keyness_pair_graphs <- function(keyness_pairs, framework_data, freetext_ids = NULL, languages = "en") {
 
   if (!(all(languages == "en") & !exists("isoLanguages"))) {
-    isoLanguages <- read.csv("data/isocodes.csv",  sep = ",", stringsAsFactors = FALSE, encoding = 'UTF-8', na.strings = "")
+    get_iso_codes()
     stopifnot(all(languages %in% isoLanguages[["Code"]]))
   }
 

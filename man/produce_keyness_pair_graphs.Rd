@@ -4,7 +4,12 @@
 \alias{produce_keyness_pair_graphs}
 \title{Plot keyness bar charts for pairs of data queries.}
 \usage{
-produce_keyness_pair_graphs(keyness_pairs, framework_data, freetext_ids = NULL)
+produce_keyness_pair_graphs(
+  keyness_pairs,
+  framework_data,
+  freetext_ids = NULL,
+  languages = "en"
+)
 }
 \arguments{
 \item{keyness_pairs}{\itemize{
