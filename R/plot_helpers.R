@@ -1038,9 +1038,10 @@ produce_keyness_pair_graphs <- function(keyness_pairs, framework_data, freetext_
 
   if (!(all(languages == "en") & !exists("isoLanguages"))) {
     isoLanguages <- read.csv("data/isocodes.csv",  sep = ",", stringsAsFactors = FALSE, encoding = 'UTF-8', na.strings = "")
+    stopifnot(all(languages %in% isoLanguages[["Code"]]))
   }
 
-  stopifnot(all(languages %in% isoLanguages[["Code"]]))
+
 
   if (class(keyness_pairs) == "character") {
     stopifnot(file.exists(keyness_pairs))
