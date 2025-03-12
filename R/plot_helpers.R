@@ -1556,22 +1556,23 @@ word_frequency_plot <- function(frequency_graph_pairs, freetexts_to_plot, framew
       data_to_plot_combined <- dplyr::bind_rows(dplyr::mutate(data_from_plot_corpus, data_set = stringr::str_replace_all(from_id, "_", " ")),
                                    dplyr::mutate(data_to_plot_corpus, data_set = stringr::str_replace_all(to_id, "_", " ")))
 
-       frequency <- data_to_plot_combined %>%
-        mutate(word = str_extract(word, "[a-z']+")) %>%
-        count(data_set, word) %>%
-        group_by(data_set) %>%
-        mutate(proportion = n / sum(n)) %>%
-        select(-n) %>%
-        spread(data_set, proportion)
+        frequency <- data_to_plot_combined %>%
+        dplyr::mutate(word = str_extract(word, "[a-z']+")) %>%
+        dplyr::count(data_set, word) %>%
+        dplyr::group_by(data_set) %>%
+        dplyr::mutate(proportion = n / sum(n)) %>%
+        dplyr::select(-n) %>%
+        tidyr::spread(data_set, proportion)
+
        #, color = abs(`Actively Use` - `Actively Not`)
-       out_plots[[paste0(from_id, "_", to_id)]] <<- ggplot(frequency, aes(x = .data[[stringr::str_replace_all(from_id, "_", " ")]], y = .data[[stringr::str_replace_all(to_id, "_", " ")]],
+       out_plots[[paste0(from_id, "_", to_id)]] <<- ggplot2::ggplot(frequency, ggplot2::aes(x = .data[[stringr::str_replace_all(from_id, "_", " ")]], y = .data[[stringr::str_replace_all(to_id, "_", " ")]],
                              color = abs(.data[[stringr::str_replace_all(from_id, "_", " ")]] - .data[[stringr::str_replace_all(to_id, "_", " ")]]))) +
-         geom_abline(color = "gray40", lty = 2) +
-         geom_jitter(alpha = 0.1, size = 2.4, width = 0.3, height = 0.3) +
-         geom_text(aes(label = word), check_overlap = TRUE, vjust = 1.5) +
-         scale_x_log10(labels = scales::percent_format()) +
-         scale_y_log10(labels = scales::percent_format()) +
-         scale_colour_gradient(limits = c(0, 0.001),
+         ggplot2::geom_abline(color = "gray40", lty = 2) +
+         ggplot2::geom_jitter(alpha = 0.1, size = 2.4, width = 0.3, height = 0.3) +
+         ggplot2::geom_text(aes(label = word), check_overlap = TRUE, vjust = 1.5) +
+         ggplot2::scale_x_log10(labels = scales::percent_format()) +
+         ggplot2::scale_y_log10(labels = scales::percent_format()) +
+         ggplot2::scale_colour_gradient(limits = c(0, 0.001),
                                low = "darkslategray4", high = "gray75") +
          ggplot2::theme(legend.position = "none")
 
