@@ -1047,8 +1047,10 @@ produce_tern_pair_means_graphs_by_triad <- function(tern_pairs, framework_data, 
 #' @param keyness_pairs - A data frame with columns "from_id", "to_id", "from_colour" and "to_colour". The from and to ids are data queries stored in the data list (public field). The colours are valid R colour names or codes.
 #' @param framework_data - The framework sensemakerdatar object.
 #' @param freetext_ids - default NULL, A vector of freetext signifier ids for textual data If NULL all freetext signifiers set as a fragment are plotted.
+#' @param min_term_freq - Default 3, number of occurrence of a term before it it is accepted into the corpus.
+#' @param languages - Default "en", a vector of supported 2 character language codes for use in stop words and stemming.
 #' @export
-produce_keyness_pair_graphs <- function(keyness_pairs, framework_data, freetext_ids = NULL, languages = "en") {
+produce_keyness_pair_graphs <- function(keyness_pairs, framework_data, freetext_ids = NULL, min_term_freq = 3, languages = "en") {
 
   if (!(all(languages == "en") & !exists("isoLanguages"))) {
     get_iso_codes()
@@ -1068,27 +1070,29 @@ produce_keyness_pair_graphs <- function(keyness_pairs, framework_data, freetext_
     freetext_ids <- framework_data$sm_framework$get_freetext_fragments()
   }
 
-  from_ids <- keyness_pairs[, "from_id"]
-  to_ids <- keyness_pairs[, "to_id"]
-  from_colours <- keyness_pairs[, "from_colour"]
-  to_colours <- keyness_pairs[, "to_colour"]
+  build_pair_datasets(framework_data, pairs_definitions = keyness_pairs, doc_var = "auto", plot_col = "auto")
 
-  filters_used <- unique(append(from_ids, to_ids))
-  stopifnot(all(filters_used %in% framework_data$get_data_list_names()))
-  stopifnot(all(areColors(from_colours)))
-  stopifnot(all(areColors(to_colours)))
+   from_ids <- keyness_pairs[, "from_id"]
+   to_ids <- keyness_pairs[, "to_id"]
+   from_colours <- keyness_pairs[, "from_colour"]
+   to_colours <- keyness_pairs[, "to_colour"]
+
+  # filters_used <- unique(append(from_ids, to_ids))
+  # stopifnot(all(filters_used %in% framework_data$get_data_list_names()))
+  # stopifnot(all(areColors(from_colours)))
+  # stopifnot(all(areColors(to_colours)))
 
   # Add new data-frames that have the from and to values added and appended (bind_rows) for quanteda keyness processing ready.
-  purrr::pwalk(list(from_ids, to_ids, from_colours, to_colours), function(from_id, to_id, from_colour, to_colour) {
+  # purrr::pwalk(list(from_ids, to_ids, from_colours, to_colours), function(from_id, to_id, from_colour, to_colour) {
     #tmp_from and with the quanteda keyness processing doc_var added then row-bind into a single data frame and add to the data list. Add colours to it too.
-    tmp_from <- framework_data$data[[from_id]]
-    tmp_from[["doc_var"]] <- rep_len(x = from_id, length.out = nrow(tmp_from))
-    tmp_from[["plot_col"]] <- rep_len(x = from_colour, length.out = nrow(tmp_from))
-    tmp_to <- framework_data$data[[to_id]]
-    tmp_to[["doc_var"]] <- rep_len(x = to_id, length.out = nrow(tmp_to))
-    tmp_to[["plot_col"]] <- rep_len(x = to_colour, length.out = nrow(tmp_to))
-    framework_data$add_data_data_frame(dplyr::bind_rows(tmp_from, tmp_to), name = paste0(from_id, "_", to_id), add_to_export_list_names = TRUE)
-  })
+  #    tmp_from <- framework_data$data[[from_id]]
+  #    tmp_from[["doc_var"]] <- rep_len(x = from_id, length.out = nrow(tmp_from))
+  #   tmp_from[["plot_col"]] <- rep_len(x = from_colour, length.out = nrow(tmp_from))
+  #   tmp_to <- framework_data$data[[to_id]]
+  #   tmp_to[["doc_var"]] <- rep_len(x = to_id, length.out = nrow(tmp_to))
+  #   tmp_to[["plot_col"]] <- rep_len(x = to_colour, length.out = nrow(tmp_to))
+  #   framework_data$add_data_data_frame(dplyr::bind_rows(tmp_from, tmp_to), name = paste0(from_id, "_", to_id), add_to_export_list_names = TRUE)
+  # })
 
   out_results <<- vector("list", length = length(from_ids))
   names(out_results) <- paste0(from_ids, "_", to_ids)
@@ -1102,26 +1106,31 @@ produce_keyness_pair_graphs <- function(keyness_pairs, framework_data, freetext_
     purrr::walk(freetext_ids, function(freetext_id) {
 
       df <- framework_data$data[[paste0(from_id, "_", to_id)]]
-      fragment_text_corpus <- quanteda::corpus(df[[freetext_id]], docvars = data.frame(doc_var = df[["doc_var"]]))
-      tokens <- quanteda::tokens(fragment_text_corpus, remove_punct = TRUE, remove_symbols = TRUE, remove_numbers = TRUE,
-                                 remove_url = TRUE, remove_separators = TRUE, split_hyphens = TRUE, split_tags = TRUE)
 
-      purrr::walk(languages, ~ {fragment_token <<- quanteda::tokens_wordstem(tokens, language = .x)} )
+      corp_list <- build_corpus(df, framework_data,  freetext_id, doc_var = "doc_var", min_term_freq = min_term_freq, languages = languages)
 
-      purrr::walk(languages, ~ {fragment_token <<- quanteda::tokens_remove(fragment_token, quanteda::stopwords(.x))})
+      #fragment_text_corpus <- quanteda::corpus(df[[freetext_id]], docvars = data.frame(doc_var = df[["doc_var"]]))
+      #tokens <- quanteda::tokens(fragment_text_corpus, remove_punct = TRUE, remove_symbols = TRUE, remove_numbers = TRUE,
+      #                           remove_url = TRUE, remove_separators = TRUE, split_hyphens = TRUE, split_tags = TRUE)
 
-      fragment_token <- quanteda::tokens_remove(fragment_token, framework_data$stop_words)
+     # purrr::walk(languages, ~ {fragment_token <<- quanteda::tokens_wordstem(tokens, language = .x)} )
 
-      dtm <- quanteda::dfm(fragment_token, tolower = TRUE)
-      dtm.trim <- quanteda::dfm_trim(dtm, min_termfreq = 3)
+     # purrr::walk(languages, ~ {fragment_token <<- quanteda::tokens_remove(fragment_token, quanteda::stopwords(.x))})
+
+    #  fragment_token <- quanteda::tokens_remove(fragment_token, framework_data$stop_words)
+
+    #  dtm <- quanteda::dfm(fragment_token, tolower = TRUE)
+    #  dtm.trim <- quanteda::dfm_trim(dtm, min_termfreq = 3)
+
+      dtm.trim <- corp_list$dtm_trim
       keyness_doc_var <- quanteda.textstats::textstat_keyness(dtm.trim,
-                                                              quanteda::docvars(fragment_text_corpus, "doc_var") == from_id,
+                                                              quanteda::docvars(corp_list$text_corpus, "doc_var") == from_id,
                                                               sort = TRUE, measure = "chi2")
 
       out_plots[[freetext_id]] <<- quanteda.textplots::textplot_keyness(keyness_doc_var, color = c(from_colour, to_colour), show_reference = TRUE, show_legend = FALSE, margin = 0.05, n = 20L, min_count = 2L) +
-        scale_fill_discrete(name="", labels= c(from_id, to_id)) +
-        ggtitle(paste("KEYNESS PLOT for", from_id, "and", to_id)) +
-        theme(legend.position = c(0.6, 0.3)) + ylim(0, 40)
+        ggplot2::scale_fill_discrete(name="", labels= c(from_id, to_id)) +
+        ggplot2::ggtitle(paste("KEYNESS PLOT for", from_id, "and", to_id)) +
+        ggplot2::theme(legend.position = c(0.6, 0.3)) + ylim(0, 40)
 
     })
     out_results[[paste0(from_id, "_", to_id)]] <<- out_plots

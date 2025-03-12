@@ -520,6 +520,8 @@ get_residuals <- function(df, fw, from_col, to_col, round_digits = 0, residual_t
 #' @param framework_data - The framework data object.
 #' @param freetext_id - The freetext column name containing the text to create the corpus from
 #' @param doc_var - The column name to use as the document variable.
+#' @param min_term_freq - Default 3, number of occurrence of a term before it it is accepted into the corpus.
+#' @param languages - Default "en", a vector of supported 2 character language codes for use in stop words and stemming.
 #' @returns Returns a named list of tokens_stem (the stemmed tokens with stop words removed), tokens_unstem (the unstemmed tokens with stop words removed), dtm (the document term matrix not trimmed) and dtm_trim, the document term matrix trimmed to the min_term_freq value.
 #' @export
 build_corpus <- function(df, framework_data,  freetext_id, doc_var, min_term_freq = 3, languages = "en") {
@@ -551,7 +553,7 @@ build_corpus <- function(df, framework_data,  freetext_id, doc_var, min_term_fre
   dtm <- quanteda::dfm(fragment_token, tolower = TRUE)
   dtm.trim <- quanteda::dfm_trim(dtm, min_termfreq = 3)
 
-  return(list(tokens_stem = fragment_token, tokens_unstem = fragment_token_unstemmed, dtm = dtm, dtm_trim = dtm.trim))
+  return(list(text_corpus = fragment_text_corpus, tokens_stem = fragment_token, tokens_unstem = fragment_token_unstemmed, dtm = dtm, dtm_trim = dtm.trim))
 }
 
 # Build a pairs data frame - one data frame binding rows from two data frames. .
@@ -591,7 +593,7 @@ build_pair_datasets <- function(framework_data, pairs_definitions, doc_var = "no
     stopifnot(is.character(plot_col))
     stopifnot(length(plot_col) == 1)
     stopifnot(plot_col %in% c("none", "auto"))
-    if (doc_var == "auto") {
+    if (plot_col == "auto") {
       stopifnot(all(c("from_colour", "to_colour") %in% colnames(pairs_definitions)))
       stopifnot(all(areColors(pairs_definitions[["from_colour"]])))
       stopifnot(all(areColors(pairs_definitions[["to_colour"]])))

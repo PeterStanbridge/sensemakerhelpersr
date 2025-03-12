@@ -8,6 +8,7 @@ produce_keyness_pair_graphs(
   keyness_pairs,
   framework_data,
   freetext_ids = NULL,
+  min_term_freq = 3,
   languages = "en"
 )
 }
@@ -22,6 +23,14 @@ produce_keyness_pair_graphs(
 
 \item{freetext_ids}{\itemize{
 \item default NULL, A vector of freetext signifier ids for textual data If NULL all freetext signifiers set as a fragment are plotted.
+}}
+
+\item{min_term_freq}{\itemize{
+\item Default 3, number of occurrence of a term before it it is accepted into the corpus.
+}}
+
+\item{languages}{\itemize{
+\item Default "en", a vector of supported 2 character language codes for use in stop words and stemming.
 }}
 }
 \description{
