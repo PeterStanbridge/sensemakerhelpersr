@@ -1588,7 +1588,7 @@ word_frequency_plot <- function(frequency_graph_pairs, freetexts_to_plot, framew
          ggplot2::scale_colour_gradient(limits = c(0, 0.001),
                                low = "darkslategray4", high = "gray75") +
          ggplot2::theme(legend.position = "none") +
-         ggplot2::ggtitle(paste("Freqency Graph for: ", from_title, "against", to_title)) +
+         ggplot2::ggtitle(paste("Frequency Graph for: ", from_title, "against", to_title)) +
          ggplot2::xlab(from_title) + ggplot2::ylab(to_title)
 
     })
