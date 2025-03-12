@@ -1471,9 +1471,15 @@ plot_emotions_over_time <- function(sentiment_filters, freetexts_to_plot, framew
 #' @param framework_data - the sensemakerdatar object for the framework.
 #' @param use_stem - default NULL, If TRUE, the graph will accumulate stemmed word usage.
 #' @export
-word_frequency_plot <- function(frequency_graph_pairs, freetexts_to_plot, framework_data, use_stem = FALSE) {
+word_frequency_plot <- function(frequency_graph_pairs, freetexts_to_plot, framework_data, use_stem = FALSE, languages = "en") {
 
   stopifnot(all(class(framework_data) %in% c("Data", "R6")))
+
+  if (!(all(languages == "en") & !exists("isoLanguages"))) {
+    get_iso_codes()
+    stopifnot(all(languages %in% isoLanguages[["Code"]]))
+  }
+
 
   # freetexts_to_plot can be either a vector of 1 or more free text ids, a file name of a csv file containing the freetext ids or a parsed version (data.frame)
   if (stringr::str_ends(string = freetexts_to_plot, ".csv")) {
@@ -1519,7 +1525,9 @@ word_frequency_plot <- function(frequency_graph_pairs, freetexts_to_plot, framew
 
   # todo - this might not work
 
-  stop_words <- tidytext::stop_words
+ # stop_words <- tidytext::stop_words
+  stop_words <- NULL
+  purrr::walk(languages, ~ {stop_words <<- dplyr::bind_rows(stop_words, tidytext::get_stopwords(language = .x))})
   remove_tibble <- dplyr::tibble(word = framework_data$stop_words, lexicon = rep_len("CUSTOM", length(framework_data$stop_words)))
 
 
@@ -1544,13 +1552,14 @@ word_frequency_plot <- function(frequency_graph_pairs, freetexts_to_plot, framew
       data_from_plot_corpus <- data_from_plot  %>%  tidytext::unnest_tokens(word, fragment) %>% dplyr::anti_join(dplyr::rows_append(stop_words, remove_tibble))
 
       if (use_stem) {
-        data_from_plot_corpus <-  data_from_plot_corpus %>% mutate(word = SnowballC::wordStem(word))
+        purrr::walk(languages, ~ {data_from_plot_corpus <<-  data_from_plot_corpus %>% mutate(word = SnowballC::wordStem(word, language = .x))})
       }
 
       data_to_plot_corpus <- data_to_plot  %>%  tidytext::unnest_tokens(word, fragment) %>% dplyr::anti_join(dplyr::rows_append(stop_words, remove_tibble))
 
       if (use_stem) {
-        data_to_plot_corpus <-  data_to_plot_corpus %>% mutate(word = SnowballC::wordStem(word))
+       # data_to_plot_corpus <-  data_to_plot_corpus %>% mutate(word = SnowballC::wordStem(word))
+        purrr::walk(languages, ~ {data_to_plot_corpus <<-  data_to_plot_corpus %>% mutate(word = SnowballC::wordStem(word, language = .x))})
       }
 
       data_to_plot_combined <- dplyr::bind_rows(dplyr::mutate(data_from_plot_corpus, data_set = stringr::str_replace_all(from_id, "_", " ")),
