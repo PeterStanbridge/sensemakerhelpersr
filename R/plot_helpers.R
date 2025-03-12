@@ -1064,6 +1064,8 @@ produce_keyness_pair_graphs <- function(keyness_pairs, framework_data, freetext_
     keyness_pairs <- read.csv(keyness_pairs, stringsAsFactors = FALSE)
   }
 
+  stopifnot(all(c("from_id", "to_id", "from_colour", "to_colour", "from_title", "to_title") %in% colnames(keyness_pairs)))
+
   if (!is.null(freetext_ids)) {
     stopifnot(all(freetext_ids %in% framework_data$sm_framework$get_freetext_fragments()))
   } else {
@@ -1076,6 +1078,8 @@ produce_keyness_pair_graphs <- function(keyness_pairs, framework_data, freetext_
    to_ids <- keyness_pairs[, "to_id"]
    from_colours <- keyness_pairs[, "from_colour"]
    to_colours <- keyness_pairs[, "to_colour"]
+   from_titles <- keyness_pairs[, "from_title"]
+   to_titles <- keyness_pairs[, "to_titles"]
 
   # filters_used <- unique(append(from_ids, to_ids))
   # stopifnot(all(filters_used %in% framework_data$get_data_list_names()))
@@ -1098,7 +1102,7 @@ produce_keyness_pair_graphs <- function(keyness_pairs, framework_data, freetext_
   names(out_results) <- paste0(from_ids, "_", to_ids)
 
   # perform the keyness processing
-  purrr::pwalk(list(from_ids, to_ids, from_colours, to_colours), function(from_id, to_id, from_colour, to_colour) {
+  purrr::pwalk(list(from_ids, to_ids, from_colours, to_colours, from_titles, to_titles), function(from_id, to_id, from_colour, to_colour, from_title, to_title) {
 
     out_plots <<- vector("list", length = length(freetext_ids))
     names(out_plots) <- freetext_ids
@@ -1128,8 +1132,8 @@ produce_keyness_pair_graphs <- function(keyness_pairs, framework_data, freetext_
                                                               sort = TRUE, measure = "chi2")
 
       out_plots[[freetext_id]] <<- quanteda.textplots::textplot_keyness(keyness_doc_var, color = c(from_colour, to_colour), show_reference = TRUE, show_legend = FALSE, margin = 0.05, n = 20L, min_count = 2L) +
-        ggplot2::scale_fill_discrete(name="", labels= c(from_id, to_id)) +
-        ggplot2::ggtitle(paste("KEYNESS PLOT for", from_id, "and", to_id)) +
+        ggplot2::scale_fill_discrete(name="", labels= c(from_title, to_title)) +
+        ggplot2::ggtitle(paste("KEYNESS PLOT for", from_title, "and", to_title)) +
         ggplot2::theme(legend.position = c(0.6, 0.3)) + ylim(0, 40)
 
     })
@@ -1516,7 +1520,7 @@ word_frequency_plot <- function(frequency_graph_pairs, freetexts_to_plot, framew
   # todo - this might not work
 
   stop_words <- tidytext::stop_words
-  remove_tibble <- tibble(word = framework_data$stop_words, lexicon = rep_len("CUSTOM", length(framework_data$stop_words)))
+  remove_tibble <- dplyr::tibble(word = framework_data$stop_words, lexicon = rep_len("CUSTOM", length(framework_data$stop_words)))
 
 
   out_results <<- vector("list", length = length(freetexts_to_plot))
