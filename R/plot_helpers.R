@@ -1509,6 +1509,8 @@ word_frequency_plot <- function(frequency_graph_pairs, freetexts_to_plot, framew
     stopifnot(all(c("from_id", "to_id") %in% colnames(frequency_graph_pairs)))
     graph_pairs_from_ids <- frequency_graph_pairs[["from_id"]]
     graph_pairs_to_ids <- frequency_graph_pairs[["to_id"]]
+    graph_pairs_from_titles <- frequency_graph_pairs[["from_title"]]
+    graph_pairs_to_titles <- frequency_graph_pairs[["to_title"]]
   } else {
   if (stringr::str_ends(string = frequency_graph_pairs, ".csv")) {
     stopifnot(file.exists(frequency_graph_pairs))
@@ -1517,6 +1519,8 @@ word_frequency_plot <- function(frequency_graph_pairs, freetexts_to_plot, framew
     stopifnot(all(c("from_id", "to_id") %in% colnames(df)))
     graph_pairs_from_ids <- df[["from_id"]]
     graph_pairs_to_ids <- df[["to_id"]]
+    graph_pairs_from_titles <- frequency_graph_pairs[["from_title"]]
+    graph_pairs_to_titles <- frequency_graph_pairs[["to_title"]]
   }
   }
 
@@ -1540,8 +1544,8 @@ word_frequency_plot <- function(frequency_graph_pairs, freetexts_to_plot, framew
     out_plots <<- vector("list", length = length(graph_pairs_from_ids))
     names(out_plots) <- paste0(graph_pairs_from_ids, "_", graph_pairs_to_ids)
 
-
-    purrr::walk2(graph_pairs_from_ids, graph_pairs_to_ids, function(from_id, to_id) {
+    purrr::pwalk(list(graph_pairs_from_ids, graph_pairs_to_ids, graph_pairs_from_titles, graph_pairs_to_titles), function(from_id, to_id, from_title, to_title) {
+    #purrr::walk2(graph_pairs_from_ids, graph_pairs_to_ids, function(from_id, to_id) {
 
       data_from <- framework_data$get_data_dataframe(from_id, as_tibble = TRUE)
       data_to <- framework_data$get_data_dataframe(to_id, as_tibble = TRUE)
@@ -1583,7 +1587,9 @@ word_frequency_plot <- function(frequency_graph_pairs, freetexts_to_plot, framew
          ggplot2::scale_y_log10(labels = scales::percent_format()) +
          ggplot2::scale_colour_gradient(limits = c(0, 0.001),
                                low = "darkslategray4", high = "gray75") +
-         ggplot2::theme(legend.position = "none")
+         ggplot2::theme(legend.position = "none") +
+         ggplot2::ggtitle(paste("Freqency Graph for: ", from_title, "against", to_title)) +
+         ggplot2::xlab(from_title) + ggplot2::ylab(to_title)
 
     })
 
