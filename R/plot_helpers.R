@@ -1079,7 +1079,7 @@ produce_keyness_pair_graphs <- function(keyness_pairs, framework_data, freetext_
    from_colours <- keyness_pairs[, "from_colour"]
    to_colours <- keyness_pairs[, "to_colour"]
    from_titles <- keyness_pairs[, "from_title"]
-   to_titles <- keyness_pairs[, "to_titles"]
+   to_titles <- keyness_pairs[, "to_title"]
 
   # filters_used <- unique(append(from_ids, to_ids))
   # stopifnot(all(filters_used %in% framework_data$get_data_list_names()))
