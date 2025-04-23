@@ -427,7 +427,7 @@ get_correlations_by_type <- function(df, fw, from_type, to_type, round_digits = 
 #' @param round_digits - default 0, z, z^2, expected value table rounding digits.
 #' @param residual_threshold - default 4, the threshold for residual calculation on residual squared values.
 #' @param p_threshold - default 0.05, the p-value threshold for null hypothesis test.
-#' @returns Returns a named list.containing the residual calculations. z, zsqr  the data count matrix, expected value matrix, p_value and test_result accept null hypothesis TRUE or FALSE.
+#' @returns Returns a named list.containing the residual calculations. z, zsqr  the data count matrix, expected value matrix, p_value, test_result accept null hypothesis TRUE or FALSE, .
 #' @export
 get_residuals <- function(df, fw, from_col, to_col, round_digits = 0, residual_threshold = 4, p_threshold = 0.05) {
 
@@ -481,16 +481,19 @@ get_residuals <- function(df, fw, from_col, to_col, round_digits = 0, residual_t
   expected <- round(chiTest$expected, digits = round_digits)
   colnames(expected) <- colnames(t1)
   rownames(expected) <- rownames(t1)
-  z <- round(chiTest$stdres, digits = round_digits)
+  z1 <- chiTest$stdres
+  z <- round(z1, digits = round_digits)
   colnames(z) <- colnames(t1)
   rownames(z) <- rownames(t1)
-  zsqr <- round(chiTest$stdres^2, digits = round_digits)
+  zsqr1 <- z1^2
+  zsqr <- round(zsqr1, digits = round_digits)
   colnames(zsqr) <- colnames(t1)
   rownames(zsqr) <- rownames(t1)
   p_value <- round(chiTest$p.value, digits = 4)
   test_result <- chiTest$p.value < p_threshold
 
   test_results_sqr <- data.frame(row_val = character(0), col_val = character(0), residual_sqr = numeric(), type = character(0))
+
 
   for (i in seq_along(rownames(zsqr))) {
 
@@ -499,15 +502,22 @@ get_residuals <- function(df, fw, from_col, to_col, round_digits = 0, residual_t
       if (is.nan(zsqr[i, j])) {
         zsqr[i, j] <- 0
       }
-      if (zsqr[i, j] >= residual_threshold) {
-        temp_df_sqr <- data.frame(row_val = rownames(zsqr)[[i]], col_val = colnames(zsqr)[[j]], residual_sqr = zsqr[i, j], type = ifelse(z[i, j] < 0, "Negative", "Positive"))
+    }
+  }
+
+  for (i in seq_along(rownames(zsqr))) {
+
+    for (j in seq_along(colnames(zsqr))) {
+
+      if (zsqr1[i, j] >= residual_threshold) {
+        temp_df_sqr <- data.frame(row_val = rownames(zsqr)[[i]], col_val = colnames(zsqr)[[j]], residual_sqr = zsqr1[i, j], type = ifelse(z1[i, j] < 0, "Negative", "Positive"))
         test_results_sqr <- dplyr::bind_rows(test_results_sqr, temp_df_sqr)
       }
     }
 
   }
 
-  return(list(z = z, zsqr = zsqr, data = dta, expected = expected, p_value = p_value, test_result = test_result, test_result_detail = test_results_sqr))
+  return(list(z = z, zsqr = zsqr, data = dta, expected = expected, p_value = p_value, test_result = test_result, test_result_detail = test_results_sqr, z1 = z1, zsqr1 = zsqr1))
 }
 
 
