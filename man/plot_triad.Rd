@@ -154,6 +154,10 @@ plot_triad(
 \item default "black". The colour of the graph title. A Character string of any valid R colour format, such as hex values or colour names.
 }}
 
+\item{title_size}{\itemize{
+\item default NULL. The size of the graph title. If NULL calculate anchor size otherwise use the passed in size.
+}}
+
 \item{anchor_size}{\itemize{
 \item default NULL. If NULL calculate anchor size otherwise use the passed in size.
 }}
@@ -233,12 +237,10 @@ plot_triad(
 \item{legend_text_size}{\itemize{
 \item default 8. The size of the legend text.
 }}
-
-\item{-}{default NULL. The size of the graph title. If NULL calculate anchor size otherwise use the passed in size.}
 }
 \value{
 A ggplot graph object of the triad.
 }
 \description{
-Plot a SenseMaker® defined triad with ggplot (note requires the sensemakerframeworkr object)
+Plot a SenseMaker defined triad with ggplot (note requires the sensemakerframeworkr object)
 }

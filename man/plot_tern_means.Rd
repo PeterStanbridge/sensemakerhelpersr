@@ -97,6 +97,14 @@ plot_tern_means(
 \item default 0.6. A value between 0-1 for end colour value in the selected viridis palette. Only applicable if "viridis" selected as the colour package.
 }}
 
+\item{show_colour_legend}{\itemize{
+\item default TRUE, will display the colour legend when colour options are given. Otherwise FALSE.
+}}
+
+\item{legend_title_colour}{\itemize{
+\item default "black", the colour of the legend title. Any valid R colour can be given here.
+}}
+
 \item{legend_title_size}{\itemize{
 \item default 8. The size of the legend title.
 }}

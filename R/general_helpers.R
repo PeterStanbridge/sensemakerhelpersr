@@ -54,7 +54,7 @@ clearDash <- function(input_string, double_space_to_single = TRUE) {
 #' @returns The string with long dash removed.
 #' @export
 clearLongDash <- function(input_string, double_space_to_single = TRUE) {
-  ret_val <- gsub("–", "", input_string)
+  ret_val <- gsub("\u2013", "", input_string)
   if (double_space_to_single) {
     ret_val <- gsub("  ", " ", ret_val)
   }
@@ -204,7 +204,7 @@ clearColon <- function(input_string, double_space_to_single = TRUE) {
 #' @returns The string with apostrophes removed.
 #' @export
 clearApos <- function(input_string, double_space_to_single = TRUE) {
-  ret_val <- gsub("’", "", input_string)
+  ret_val <- gsub("\u02BC", "", input_string)
   if (double_space_to_single) {
     ret_val <- gsub("  ", " ", ret_val)
   }
@@ -249,7 +249,7 @@ clearPer <- function(input_string, double_space_to_single = TRUE) {
 #' @returns The string with close triple dots removed.
 #' @export
 clearCloseDots <- function(input_string, double_space_to_single = TRUE) {
-  ret_val <- gsub("…", "", input_string)
+  ret_val <- gsub("\u2026", "", input_string)
   if (double_space_to_single) {
     ret_val <- gsub("  ", " ", ret_val)
   }
@@ -318,6 +318,7 @@ createBrewerColourArray <- function() {
 #' @description
 #' This function returns the standard "Very Positive", "Positive", "Neutral", "Negative", "Very Negative" sentiments based on the passed in text and stop words.
 #' @param data - A data frame that must contain the "FragmentID" column and "fragment" column (with this spelling/case) containing the text.
+#' @param remove_words - a vector of words to remove in addition to the standard stopwords for the language. ß
 #' @returns A data frame with the sentiments and counts to plot.
 #' @export
 apply_standard_emotions = function(data, remove_words) {
@@ -344,12 +345,12 @@ apply_standard_emotions = function(data, remove_words) {
   sp <- as.vector(sentiment_polarity[,"positive"])
   # Add sentiment polarity scores back to the original data
   data_with_sentiment <- data %>%
-    mutate(sentiment_polarity = sp)
+    dplyr::mutate(sentiment_polarity = sp)
 
  # full_data <- fwd$data$df1
   #full_data_join <- dplyr::inner_join(full_data, data_with_sentiment, by = c(FragmentID =  "fragmentID"))
 
-  full_data_join <- data_with_sentiment %>% dplyr::mutate(sent_emotion = case_when(
+  full_data_join <- data_with_sentiment %>% dplyr::mutate(sent_emotion = dplyr::case_when(
     sentiment_polarity >= 2  ~ "Very Positive",
     sentiment_polarity > 0   ~ "Positive",
     sentiment_polarity == 0  ~ "Neutral",
@@ -357,7 +358,7 @@ apply_standard_emotions = function(data, remove_words) {
     sentiment_polarity <= -2 ~ "Very Negative"
   ))
   sentiment_summary <- full_data_join %>%
-    count(sent_emotion)
+    dplyr::count(sent_emotion)
   return(sentiment_summary)
 
 }
@@ -367,6 +368,7 @@ apply_standard_emotions = function(data, remove_words) {
 #' @description
 #' This function returns the standard "Positive","Negative", sentiments based on the passed in text and stop words for German language.
 #' @param data - A data frame that must contain the "FragmentID" column and "fragment" column (with this spelling/case) containing the text.
+#' @param remove_words - stop words to remove in addition to the quanteda stop words.
 #' @returns A data frame with the sentiments and counts to plot.
 #' @export
 apply_standard_emotions_german = function(data, remove_words) {
@@ -398,7 +400,7 @@ apply_standard_emotions_german = function(data, remove_words) {
 #' @export
 areColors <- function(x) {
   sapply(x, function(X) {
-    tryCatch(is.matrix(col2rgb(X)),
+    tryCatch(is.matrix(grDevices::col2rgb(X)),
              error = function(e) FALSE)
   })
 }

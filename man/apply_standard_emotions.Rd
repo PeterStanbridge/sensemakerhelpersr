@@ -10,6 +10,10 @@ apply_standard_emotions(data, remove_words)
 \item{data}{\itemize{
 \item A data frame that must contain the "FragmentID" column and "fragment" column (with this spelling/case) containing the text.
 }}
+
+\item{remove_words}{\itemize{
+\item a vector of words to remove in addition to the standard stopwords for the language. ß
+}}
 }
 \value{
 A data frame with the sentiments and counts to plot.

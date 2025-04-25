@@ -26,6 +26,10 @@ calculate_triad_means(
 \item either "geometric" or "arithmetic".
 }}
 
+\item{framework_object}{\itemize{
+\item The sensemakerframeworkr object associated with the framework.
+}}
+
 \item{zero_logic}{\itemize{
 \item either "small_value" or "remove". Small value means to take a zero value and give it a very small replacement. Otherwise ignore this fragment.
 }}

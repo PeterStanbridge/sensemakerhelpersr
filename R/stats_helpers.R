@@ -161,7 +161,7 @@ do_means_tests <- function(filters, means_tests, fwd, signifier_ids = NULL, sign
       work_df <- dplyr::bind_rows(fwd$data[[from_dat]], fwd$data[[to_dat]])
       stopifnot("source" %in% colnames(work_df))
       cols_sel <- c(sig_columns, "source")
-      sig_data <- work_df |> dplyr::select(all_of(cols_sel)) |> na.omit()
+      sig_data <- work_df |> dplyr::select(dplyr::all_of(cols_sel)) |> stats::na.omit()
       col_contents <- get_sig_stats_names(sig_id, fwd)
       colnames(sig_data) <- col_contents$col_names
       filter_string <- paste0("sig_data %>% dplyr::filter(", col_contents$query_string, ")")
@@ -292,7 +292,7 @@ calculate_multi_select_correlations <- function(correlation_pairs, fwd, list_ids
         list_id <- names(ms_list_columns)[[1]]
       }
       col_names <- append(ms_list_columns[[list_id]], "source")
-      all_data <-  dplyr::bind_rows(fwd$data[[from_id]], fwd$data[[to_id]]) |> dplyr::select(all_of(col_names))
+      all_data <-  dplyr::bind_rows(fwd$data[[from_id]], fwd$data[[to_id]]) |> dplyr::select(dplyr::all_of(col_names))
 
       col_results <<- vector("list", length = length(colnames(all_data)) - 1)
       names(col_results) <- colnames(all_data)[1:length(colnames(all_data)) - 1]
@@ -450,7 +450,7 @@ get_residuals <- function(df, fw, from_col, to_col, round_digits = 0, residual_t
                          paste0("`", from_col, "`"), "!=   '' & ", paste0("`", to_col, "`"), " !=   ''")
   filterStringExpression <- parse(text = filterString)
   # we have to have more than two options left on removing the NAs etc in order to do the test properly - i.e get a proper table of residuals.
-  t1a <- df |> dplyr::filter(eval(filterStringExpression))  |> dplyr::select(all_of(c(from_col, to_col)))
+  t1a <- df |> dplyr::filter(eval(filterStringExpression))  |> dplyr::select(dplyr::all_of(c(from_col, to_col)))
 
   if (nrow(t1a) == 0) {return(list(z = NULL, zsqr = NULL, data = NULL, p_value = NULL))}
   if (length(unique(t1a[[1]])) < 2 | length(unique(t1a[[2]])) < 2) {return(list(z = NULL, zsqr = NULL, data = NULL, p_value = NULL))}

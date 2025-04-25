@@ -28,6 +28,10 @@ word_frequency_plot(
 \item{use_stem}{\itemize{
 \item default NULL, If TRUE, the graph will accumulate stemmed word usage.
 }}
+
+\item{languages}{\itemize{
+\item default "en" for English. Valid supported 2 character iso language code.
+}}
 }
 \description{
 Plot a frequency graph of the words used between two different queries.

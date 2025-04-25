@@ -45,5 +45,5 @@ plot_dyad(
 A ggplot graph object of the dyad
 }
 \description{
-Plot a SenseMaker® defined dyad with ggplot (note requires the sensemakerframeworkr object)
+Plot a SenseMaker defined dyad with ggplot (note requires the sensemakerframeworkr object)
 }

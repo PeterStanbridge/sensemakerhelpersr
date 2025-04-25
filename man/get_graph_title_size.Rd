@@ -11,7 +11,9 @@ get_graph_title_size(title, title_size_multiplier = 1)
 \item A string containing the title.
 }}
 
-\item{title_size_multiplier.}{A multiplier to expand or contract the retured size.}
+\item{title_size_multiplier}{\itemize{
+\item A multiplier to expand or contract the retured size.
+}}
 }
 \value{
 An integer for the title plot size.

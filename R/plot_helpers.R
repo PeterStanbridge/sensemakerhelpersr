@@ -47,7 +47,7 @@ get_triad_standard_canvas <- function() {
   #  assign("triad_standard_canvas", png::readPNG("./data/triad_standard.png"), envir = .GlobalEnv)
   #}
   #return(triad_standard_canvas)
-  triad_standard_canvas_name <- system.file("data", "triad_standard.png", package = "sensemakerhelpersr")
+  triad_standard_canvas_name <- system.file("./inst/extdata", "triad_standard.png", package = "sensemakerhelpersr")
   return(assign("triad_standard_canvas", png::readPNG(triad_standard_canvas_name), envir = .GlobalEnv))
 }
 
@@ -60,10 +60,10 @@ get_iso_codes <- function() {
   # if the image is not in the global envirionment add it
   # if (!exists("triad_standard_canvas", envir = .GlobalEnv)) {
   #  assign("triad_standard_canvas", png::readPNG("./data/triad_standard.png"), envir = .GlobalEnv)
-  #} isoLanguages <- read.csv("data/isocodes.csv",  sep = ",", stringsAsFactors = FALSE, encoding = 'UTF-8', na.strings = "")
+  #} isoLanguages <- utils::read.csv("data/isocodes.csv",  sep = ",", stringsAsFactors = FALSE, encoding = 'UTF-8', na.strings = "")
   #return(triad_standard_canvas)
-  iso_codes <- system.file("data", "isocodes.csv", package = "sensemakerhelpersr")
-  return(assign("isoLanguages", read.csv(iso_codes,  sep = ",", stringsAsFactors = FALSE, encoding = 'UTF-8', na.strings = ""), envir = .GlobalEnv))
+  iso_codes <- system.file("./inst/extdata", "isocodes.csv", package = "sensemakerhelpersr")
+  return(assign("isoLanguages", utils::read.csv(iso_codes,  sep = ",", stringsAsFactors = FALSE, encoding = 'UTF-8', na.strings = ""), envir = .GlobalEnv))
 }
 #' @title Get the zone labeled triad canvas used as triad background in a ggplot x,y plot.
 #' @description
@@ -76,7 +76,7 @@ get_triad_zone_canvas <- function() {
   #  assign("triad_zone_canvas", png::readPNG("./data/zone_zone.png"), envir = .GlobalEnv)
  # }
   #return(triad_zone_canvas)
-  triad_zone_canvas_name <- system.file("data", "zone_zone.png", package = "sensemakerhelpersr")
+  triad_zone_canvas_name <- system.file("./inst/extdata", "zone_zone.png", package = "sensemakerhelpersr")
   return(assign("triad_zone_canvas", png::readPNG(triad_zone_canvas_name), envir = .GlobalEnv))
 }
 
@@ -90,13 +90,13 @@ get_triad_count_canvas <- function() {
  # if (!exists("triad_count_canvas", envir = .GlobalEnv)) {
  #   assign("triad_count_canvas", png::readPNG("./data/triad_zone.png"), envir = .GlobalEnv)
   #}
-  triad_count_canvas_name <- system.file("data", "triad_zone.png", package = "sensemakerhelpersr")
+  triad_count_canvas_name <- system.file("./inst/extdata", "triad_zone.png", package = "sensemakerhelpersr")
   return(assign("triad_count_canvas", png::readPNG(triad_count_canvas_name), envir = .GlobalEnv))
 }
 
 #' @title Plot a triad graph using the x and y columns.
 #' @description
-#'  Plot a SenseMaker® defined triad with ggplot (note requires the sensemakerframeworkr object)
+#'  Plot a SenseMaker defined triad with ggplot (note requires the sensemakerframeworkr object)
 #' @param filtered_data - Must be supplied. Data frame that includes the triad x and y columns with filtered (if any) signifiers to plot.
 #' @param full_data - Must be supplied. Data frame that includes the triad x and y columns with all signifiers for the capture.
 #' @param sig_id - Must be supplied. The triad_id to be plotted.
@@ -122,7 +122,7 @@ get_triad_count_canvas <- function() {
 #' @param caption_colour - default "black". The colour of the caption if the display_stats_caption set to TRUE. A Character string of any valid R colour format, such as hex values or colour names.
 #' @param graph_title - default. NULL. A title for the graph. if NULL the triad title will be used.
 #' @param title_colour - default "black". The colour of the graph title. A Character string of any valid R colour format, such as hex values or colour names.
-#' @param  - default NULL. The size of the graph title. If NULL calculate anchor size otherwise use the passed in size.
+#' @param title_size - default NULL. The size of the graph title. If NULL calculate anchor size otherwise use the passed in size.
 #' @param anchor_size - default NULL. If NULL calculate anchor size otherwise use the passed in size.
 #' @param contours - default FALSE. The size of the graph anchor labels. If TRUE, probability contour lines will display in the graph. Uses a Gaussian Kernel Smoothing Density Estimation method.
 #' @param contour_fill - default FALSE. If TRUE, a heat map is displayed in the graph.
@@ -208,20 +208,20 @@ plot_triad <- function(filtered_data, full_data, sig_id, framework_object, dot_s
       # we are doing colouring by an MCQ (list)
       # use the colour vector if it is provided
       if (!is.null(colour_vector)) {
-        p = p +  ggplot2::geom_point(size = dot_size, alpha = dot_transparency, aes(colour = factor(!! rlang::sym(colour_sig_id)))) +
+        p = p +  ggplot2::geom_point(size = dot_size, alpha = dot_transparency, ggplot2::aes(colour = factor(!! rlang::sym(colour_sig_id)))) +
           scale_color_manual(values = colour_vector,
                              breaks = framework_object$get_list_items_ids(colour_sig_id),
                              labels = framework_object$get_list_items_titles(colour_sig_id)) +  labs(color = framework_object$get_signifier_title(colour_sig_id))
       } else {
         # nothing provided for colours so use a palette
         if (colour_package == "viridis") {
-          p = p +  ggplot2::geom_point(size = dot_size, alpha = dot_transparency, aes(colour = factor(!! rlang::sym(colour_sig_id)))) +
+          p = p +  ggplot2::geom_point(size = dot_size, alpha = dot_transparency, ggplot2::aes(colour = factor(!! rlang::sym(colour_sig_id)))) +
             viridis::scale_color_viridis(discrete = TRUE, option = package_palette, direction = colour_direction, begin = viridis_default_start, end = viridis_default_end,
                                          breaks = framework_object$get_list_items_ids(colour_sig_id),
                                          labels = framework_object$get_list_items_titles(colour_sig_id)) +  labs(color = framework_object$get_signifier_title(colour_sig_id))
         } else {
           if (colour_package == "RColorBrewer") {
-            p = p +  ggplot2::geom_point(size = dot_size, alpha = dot_transparency, aes(colour = factor(!! rlang::sym(colour_sig_id)))) +
+            p = p +  ggplot2::geom_point(size = dot_size, alpha = dot_transparency, ggplot2::aes(colour = factor(!! rlang::sym(colour_sig_id)))) +
               scale_color_brewer(palette = package_palette, direction = colour_direction,
                                  breaks = framework_object$get_list_items_ids(colour_sig_id),
                                  labels = framework_object$get_list_items_titles(colour_sig_id)) +  labs(color = framework_object$get_signifier_title(colour_sig_id))
@@ -330,7 +330,7 @@ plot_triad <- function(filtered_data, full_data, sig_id, framework_object, dot_s
 
 #' @title Plot a standard dyad graph.
 #' @description
-#'  Plot a SenseMaker® defined dyad with ggplot (note requires the sensemakerframeworkr object)
+#'  Plot a SenseMaker defined dyad with ggplot (note requires the sensemakerframeworkr object)
 #' @param filtered_data - Must be supplied. Data frame that includes the dyad XR columns with filtered (if any) signifiers to plot.
 #' @param full_data - Must be supplied. Data frame that includes the dyad XR columns with all signifiers for the capture.
 #' @param dyad_id - Must be supplied. The dyad_id to be plotted.
@@ -387,6 +387,8 @@ max_Y <- max(ggplot2::ggplot_build(testPlot)$data[[1]]$count) +1
 if (percentage_or_count == "percentages") {
   total_Y_D <- sum(ggplot2::ggplot_build(testPlot)$data[[1]][["count"]])
   max_Y <- (max_Y / total_Y_D) * 100
+  dyad_full_range <- TRUE # todo fix this in the parameters
+  DyadfullYRange <- FALSE
   if (!DyadfullYRange) {
     max_Y <- 105
   }
@@ -460,6 +462,8 @@ test_plot_dyad <- function(sigID, data, numBins, perCount) {
 #' @param colour_direction - default 1. 1 for left to right colour selection from the palette, -1 for reverse.
 #' @param viridis_default_start - default 0, A value between 0-1 for start colour value in the selected viridis palette. Only applicable if "viridis" selected as the colour package.
 #' @param viridis_default_end - default 0.6. A value between 0-1 for end colour value in the selected viridis palette. Only applicable if "viridis" selected as the colour package.
+#' @param show_colour_legend - default TRUE, show the colour legend if colours are requestd.
+#' @param legend_title_colour - default "black", the colour of the legend title. Any valid R colour can be given here.
 #' @param legend_title_size - default 8. The size of the legend title.
 #' @param legend_text_colour - default "black". The colour legend text A Character string of any valid R colour format, such as hex values or colour names.
 #' @param legend_text_size - default 8. The size of the legend text.
@@ -534,7 +538,9 @@ plot_tern_means_by_list_id <- function(filtered_data, triad_id, list_id, framewo
 #' @param colour_direction - default 1. 1 for left to right colour selection from the palette, -1 for reverse.
 #' @param viridis_default_start - default 0, A value between 0-1 for start colour value in the selected viridis palette. Only applicable if "viridis" selected as the colour package.
 #' @param viridis_default_end - default 0.6. A value between 0-1 for end colour value in the selected viridis palette. Only applicable if "viridis" selected as the colour package.
+#' @param show_colour_legend - default TRUE, will display the colour legend when colour options are given. Otherwise FALSE.
 #' @param legend_title_size - default 8. The size of the legend title.
+#' @param legend_title_colour - default "black", the colour of the legend title. Any valid R colour can be given here.
 #' @param legend_text_colour - default "black". The colour legend text A Character string of any valid R colour format, such as hex values or colour names.
 #' @param legend_text_size - default 8. The size of the legend text.
 #' @param dot_size - default 0.5, the size of the graph dots
@@ -596,18 +602,18 @@ plot_tern_means <- function(df_list, triad_id, data_titles, framework_object, co
     # calculate the mean
     data_means <- calculate_triad_means(plot_data, triad_id, "geometric", framework_object, zero_logic = mean_zero_logic, for_ggtern = TRUE)
     plot_data[["col_by"]] <- rep_len(data_titles[[i]], length.out = nrow(plot_data))
-    p <- p + geom_point(data = plot_data, aes_string(x = paste0("`", framework_object$get_triad_left_column_name(triad_id), "`"),
+    p <- p + ggplot2::geom_point(data = plot_data, ggplot2::aes_string(x = paste0("`", framework_object$get_triad_left_column_name(triad_id), "`"),
                                                      y = paste0("`", framework_object$get_triad_top_column_name(triad_id), "`"),
                                                      z = paste0("`", framework_object$get_triad_right_column_name(triad_id), "`"), colour = "col_by"), size = dot_size, alpha = dot_transparency)
 
     if (show_mean) {
-      p <- p + geom_point(data = data_means, ggtern::aes(x = x, y = y, z = z), colour = mean_colour[[i]], size = mean_size, shape =
+      p <- p + ggplot2::geom_point(data = data_means, ggtern::aes(x = x, y = y, z = z), colour = mean_colour[[i]], size = mean_size, shape =
                             ifelse(is.null(mean_shape), "circle", mean_shape[[i]]), fill = ifelse(!is.null(mean_colour), mean_colour[[i]],  colour_vector[[i]]))
     }
 
     if (show_confidence_intervals) {
 
-       p <- p +   ggtern::geom_confidence_tern(data = plot_data, aes_string(x = paste0("`", framework_object$get_triad_left_column_name(triad_id), "`"),
+       p <- p +   ggtern::geom_confidence_tern(data = plot_data, ggplot2::aes_string(x = paste0("`", framework_object$get_triad_left_column_name(triad_id), "`"),
                                                                             y = paste0("`", framework_object$get_triad_top_column_name(triad_id), "`"),
                                                                             z = paste0("`", framework_object$get_triad_right_column_name(triad_id), "`"),
                                                                     colour = 'col_by', inherit.aes = FALSE),
@@ -622,11 +628,11 @@ plot_tern_means <- function(df_list, triad_id, data_titles, framework_object, co
     ggtern::Llab(wrap_text(leftTitle, wrap_length = 45)) +
     ggtern::Tlab(wrap_text(topTitle, wrap_length = 75)) +
     ggtern::Rlab(wrap_text(rightTitle, wrap_length = 45))  +
-    theme(plot.title = ggplot2::element_text(colour = title_colour, size = title_size, family = "Helvetica", hjust = 0.5)) +
-    theme(tern.axis.title.L = ggplot2::element_text(hjust=0, vjust=1, colour = anchor_colour, size = anchor_size, family = "Helvetica")) +
-    theme(tern.axis.title.T = ggplot2::element_text(colour = anchor_colour, size = anchor_size, family = "Helvetica"))  +
-    theme(tern.axis.title.R = ggplot2::element_text(hjust=1, vjust=1, colour = anchor_colour, size = anchor_size, family = "Helvetica")) +
-    theme(legend.title = ggplot2::element_text(color = legend_title_colour, size = legend_title_size), legend.text = element_text(color = legend_text_colour, size = legend_text_size)) +
+    ggplot2::theme(plot.title = ggplot2::element_text(colour = title_colour, size = title_size, family = "Helvetica", hjust = 0.5)) +
+    ggplot2::theme(tern.axis.title.L = ggplot2::element_text(hjust=0, vjust=1, colour = anchor_colour, size = anchor_size, family = "Helvetica")) +
+    ggplot2::theme(tern.axis.title.T = ggplot2::element_text(colour = anchor_colour, size = anchor_size, family = "Helvetica"))  +
+    ggplot2::theme(tern.axis.title.R = ggplot2::element_text(hjust=1, vjust=1, colour = anchor_colour, size = anchor_size, family = "Helvetica")) +
+    ggplot2::theme(legend.title = ggplot2::element_text(color = legend_title_colour, size = legend_title_size), legend.text = element_text(color = legend_text_colour, size = legend_text_size)) +
     ggtern::theme_nogrid() +
     ggtern::theme_hidelabels() +
     ggtern::theme_hideticks() +
@@ -757,7 +763,7 @@ plot_tern_triad <- function(filtered_data, full_data, triad_id, framework_object
     # we are doing colouring by an MCQ (list)
     # use the colour vector if it is provided
     if (!is.null(colour_vector)) {
-      p = p +  ggplot2::geom_point(size = dot_size, alpha = dot_transparency, aes_string( colour = paste0("`", colour_sig_id, "`"))) +
+      p = p +  ggplot2::geom_point(size = dot_size, alpha = dot_transparency, ggplot2::aes_string( colour = paste0("`", colour_sig_id, "`"))) +
         ggplot2::scale_color_manual(values = colour_vector,
                            breaks = framework_object$get_list_items_ids(colour_sig_id),
                            labels = framework_object$get_list_items_titles(colour_sig_id)) +
@@ -765,14 +771,14 @@ plot_tern_triad <- function(filtered_data, full_data, triad_id, framework_object
     } else {
       # nothing provided for colours so use a palette
       if (colour_package == "viridis") {
-        p = p +  ggplot2::geom_point(size = dot_size, alpha = dot_transparency, aes_string( colour = paste0("`", colour_sig_id, "`"))) +
+        p = p +  ggplot2::geom_point(size = dot_size, alpha = dot_transparency, ggplot2::aes_string( colour = paste0("`", colour_sig_id, "`"))) +
           viridis::scale_color_viridis(discrete = TRUE, option = package_palette, direction = colour_direction, begin = viridis_default_start, end = viridis_default_end,
                                        breaks = framework_object$get_list_items_ids(colour_sig_id),
                                        labels = framework_object$get_list_items_titles(colour_sig_id)) +  labs(color = framework_object$get_signifier_title(colour_sig_id))
       } else {
         if (colour_package == "RColorBrewer") {
 
-          p = p +  ggplot2::geom_point(size = dot_size, alpha = dot_transparency, aes_string( colour = paste0("`", colour_sig_id, "`"))) +
+          p = p +  ggplot2::geom_point(size = dot_size, alpha = dot_transparency, ggplot2::aes_string( colour = paste0("`", colour_sig_id, "`"))) +
             ggplot2::scale_color_brewer(palette = package_palette, direction = colour_direction,
                                breaks = framework_object$get_list_items_ids(colour_sig_id),
                                labels = framework_object$get_list_items_titles(colour_sig_id)) +
@@ -917,7 +923,7 @@ produce_tern_pair_means_graphs <- function(tern_pairs, framework_data, triads_to
 
   if (class(tern_pairs) == "character") {
     stopifnot(file.exists(tern_pairs))
-    tern_pairs <- read.csv(tern_pairs, stringsAsFactors = FALSE)
+    tern_pairs <- utils::read.csv(tern_pairs, stringsAsFactors = FALSE)
   }
 
   from_ids <- tern_pairs[, "from_id"]
@@ -983,7 +989,7 @@ produce_tern_pair_means_graphs_by_triad <- function(tern_pairs, framework_data, 
 
   if (class(tern_pairs) == "character") {
     stopifnot(file.exists(tern_pairs))
-    tern_pairs <- read.csv(tern_pairs, stringsAsFactors = FALSE)
+    tern_pairs <- utils::read.csv(tern_pairs, stringsAsFactors = FALSE)
   }
 
   from_ids <- tern_pairs[, "from_id"]
@@ -1061,7 +1067,7 @@ produce_keyness_pair_graphs <- function(keyness_pairs, framework_data, freetext_
 
   if (class(keyness_pairs) == "character") {
     stopifnot(file.exists(keyness_pairs))
-    keyness_pairs <- read.csv(keyness_pairs, stringsAsFactors = FALSE)
+    keyness_pairs <- utils::read.csv(keyness_pairs, stringsAsFactors = FALSE)
   }
 
   stopifnot(all(c("from_id", "to_id", "from_colour", "to_colour", "from_title", "to_title") %in% colnames(keyness_pairs)))
@@ -1134,7 +1140,7 @@ produce_keyness_pair_graphs <- function(keyness_pairs, framework_data, freetext_
       out_plots[[freetext_id]] <<- quanteda.textplots::textplot_keyness(keyness_doc_var, color = c(from_colour, to_colour), show_reference = TRUE, show_legend = FALSE, margin = 0.05, n = 20L, min_count = 2L) +
         ggplot2::scale_fill_discrete(name="", labels= c(from_title, to_title)) +
         ggplot2::ggtitle(paste("KEYNESS PLOT for", from_title, "and", to_title)) +
-        ggplot2::theme(legend.position = c(0.6, 0.3)) + ylim(0, 40)
+        ggplot2::theme(legend.position = c(0.6, 0.3)) + ggplot2::ylim(0, 40)
 
     })
     out_results[[paste0(from_id, "_", to_id)]] <<- out_plots
@@ -1155,7 +1161,7 @@ plot_sentiment_bars <- function(sentiment_filters, freetexts_to_plot, framework_
 
   if (stringr::str_ends(string = freetexts_to_plot, ".csv")) {
     stopifnot(file.exists(freetexts_to_plot))
-    df <- read.csv(freetexts_to_plot, stringsAsFactors = FALSE)
+    df <- utils::read.csv(freetexts_to_plot, stringsAsFactors = FALSE)
     stopifnot(nrow(df) > 0)
     stopifnot("id" %in% colnames(df))
     freetexts_to_plot <- df[["id"]]
@@ -1183,7 +1189,7 @@ plot_sentiment_bars <- function(sentiment_filters, freetexts_to_plot, framework_
     } else {
       if (stringr::str_ends(string = sentiment_filters, ".csv")) {
         stopifnot(file.exists(sentiment_filters))
-        df <- read.csv(sentiment_filters, stringsAsFactors = FALSE)
+        df <- utils::read.csv(sentiment_filters, stringsAsFactors = FALSE)
         stopifnot(nrow(df) > 0)
         stopifnot("id" %in% colnames(df))
         stopifnot("title" %in% colnames(df))
@@ -1211,18 +1217,18 @@ plot_sentiment_bars <- function(sentiment_filters, freetexts_to_plot, framework_
         # do the sentiment stuff
         data_to_plot <- apply_standard_emotions(data_use, framework_data$stop_words)
         # plot
-        out_plots[[filter_id]] <<- ggplot(data_to_plot, aes(x = sent_emotion, y = n, fill = sent_emotion)) +
-                geom_bar(stat = "identity") +
-                theme_minimal() +
-                labs(title = paste("Sentiment Distribution : ", framework_data$sm_framework$get_signifier_title(frag_id), " : ", filter_title),
+        out_plots[[filter_id]] <<- ggplot2::ggplot(data_to_plot, ggplot2::aes(x = sent_emotion, y = n, fill = sent_emotion)) +
+          ggplot2::geom_bar(stat = "identity") +
+          ggplot2::theme_minimal() +
+          ggplot2::labs(title = paste("Sentiment Distribution : ", framework_data$sm_framework$get_signifier_title(frag_id), " : ", filter_title),
                      x = "Sentiment Category",
                      y = "Count") +
-                scale_fill_manual(values = c("Very Positive" = "darkgreen",
+          ggplot2::scale_fill_manual(values = c("Very Positive" = "darkgreen",
                                              "Positive" = "green",
                                              "Neutral" = "gray",
                                              "Negative" = "orange",
                                              "Very Negative" = "red")) +
-                theme(title = ggplot2::element_text(colour = "black", size = 8, family = "Helvetica"))
+          ggplot2::theme(title = ggplot2::element_text(colour = "black", size = 8, family = "Helvetica"))
 
 
       })
@@ -1238,15 +1244,15 @@ plot_sentiment_bars <- function(sentiment_filters, freetexts_to_plot, framework_
 #' @title Plot a bar chart of the sentiment content of the text passed in german language
 #' @description
 #' This function plots a bar chart of sentiments - positive and negative - for german language text.
-#' @param sentiment_filters - A data frame or name of a csv file with columns id and title. The id column contains the names of data queries and the title column the names to use in the graph print.
-#' @param freetexts_to_plot - default NULL, A vector of freetext signifier ids for textual data If NULL all freetext signifiers set as a fragment are plotted.
+#' @param sentiment_data - A data frame or name of a csv file with columns id and title. The id column contains the names of data queries and the title column the names to use in the graph print.
+#' @param freetexts_to_plot - A vector of freetext signifier ids for textual data If NULL all freetext signifiers set as a fragment are plotted.
 #' @param framework_data - the sensemakerdatar object for the framework.
 #' @export
-plot_german_sentiment_bars <- function(sentiment_data, freetexts_to_plot = "fragment_text", framework_data = fwd) {
+plot_german_sentiment_bars <- function(sentiment_data, freetexts_to_plot, framework_data) {
 
   if (stringr::str_ends(string = freetexts_to_plot, ".csv")) {
     stopifnot(file.exists(freetexts_to_plot))
-    df <- read.csv(freetexts_to_plot, stringsAsFactors = FALSE)
+    df <- utils::read.csv(freetexts_to_plot, stringsAsFactors = FALSE)
     stopifnot(nrow(df) > 0)
     stopifnot("id" %in% colnames(df))
     freetexts_to_plot <- df[["id"]]
@@ -1274,7 +1280,7 @@ plot_german_sentiment_bars <- function(sentiment_data, freetexts_to_plot = "frag
   } else {
     if (stringr::str_ends(string = sentiment_data, ".csv")) {
       stopifnot(file.exists(sentiment_data))
-      df <- read.csv(sentiment_data, stringsAsFactors = FALSE)
+      df <- utils::read.csv(sentiment_data, stringsAsFactors = FALSE)
       stopifnot(nrow(df) > 0)
       stopifnot("id" %in% colnames(df))
       stopifnot("title" %in% colnames(df))
@@ -1306,12 +1312,12 @@ plot_german_sentiment_bars <- function(sentiment_data, freetexts_to_plot = "frag
       pos_count <- sum(data_to_plot$positive)
       tot_count <- neg_count + pos_count
       df_plot <- data.frame(cnt = c(neg_count, pos_count),  per = c(round((neg_count/tot_count) * 100, digits = 0), round((pos_count/tot_count) * 100, digits = 0) ), emotion = c("negative", "positive"))
-      out_plots[[filter_id]] <<-  ggplot(df_plot, aes(x = emotion, y = per, fill = emotion)) +
-        geom_bar(stat = "identity") + scale_fill_manual(values = c(negative = "red", positive = "blue")) +  theme_minimal() +
-        labs(title = paste("Sentiment Distribution : ", framework_data$sm_framework$get_signifier_title(frag_id), " : ", filter_title),
+      out_plots[[filter_id]] <<-  ggplot2::ggplot(df_plot, ggplot2::aes(x = emotion, y = per, fill = emotion)) +
+        ggplot2::geom_bar(stat = "identity") + scale_fill_manual(values = c(negative = "red", positive = "blue")) +  theme_minimal() +
+        ggplot2::labs(title = paste("Sentiment Distribution : ", framework_data$sm_framework$get_signifier_title(frag_id), " : ", filter_title),
              x = "Sentiment Category",
              y = "Percentage") +
-        theme(title = ggplot2::element_text(colour = "black", size = 8, family = "Helvetica")) + coord_cartesian(ylim = c(0, 100))
+        ggplot2::theme(title = ggplot2::element_text(colour = "black", size = 8, family = "Helvetica")) + ggplot2::coord_cartesian(ylim = c(0, 100))
 
 
     })
@@ -1336,7 +1342,7 @@ plot_sentiment_valence <- function(sentiment_filters, freetexts_to_plot, framewo
   # freetexts_to_plot can be either a vector of 1 or more free text ids, a file name of a csv file containing the freetext ids or a parsed version (data.frame)
   if (stringr::str_ends(string = freetexts_to_plot, ".csv")) {
     stopifnot(file.exists(freetexts_to_plot))
-    df <- read.csv(freetexts_to_plot, stringsAsFactors = FALSE)
+    df <- utils::read.csv(freetexts_to_plot, stringsAsFactors = FALSE)
     stopifnot(nrow(df) > 0)
     stopifnot("id" %in% colnames(df))
     freetexts_to_plot <- df[["id"]]
@@ -1364,7 +1370,7 @@ plot_sentiment_valence <- function(sentiment_filters, freetexts_to_plot, framewo
   } else {
     if (stringr::str_ends(string = sentiment_filters, ".csv")) {
       stopifnot(file.exists(sentiment_filters))
-      df <- read.csv(sentiment_filters, stringsAsFactors = FALSE)
+      df <- utils::read.csv(sentiment_filters, stringsAsFactors = FALSE)
       stopifnot(nrow(df) > 0)
       stopifnot("id" %in% colnames(df))
       stopifnot("title" %in% colnames(df))
@@ -1400,12 +1406,12 @@ plot_sentiment_valence <- function(sentiment_filters, freetexts_to_plot, framewo
       # Perform sentiment analysis using sentimentr
       sentiment_scores <- sentimentr::sentiment(text_column)
 
-      out_plots[[filter_id]] <<- ggplot2::ggplot(sentiment_scores, aes(x = sentiment)) + geom_density(colour = "blue", size = 1) +
-        labs(title = paste("Sentiment Density : ", framework_data$sm_framework$get_signifier_title(frag_id), " : ", filter_title),
+      out_plots[[filter_id]] <<- ggplot2::ggplot(sentiment_scores, ggplot2::aes(x = sentiment)) + ggplot2::geom_density(colour = "blue", size = 1) +
+        ggplot2::labs(title = paste("Sentiment Density : ", framework_data$sm_framework$get_signifier_title(frag_id), " : ", filter_title),
              x = "Sentiment Range",
              y = "") +
         ggplot2::labs(caption = paste("Data count = ", nrow(data_use))) +
-        theme(title = ggplot2::element_text(colour = "black", size = 8, family = "Helvetica"))
+        ggplot2::theme(title = ggplot2::element_text(colour = "black", size = 8, family = "Helvetica"))
 
     })
 
@@ -1429,7 +1435,7 @@ plot_emotions_over_time <- function(sentiment_filters, freetexts_to_plot, framew
   # freetexts_to_plot can be either a vector of 1 or more free text ids, a file name of a csv file containing the freetext ids or a parsed version (data.frame)
   if (stringr::str_ends(string = freetexts_to_plot, ".csv")) {
     stopifnot(file.exists(freetexts_to_plot))
-    df <- read.csv(freetexts_to_plot, stringsAsFactors = FALSE)
+    df <- utils::read.csv(freetexts_to_plot, stringsAsFactors = FALSE)
     stopifnot(nrow(df) > 0)
     stopifnot("id" %in% colnames(df))
     freetexts_to_plot <- df[["id"]]
@@ -1457,7 +1463,7 @@ plot_emotions_over_time <- function(sentiment_filters, freetexts_to_plot, framew
   } else {
     if (stringr::str_ends(string = sentiment_filters, ".csv")) {
       stopifnot(file.exists(sentiment_filters))
-      df <- read.csv(sentiment_filters, stringsAsFactors = FALSE)
+      df <- utils::read.csv(sentiment_filters, stringsAsFactors = FALSE)
       stopifnot(nrow(df) > 0)
       stopifnot("id" %in% colnames(df))
       stopifnot("title" %in% colnames(df))
@@ -1496,20 +1502,20 @@ plot_emotions_over_time <- function(sentiment_filters, freetexts_to_plot, framew
       nrc_emotions_with_fragments$EntryYrMth <- data_use$EntryYrMth
       # Summarize the emotions by 'EntryYrMth'
       emotion_over_time <- nrc_emotions %>%
-        group_by(EntryYrMth) %>%
-        summarise(across(everything(), sum, na.rm = TRUE))
+        dplyr::group_by(EntryYrMth) %>%
+        dplyr::summarise(dplyr::across(dplyr::everything(), sum, na.rm = TRUE))
 
       # Exclude 'positive' and 'negative' from the plot
-      emotion_over_time <- emotion_over_time %>% select(-positive, -negative)
+      emotion_over_time <- emotion_over_time %>% dplyr::select(-positive, -negative)
 
       # Calculate the percentage of each emotion per month
       emotion_percentages <- emotion_over_time %>%
-        rowwise() %>%
-        mutate(across(-EntryYrMth, ~ . / sum(c_across(-EntryYrMth))))
+        dplyr::rowwise() %>%
+        dplyr::mutate(dplyr::across(-EntryYrMth, ~ . / sum(dplyr::c_across(-EntryYrMth))))
 
       # Reshape data for plotting
       emotion_long <- emotion_percentages %>%
-        pivot_longer(cols = -EntryYrMth,
+        tidyr::pivot_longer(cols = -EntryYrMth,
                      names_to = "Emotion",
                      values_to = "Percentage")
 
@@ -1527,19 +1533,19 @@ plot_emotions_over_time <- function(sentiment_filters, freetexts_to_plot, framew
         "trust" = "#17BECF",       # Teal
         "joy" = "#FF1493"          # Hot Pink
       )
-      colScale <- scale_colour_manual(name = "grp",values = myColors)
+      colScale <- ggplot2::scale_colour_manual(name = "grp",values = myColors)
       # Plotting the percentage of emotions over time with points
-      out_plots[[filter_id]] <<- ggplot(emotion_long, aes(x = as.Date(paste0(EntryYrMth, "01"), format="%Y%m%d"), y = Percentage, color = Emotion)) +
-              geom_line(size=1) +
-              geom_point(size=2) +  # Add points to the lines
-              colScale +
-              labs(title= paste("%age of emotions over time : ", framework_data$sm_framework$get_signifier_title(frag_id), " : ", filter_title),
+      out_plots[[filter_id]] <<- ggplot2::ggplot(emotion_long, ggplot2::aes(x = as.Date(paste0(EntryYrMth, "01"), format="%Y%m%d"), y = Percentage, color = Emotion)) +
+        ggplot2::geom_line(size=1) +
+        ggplot2::geom_point(size=2) +  # Add points to the lines
+        colScale +
+        ggplot2::labs(title= paste("%age of emotions over time : ", framework_data$sm_framework$get_signifier_title(frag_id), " : ", filter_title),
                    x="Time (Year-Month)", y="Percentage of Emotions") +
-              scale_y_continuous(labels = scales::percent_format()) +
-              theme_minimal() +
-              scale_x_date(date_labels = "%Y-%m", date_breaks = "1 months") +
+        ggplot2::scale_y_continuous(labels = scales::percent_format()) +
+        ggplot2::theme_minimal() +
+        ggplot2::scale_x_date(date_labels = "%Y-%m", date_breaks = "1 months") +
               ggplot2::labs(caption = paste("Data count = ", nrow(data_use))) +
-              theme(axis.text.x = ggplot2::element_text(angle=45, hjust=1), title = ggplot2::element_text(colour = "black", size = 8, family = "Helvetica"))
+        ggplot2::theme(axis.text.x = ggplot2::element_text(angle=45, hjust=1), title = ggplot2::element_text(colour = "black", size = 8, family = "Helvetica"))
 
 
     })
@@ -1559,6 +1565,7 @@ plot_emotions_over_time <- function(sentiment_filters, freetexts_to_plot, framew
 #' @param freetexts_to_plot - default NULL, A vector of freetext signifier ids for textual data If NULL all freetext signifiers set as a fragment are plotted.
 #' @param framework_data - the sensemakerdatar object for the framework.
 #' @param use_stem - default NULL, If TRUE, the graph will accumulate stemmed word usage.
+#' @param languages - default "en" for English. Valid supported 2 character iso language code.
 #' @export
 word_frequency_plot <- function(frequency_graph_pairs, freetexts_to_plot, framework_data, use_stem = FALSE, languages = "en") {
 
@@ -1573,7 +1580,7 @@ word_frequency_plot <- function(frequency_graph_pairs, freetexts_to_plot, framew
   # freetexts_to_plot can be either a vector of 1 or more free text ids, a file name of a csv file containing the freetext ids or a parsed version (data.frame)
   if (stringr::str_ends(string = freetexts_to_plot, ".csv")) {
     stopifnot(file.exists(freetexts_to_plot))
-    df <- read.csv(freetexts_to_plot, stringsAsFactors = FALSE)
+    df <- utils::read.csv(freetexts_to_plot, stringsAsFactors = FALSE)
     stopifnot(nrow(df) > 0)
     stopifnot("id" %in% colnames(df))
     freetexts_to_plot <- df[["id"]]
@@ -1603,7 +1610,7 @@ word_frequency_plot <- function(frequency_graph_pairs, freetexts_to_plot, framew
   } else {
   if (stringr::str_ends(string = frequency_graph_pairs, ".csv")) {
     stopifnot(file.exists(frequency_graph_pairs))
-    df <- read.csv(frequency_graph_pairs, stringsAsFactors = FALSE)
+    df <- utils::read.csv(frequency_graph_pairs, stringsAsFactors = FALSE)
     stopifnot(nrow(df) > 0)
     stopifnot(all(c("from_id", "to_id") %in% colnames(df)))
     graph_pairs_from_ids <- df[["from_id"]]
@@ -1693,7 +1700,7 @@ add_clean_freetext_to_data <- function(framework_data, freetexts_to_plot) {
 
   purrr::walk(freetexts_to_plot, function(x) {
     if (!(paste0("data_clean_", x) %in% framework_data$get_data_list_names())) {
-      framework_data$add_data_data_frame((framework_data$data$df1 %>% dplyr::select(fragment = all_of(x), "FragmentID", "EntryYrMth") %>% dplyr::filter(!is.na(fragment))),
+      framework_data$add_data_data_frame((framework_data$data$df1 %>% dplyr::select(fragment = dplyr::all_of(x), "FragmentID", "EntryYrMth") %>% dplyr::filter(!is.na(fragment))),
                                       name = paste0("data_clean_", x), add_to_export_list_names = TRUE)
     }
   })

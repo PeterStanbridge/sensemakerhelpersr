@@ -1,6 +1,9 @@
 
 #' get a triad value's zone
 #'
+#' @title get a triad value's zone
+#' @description
+#' This function returns the zone value for a triad based on passing in a left, top and right compositional value.
 #' @param top percentage triad top value (between 0 and 100).
 #' @param left  percentage triad left value (between 0 and 100).
 #' @param right  percentage triad right value (between 0 and 100).
@@ -171,6 +174,7 @@ calculate_stone_9_zone = function(x, y) {
 #' @param data - The data containing the triad top, left and right columns. This can be the full data dataframe, provided the triad's 3 columns are present.
 #' @param triad_id - The signifier id of the triad to calculate means.
 #' @param mean_type - either "geometric" or "arithmetic".
+#' @param framework_object - The sensemakerframeworkr object associated with the framework.
 #' @param zero_logic - either "small_value" or "remove". Small value means to take a zero value and give it a very small replacement. Otherwise ignore this fragment.
 #' @param for_ggtern - Default FALSE, if true, the returned dataframe containing the mean is in a format ready to plot in ggtern.
 #' @returns The triad means as 3 values.
@@ -303,7 +307,7 @@ get_triad_anchor_plot_size <- function (anchor_titles) {
 #' @description
 #' This might be a useful function - it is used by the workbench to size plot titles and useful for Workbench sized plot objects.
 #' @param title - A string containing the title.
-#' @param title_size_multiplier. A multiplier to expand or contract the retured size.
+#' @param title_size_multiplier - A multiplier to expand or contract the retured size.
 #' @returns An integer for the title plot size.
 #' @export
 get_graph_title_size <- function(title, title_size_multiplier = 1) {

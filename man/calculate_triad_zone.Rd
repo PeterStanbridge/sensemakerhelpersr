@@ -17,6 +17,9 @@ calculate_triad_zone(top, left, right)
 A single character returning the triad zone
 }
 \description{
+This function returns the zone value for a triad based on passing in a left, top and right compositional value.
+}
+\details{
 get a triad value's zone
 }
 \examples{
