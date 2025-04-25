@@ -1054,14 +1054,10 @@ produce_tern_pair_means_graphs_by_triad <- function(tern_pairs, framework_data, 
 produce_keyness_pair_graphs <- function(keyness_pairs, framework_data, freetext_ids = NULL, min_term_freq = 3, languages = "en") {
 
   if (!(all(languages == "en") & !exists("isoLanguages"))) {
-    print("get isocodes")
     get_iso_codes()
-    print("past get iso codes")
     stopifnot(all(languages %in% isoLanguages[["Code"]]))
   }
 
-
-print(paste("class keyness pairs is", class(keyness_pairs)))
   if (class(keyness_pairs) == "character") {
     stopifnot(file.exists(keyness_pairs))
     keyness_pairs <- utils::read.csv(keyness_pairs, stringsAsFactors = FALSE)
@@ -1074,9 +1070,9 @@ print(paste("class keyness pairs is", class(keyness_pairs)))
   } else {
     freetext_ids <- framework_data$sm_framework$get_freetext_fragments()
   }
-print("before build datasets")
+
   build_pair_datasets(framework_data, pairs_definitions = keyness_pairs, doc_var = "auto", plot_col = "auto")
-print("after build datasets")
+
    from_ids <- keyness_pairs[, "from_id"]
    to_ids <- keyness_pairs[, "to_id"]
    from_colours <- keyness_pairs[, "from_colour"]
