@@ -44,7 +44,7 @@ get_residuals(
 }}
 }
 \value{
-Returns a named list.containing the residual calculations. z, zsqr  the data count matrix, expected value matrix, p_value and test_result accept null hypothesis TRUE or FALSE.
+Returns a named list.containing the residual calculations. z, zsqr  the data count matrix, expected value matrix, p_value, test_result accept null hypothesis TRUE or FALSE, .
 }
 \description{
 This function will perform goodness of fit tests and return the results for each signifier combination of the from and to signifier types. For lists, these will be only the single select signifier mcqs and the date columns.

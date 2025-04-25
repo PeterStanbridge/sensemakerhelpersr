@@ -1235,6 +1235,95 @@ plot_sentiment_bars <- function(sentiment_filters, freetexts_to_plot, framework_
 
 }
 
+#' @title Plot a bar chart of the sentiment content of the text passed in german language
+#' @description
+#' This function plots a bar chart of sentiments - positive and negative - for german language text.
+#' @param sentiment_filters - A data frame or name of a csv file with columns id and title. The id column contains the names of data queries and the title column the names to use in the graph print.
+#' @param freetexts_to_plot - default NULL, A vector of freetext signifier ids for textual data If NULL all freetext signifiers set as a fragment are plotted.
+#' @param framework_data - the sensemakerdatar object for the framework.
+#' @export
+plot_german_sentiment_bars <- function(sentiment_data, freetexts_to_plot = "fragment_text", framework_data = fwd) {
+
+  if (stringr::str_ends(string = freetexts_to_plot, ".csv")) {
+    stopifnot(file.exists(freetexts_to_plot))
+    df <- read.csv(freetexts_to_plot, stringsAsFactors = FALSE)
+    stopifnot(nrow(df) > 0)
+    stopifnot("id" %in% colnames(df))
+    freetexts_to_plot <- df[["id"]]
+  } else {
+    if (class(freetexts_to_plot) == "character") {
+      stopifnot(trimws(freetexts_to_plot) != "")
+    } else {
+      if (class(freetexts_to_plot) == "data.frame") {
+        stopifnot(nrow(freetexts_to_plot) > 0)
+        stopifnot("id" %in% colnames(freetexts_to_plot))
+        freetexts_to_plot <- freetexts_to_plot[["id"]]
+      }
+    }
+  }
+
+  # so now we have our freetexts_to_plot as a vector of one or more characters - check that they are free texts
+  stopifnot(all(freetexts_to_plot %in% framework_data$sm_framework$get_freetext_fragments()))
+
+  if (class(sentiment_data) == "data.frame") {
+    stopifnot(nrow(sentiment_data) > 0)
+    stopifnot("id" %in% colnames(sentiment_data))
+    stopifnot("title" %in% colnames(sentiment_data))
+    sentiment_titles <- sentiment_data[["title"]]
+    sentiment_data <- sentiment_data[["id"]]
+  } else {
+    if (stringr::str_ends(string = sentiment_data, ".csv")) {
+      stopifnot(file.exists(sentiment_data))
+      df <- read.csv(sentiment_data, stringsAsFactors = FALSE)
+      stopifnot(nrow(df) > 0)
+      stopifnot("id" %in% colnames(df))
+      stopifnot("title" %in% colnames(df))
+      sentiment_data <- df[["id"]]
+      sentiment_titles <- df[["title"]]
+    }
+  }
+
+  # we create separate cleaned dataframes for the sentiment analysis so add if they are not already there
+  add_clean_freetext_to_data(framework_data, freetexts_to_plot)
+
+
+  out_results <<- vector("list", length = length(freetexts_to_plot))
+  names(out_results) <- freetexts_to_plot
+
+  purrr::walk(freetexts_to_plot, function(frag_id) {
+    # each column
+
+    out_plots <<- vector("list", length = length(sentiment_data))
+    names(out_plots) <- sentiment_data
+
+    purrr::walk2(sentiment_data, sentiment_titles, function(filter_id, filter_title) {
+      # each data set - this is the data clean for this column filtered by the data filter in use
+      data_use <-  framework_data$data[[paste0("data_clean_", frag_id)]] %>% dplyr::filter(.data[["FragmentID"]] %in% framework_data$data[[filter_id]][["FragmentID"]])
+      # do the sentiment stuff
+      data_to_plot <- apply_standard_emotions_german(data_use, framework_data$stop_words)
+      # plot
+      neg_count <- sum(data_to_plot$negative)
+      pos_count <- sum(data_to_plot$positive)
+      tot_count <- neg_count + pos_count
+      df_plot <- data.frame(cnt = c(neg_count, pos_count),  per = c(round((neg_count/tot_count) * 100, digits = 0), round((pos_count/tot_count) * 100, digits = 0) ), emotion = c("negative", "positive"))
+      out_plots[[filter_id]] <<-  ggplot(df_plot, aes(x = emotion, y = per, fill = emotion)) +
+        geom_bar(stat = "identity") + scale_fill_manual(values = c(negative = "red", positive = "blue")) +  theme_minimal() +
+        labs(title = paste("Sentiment Distribution : ", framework_data$sm_framework$get_signifier_title(frag_id), " : ", filter_title),
+             x = "Sentiment Category",
+             y = "Percentage") +
+        theme(title = ggplot2::element_text(colour = "black", size = 8, family = "Helvetica")) + coord_cartesian(ylim = c(0, 100))
+
+
+    })
+
+    out_results[[frag_id]] <<- out_plots
+
+  })
+
+  return(out_results)
+
+}
+
 #' @title Plot a graph of the sentiment valence of the freetext ids passed to the function.
 #' @description
 #' This function plots a bar chart of sentiments.

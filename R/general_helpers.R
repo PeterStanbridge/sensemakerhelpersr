@@ -362,6 +362,36 @@ apply_standard_emotions = function(data, remove_words) {
 
 }
 
+
+#' @title apply standard emotions to german text data.
+#' @description
+#' This function returns the standard "Positive","Negative", sentiments based on the passed in text and stop words for German language.
+#' @param data - A data frame that must contain the "FragmentID" column and "fragment" column (with this spelling/case) containing the text.
+#' @returns A data frame with the sentiments and counts to plot.
+#' @export
+apply_standard_emotions_german = function(data, remove_words) {
+
+
+  # Create a quanteda corpus
+  corpus_data <- quanteda::corpus(data, text_field = "fragment", docid_field = "FragmentID")
+
+  # Tokenize the corpus
+  tokens_data <- quanteda::tokens(corpus_data, remove_punct = TRUE, remove_symbols = TRUE)
+  tokens_data <- quanteda::tokens_remove(tokens_data, quanteda::stopwords(language))
+  tokens_data <- quanteda::tokens_remove(tokens_data, remove_words)
+  # Define the sentiment dictionary, e.g., Loughran-McDonald dictionary
+
+
+  dfm_toks <- quanteda::dfm(tokens_data)
+  dict <- quanteda.sentiment::data_dictionary_sentiws
+  sentiment_dfm <- quanteda::dfm_lookup(dfm_toks, dictionary = dict, levels = 1, valuetype = )
+
+  # Convert to data.frame
+  sentiment_df <- quanteda::convert(sentiment_dfm, to = "data.frame")
+  return(sentiment_df)
+
+}
+
 #' @title Is the colour code or name valid.
 #' @description Determines whether colour characters are valid colour codes/names
 #' @param x A vector of colour codes/characters to test

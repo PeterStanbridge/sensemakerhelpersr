@@ -8,7 +8,8 @@ word_frequency_plot(
   frequency_graph_pairs,
   freetexts_to_plot,
   framework_data,
-  use_stem = FALSE
+  use_stem = FALSE,
+  languages = "en"
 )
 }
 \arguments{
