@@ -47,7 +47,7 @@ get_triad_standard_canvas <- function() {
   #  assign("triad_standard_canvas", png::readPNG("./data/triad_standard.png"), envir = .GlobalEnv)
   #}
   #return(triad_standard_canvas)
-  triad_standard_canvas_name <- system.file("./inst/extdata", "triad_standard.png", package = "sensemakerhelpersr")
+  triad_standard_canvas_name <- system.file("extdata", "triad_standard.png", package = "sensemakerhelpersr")
   return(assign("triad_standard_canvas", png::readPNG(triad_standard_canvas_name), envir = .GlobalEnv))
 }
 
@@ -57,13 +57,8 @@ get_triad_standard_canvas <- function() {
 #' @returns The iso codes in a data frame
 #' @export
 get_iso_codes <- function() {
-  # if the image is not in the global envirionment add it
-  # if (!exists("triad_standard_canvas", envir = .GlobalEnv)) {
-  #  assign("triad_standard_canvas", png::readPNG("./data/triad_standard.png"), envir = .GlobalEnv)
-  #} isoLanguages <- utils::read.csv("data/isocodes.csv",  sep = ",", stringsAsFactors = FALSE, encoding = 'UTF-8', na.strings = "")
-  #return(triad_standard_canvas)
-  iso_codes <- system.file("./inst/extdata", "isocodes.csv", package = "sensemakerhelpersr")
-  return(assign("isoLanguages", utils::read.csv(iso_codes,  sep = ",", stringsAsFactors = FALSE, encoding = 'UTF-8', na.strings = ""), envir = .GlobalEnv))
+ iso_codes <- system.file("extdata", "isocodes.csv", package = "sensemakerhelpersr")
+return(assign("isoLanguages", utils::read.csv(iso_codes,  sep = ",", stringsAsFactors = FALSE, encoding = 'UTF-8', na.strings = ""), envir = .GlobalEnv))
 }
 #' @title Get the zone labeled triad canvas used as triad background in a ggplot x,y plot.
 #' @description
@@ -76,7 +71,7 @@ get_triad_zone_canvas <- function() {
   #  assign("triad_zone_canvas", png::readPNG("./data/zone_zone.png"), envir = .GlobalEnv)
  # }
   #return(triad_zone_canvas)
-  triad_zone_canvas_name <- system.file("./inst/extdata", "zone_zone.png", package = "sensemakerhelpersr")
+  triad_zone_canvas_name <- system.file("extdata", "zone_zone.png", package = "sensemakerhelpersr")
   return(assign("triad_zone_canvas", png::readPNG(triad_zone_canvas_name), envir = .GlobalEnv))
 }
 
@@ -90,7 +85,7 @@ get_triad_count_canvas <- function() {
  # if (!exists("triad_count_canvas", envir = .GlobalEnv)) {
  #   assign("triad_count_canvas", png::readPNG("./data/triad_zone.png"), envir = .GlobalEnv)
   #}
-  triad_count_canvas_name <- system.file("./inst/extdata", "triad_zone.png", package = "sensemakerhelpersr")
+  triad_count_canvas_name <- system.file("extdata", "triad_zone.png", package = "sensemakerhelpersr")
   return(assign("triad_count_canvas", png::readPNG(triad_count_canvas_name), envir = .GlobalEnv))
 }
 
@@ -1059,12 +1054,14 @@ produce_tern_pair_means_graphs_by_triad <- function(tern_pairs, framework_data, 
 produce_keyness_pair_graphs <- function(keyness_pairs, framework_data, freetext_ids = NULL, min_term_freq = 3, languages = "en") {
 
   if (!(all(languages == "en") & !exists("isoLanguages"))) {
+    print("get isocodes")
     get_iso_codes()
+    print("past get iso codes")
     stopifnot(all(languages %in% isoLanguages[["Code"]]))
   }
 
 
-
+print(paste("class keyness pairs is", class(keyness_pairs)))
   if (class(keyness_pairs) == "character") {
     stopifnot(file.exists(keyness_pairs))
     keyness_pairs <- utils::read.csv(keyness_pairs, stringsAsFactors = FALSE)
@@ -1077,9 +1074,9 @@ produce_keyness_pair_graphs <- function(keyness_pairs, framework_data, freetext_
   } else {
     freetext_ids <- framework_data$sm_framework$get_freetext_fragments()
   }
-
+print("before build datasets")
   build_pair_datasets(framework_data, pairs_definitions = keyness_pairs, doc_var = "auto", plot_col = "auto")
-
+print("after build datasets")
    from_ids <- keyness_pairs[, "from_id"]
    to_ids <- keyness_pairs[, "to_id"]
    from_colours <- keyness_pairs[, "from_colour"]
