@@ -379,7 +379,7 @@ apply_standard_emotions_german = function(data, remove_words) {
 
   # Tokenize the corpus
   tokens_data <- quanteda::tokens(corpus_data, remove_punct = TRUE, remove_symbols = TRUE)
-  tokens_data <- quanteda::tokens_remove(tokens_data, quanteda::stopwords(language))
+  tokens_data <- quanteda::tokens_remove(tokens_data, quanteda::stopwords("de"))
   tokens_data <- quanteda::tokens_remove(tokens_data, remove_words)
   # Define the sentiment dictionary, e.g., Loughran-McDonald dictionary
 
