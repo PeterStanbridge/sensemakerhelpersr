@@ -9,7 +9,8 @@ produce_keyness_pair_graphs(
   framework_data,
   freetext_ids = NULL,
   min_term_freq = 3,
-  languages = "en"
+  languages = "en",
+  stem_text = TRUE
 )
 }
 \arguments{
@@ -31,6 +32,10 @@ produce_keyness_pair_graphs(
 
 \item{languages}{\itemize{
 \item Default "en", a vector of supported 2 character language codes for use in stop words and stemming.
+}}
+
+\item{stem_text}{\itemize{
+\item Default TRUE, whether to stem the text.
 }}
 }
 \description{

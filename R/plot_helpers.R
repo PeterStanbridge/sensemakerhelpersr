@@ -1050,8 +1050,9 @@ produce_tern_pair_means_graphs_by_triad <- function(tern_pairs, framework_data, 
 #' @param freetext_ids - default NULL, A vector of freetext signifier ids for textual data If NULL all freetext signifiers set as a fragment are plotted.
 #' @param min_term_freq - Default 3, number of occurrence of a term before it it is accepted into the corpus.
 #' @param languages - Default "en", a vector of supported 2 character language codes for use in stop words and stemming.
+#' @param stem_text - Default TRUE, whether to stem the text.
 #' @export
-produce_keyness_pair_graphs <- function(keyness_pairs, framework_data, freetext_ids = NULL, min_term_freq = 3, languages = "en") {
+produce_keyness_pair_graphs <- function(keyness_pairs, framework_data, freetext_ids = NULL, min_term_freq = 3, languages = "en", stem_text = TRUE) {
 
   if (!(all(languages == "en") & !exists("isoLanguages"))) {
     get_iso_codes()
@@ -1110,7 +1111,7 @@ produce_keyness_pair_graphs <- function(keyness_pairs, framework_data, freetext_
 
       df <- framework_data$data[[paste0(from_id, "_", to_id)]]
 
-      corp_list <- build_corpus(df, framework_data,  freetext_id, doc_var = "doc_var", min_term_freq = min_term_freq, languages = languages)
+      corp_list <- build_corpus(df, framework_data,  freetext_id, doc_var = "doc_var", min_term_freq = min_term_freq, languages = languages, stem_text)
 
       #fragment_text_corpus <- quanteda::corpus(df[[freetext_id]], docvars = data.frame(doc_var = df[["doc_var"]]))
       #tokens <- quanteda::tokens(fragment_text_corpus, remove_punct = TRUE, remove_symbols = TRUE, remove_numbers = TRUE,
