@@ -550,11 +550,11 @@ build_corpus <- function(df, framework_data,  freetext_id, doc_var, min_term_fre
 
 
   fragment_text_corpus <- quanteda::corpus(df[[freetext_id]], docvars = data.frame(doc_var = df[[doc_var]]))
-  fragment_token <- quanteda::tokens(fragment_text_corpus, remove_punct = TRUE, remove_symbols = TRUE, remove_numbers = TRUE,
+  tokens <- quanteda::tokens(fragment_text_corpus, remove_punct = TRUE, remove_symbols = TRUE, remove_numbers = TRUE,
                              remove_url = TRUE, remove_separators = TRUE, split_hyphens = TRUE, split_tags = TRUE)
 
   if (stem_text) {
-    purrr::walk(languages, ~ {fragment_token <<- quanteda::tokens_wordstem(fragment_token, language = .x)})
+    purrr::walk(languages, ~ {fragment_token <<- quanteda::tokens_wordstem(tokens, language = .x)})
   }
 
   purrr::walk(languages, ~ {fragment_token <<- quanteda::tokens_remove(fragment_token, quanteda::stopwords(.x))})
