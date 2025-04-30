@@ -553,14 +553,14 @@ build_corpus <- function(df, framework_data,  freetext_id, doc_var, min_term_fre
   tokens <- quanteda::tokens(fragment_text_corpus, remove_punct = TRUE, remove_symbols = TRUE, remove_numbers = TRUE,
                              remove_url = TRUE, remove_separators = TRUE, split_hyphens = TRUE, split_tags = TRUE)
 
-  purrr::walk(languages, ~ {fragment_token <<- quanteda::tokens_wordstem(tokens, language = .x)})
+  purrr::walk(languages, ~ {fragment_token_stemmed <<- quanteda::tokens_wordstem(tokens, language = .x)})
 
-  purrr::walk(languages, ~ {fragment_token <<- quanteda::tokens_remove(fragment_token, quanteda::stopwords(.x))})
+  purrr::walk(languages, ~ {fragment_token_stemmed <<- quanteda::tokens_remove(fragment_token_stemmed, quanteda::stopwords(.x))})
 
-  fragment_token <- quanteda::tokens_remove(fragment_token, framework_data$stop_words)
+  fragment_token_stemmed <- quanteda::tokens_remove(fragment_token_stemmed, framework_data$stop_words)
 
-  dtm <- quanteda::dfm(fragment_token, tolower = TRUE)
-  dtm.trim <- quanteda::dfm_trim(dtm, min_termfreq = 3)
+  dtm.stemmed <- quanteda::dfm(fragment_token_stemmed, tolower = TRUE)
+  dtm.trim_stemmed <- quanteda::dfm_trim(dtm.stemmed, min_termfreq = 3)
 
 
   purrr::walk(languages, ~ {fragment_token_unstemmed <<- quanteda::tokens_remove(tokens, quanteda::stopwords(.x))})
@@ -570,7 +570,7 @@ build_corpus <- function(df, framework_data,  freetext_id, doc_var, min_term_fre
   dtm.unstemmed <- quanteda::dfm(fragment_token_unstemmed, tolower = TRUE)
   dtm.trim_unstemmed <- quanteda::dfm_trim(dtm.unstemmed, min_termfreq = 3)
 
-  return(list(text_corpus = fragment_text_corpus, tokens_stem = fragment_token, tokens_unstem = fragment_token_unstemmed, dtm = dtm, dtm_trim = dtm.trim, dtm_unstemmed = dtm.unstemmed, dtm_trim_unstemmed = dtm.trim_unstemmed))
+  return(list(text_corpus = fragment_text_corpus, tokens_stem = fragment_token_stemmed, tokens_unstem = fragment_token_unstemmed, dtm_stemmed = dtm.stemmed, dtm_trim_stemmed = dtm.trim_stemmed, dtm_unstemmed = dtm.unstemmed, dtm_trim_unstemmed = dtm.trim_unstemmed))
 }
 
 # Build a pairs data frame - one data frame binding rows from two data frames. .

@@ -1113,6 +1113,7 @@ produce_keyness_pair_graphs <- function(keyness_pairs, framework_data, freetext_
 
       corp_list <- build_corpus(df, framework_data,  freetext_id, doc_var = "doc_var", min_term_freq = min_term_freq, languages = languages)
       #return(list(text_corpus = fragment_text_corpus, tokens_stem = fragment_token, tokens_unstem = fragment_token_unstemmed, dtm = dtm, dtm_trim = dtm.trim))
+
       #fragment_text_corpus <- quanteda::corpus(df[[freetext_id]], docvars = data.frame(doc_var = df[["doc_var"]]))
       #tokens <- quanteda::tokens(fragment_text_corpus, remove_punct = TRUE, remove_symbols = TRUE, remove_numbers = TRUE,
       #                           remove_url = TRUE, remove_separators = TRUE, split_hyphens = TRUE, split_tags = TRUE)
@@ -1126,12 +1127,12 @@ produce_keyness_pair_graphs <- function(keyness_pairs, framework_data, freetext_
     #  dtm <- quanteda::dfm(fragment_token, tolower = TRUE)
     #  dtm.trim <- quanteda::dfm_trim(dtm, min_termfreq = 3)
       if (stem_text) {
-        dtm.trim <- corp_list$dtm_trim
+        dtm.trim <- corp_list$dtm_trim_stemmed
       } else {
         dtm.trim <- corp_list$dtm_trim_unstemmed
       }
 
-      keyness_doc_var <- quanteda.textstats::textstat_keyness(corp_list$dtm_trim_unstemmed,
+      keyness_doc_var <- quanteda.textstats::textstat_keyness(dtm.trim,
                                                               quanteda::docvars(corp_list$text_corpus, "doc_var") == from_id,
                                                               sort = TRUE, measure = "chi2")
 
@@ -1152,10 +1153,11 @@ produce_keyness_pair_graphs <- function(keyness_pairs, framework_data, freetext_
 #' @description
 #' This function plots a bar chart of sentiments.
 #' @param sentiment_filters - A data frame or name of a csv file with columns id and title. The id column contains the names of data queries and the title column the names to use in the graph print.
-#' @param freetexts_to_plot - default NULL, A vector of freetext signifier ids for textual data If NULL all freetext signifiers set as a fragment are plotted.
-#' @param framework_data - the sensemakerdatar object for the framwework.
+#' @param freetexts_to_plot - Default NULL, A vector of freetext signifier ids for textual data If NULL all freetext signifiers set as a fragment are plotted.
+#' @param framework_data - The sensemakerdatar object for the framwework.
+#' @param as_percentages - Default FALSE, graph as counts. TRUE graph as percantages
 #' @export
-plot_sentiment_bars <- function(sentiment_filters, freetexts_to_plot, framework_data) {
+plot_sentiment_bars <- function(sentiment_filters, freetexts_to_plot, framework_data, as_percentages = FALSE) {
 
   if (stringr::str_ends(string = freetexts_to_plot, ".csv")) {
     stopifnot(file.exists(freetexts_to_plot))
@@ -1215,12 +1217,17 @@ plot_sentiment_bars <- function(sentiment_filters, freetexts_to_plot, framework_
         # do the sentiment stuff
         data_to_plot <- apply_standard_emotions(data_use, framework_data$stop_words)
         # plot
+        if (as_percentages) {
+          data_to_plot <- data_to_plot |> dplyr::mutate(per = (round(((data_to_plot[["n"]] / sum(data_to_plot[["n"]])) * 100), digits = 0)))
+          data_to_plot[["n"]] <- data_to_plot[["per"]]
+        }
+
         out_plots[[filter_id]] <<- ggplot2::ggplot(data_to_plot, ggplot2::aes(x = sent_emotion, y = n, fill = sent_emotion)) +
           ggplot2::geom_bar(stat = "identity") +
           ggplot2::theme_minimal() +
           ggplot2::labs(title = paste("Sentiment Distribution : ", framework_data$sm_framework$get_signifier_title(frag_id), " : ", filter_title),
                      x = "Sentiment Category",
-                     y = "Count") +
+                     y =  ifelse(as_percentages, "Percentage", "Count")) +
           ggplot2::scale_fill_manual(values = c("Very Positive" = "darkgreen",
                                              "Positive" = "green",
                                              "Neutral" = "gray",
@@ -1620,14 +1627,12 @@ word_frequency_plot <- function(frequency_graph_pairs, freetexts_to_plot, framew
 
   # we create separate cleaned dataframes for the sentiment analysis so add if they are not already there
   add_clean_freetext_to_data(framework_data, freetexts_to_plot)
-
   # todo - this might not work
 
  # stop_words <- tidytext::stop_words
   stop_words <- NULL
   purrr::walk(languages, ~ {stop_words <<- dplyr::bind_rows(stop_words, tidytext::get_stopwords(language = .x))})
   remove_tibble <- dplyr::tibble(word = framework_data$stop_words, lexicon = rep_len("CUSTOM", length(framework_data$stop_words)))
-
 
   out_results <<- vector("list", length = length(freetexts_to_plot))
   names(out_results) <- freetexts_to_plot
@@ -1639,7 +1644,7 @@ word_frequency_plot <- function(frequency_graph_pairs, freetexts_to_plot, framew
     names(out_plots) <- paste0(graph_pairs_from_ids, "_", graph_pairs_to_ids)
 
     purrr::pwalk(list(graph_pairs_from_ids, graph_pairs_to_ids, graph_pairs_from_titles, graph_pairs_to_titles), function(from_id, to_id, from_title, to_title) {
-    #purrr::walk2(graph_pairs_from_ids, graph_pairs_to_ids, function(from_id, to_id) {
+    #purrr::walk2(graph_pairs_from_ids, graph_pairs_to_ids, fußnction(from_id, to_id) {
 
       data_from <- framework_data$get_data_dataframe(from_id, as_tibble = TRUE)
       data_to <- framework_data$get_data_dataframe(to_id, as_tibble = TRUE)
