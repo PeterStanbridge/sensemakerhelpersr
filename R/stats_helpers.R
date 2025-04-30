@@ -532,10 +532,9 @@ get_residuals <- function(df, fw, from_col, to_col, round_digits = 0, residual_t
 #' @param doc_var - The column name to use as the document variable.
 #' @param min_term_freq - Default 3, number of occurrence of a term before it it is accepted into the corpus.
 #' @param languages - Default "en", a vector of supported 2 character language codes for use in stop words and stemming.
-#' @param stem_text - Default TRUE, whether to stem the text
 #' @returns Returns a named list of tokens_stem (the stemmed tokens with stop words removed), tokens_unstem (the unstemmed tokens with stop words removed), dtm (the document term matrix not trimmed) and dtm_trim, the document term matrix trimmed to the min_term_freq value.
 #' @export
-build_corpus <- function(df, framework_data,  freetext_id, doc_var, min_term_freq = 3, languages = "en", stem_text = TRUE) {
+build_corpus <- function(df, framework_data,  freetext_id, doc_var, min_term_freq = 3, languages = "en") {
 
   stopifnot(doc_var %in% colnames(df))
   stopifnot(freetext_id %in% colnames(df))
@@ -550,23 +549,28 @@ build_corpus <- function(df, framework_data,  freetext_id, doc_var, min_term_fre
 
 
   fragment_text_corpus <- quanteda::corpus(df[[freetext_id]], docvars = data.frame(doc_var = df[[doc_var]]))
+
   tokens <- quanteda::tokens(fragment_text_corpus, remove_punct = TRUE, remove_symbols = TRUE, remove_numbers = TRUE,
                              remove_url = TRUE, remove_separators = TRUE, split_hyphens = TRUE, split_tags = TRUE)
 
-  if (stem_text) {
-    purrr::walk(languages, ~ {fragment_token <<- quanteda::tokens_wordstem(tokens, language = .x)})
-  }
+  purrr::walk(languages, ~ {fragment_token <<- quanteda::tokens_wordstem(tokens, language = .x)})
 
   purrr::walk(languages, ~ {fragment_token <<- quanteda::tokens_remove(fragment_token, quanteda::stopwords(.x))})
-
-  purrr::walk(languages, ~ {fragment_token_unstemmed <<- quanteda::tokens_remove(tokens, quanteda::stopwords(.x))})
 
   fragment_token <- quanteda::tokens_remove(fragment_token, framework_data$stop_words)
 
   dtm <- quanteda::dfm(fragment_token, tolower = TRUE)
   dtm.trim <- quanteda::dfm_trim(dtm, min_termfreq = 3)
 
-  return(list(text_corpus = fragment_text_corpus, tokens_stem = fragment_token, tokens_unstem = fragment_token_unstemmed, dtm = dtm, dtm_trim = dtm.trim))
+
+  purrr::walk(languages, ~ {fragment_token_unstemmed <<- quanteda::tokens_remove(tokens, quanteda::stopwords(.x))})
+
+  fragment_token_unstemmed <- quanteda::tokens_remove(fragment_token_unstemmed, framework_data$stop_words)
+
+  dtm.unstemmed <- quanteda::dfm(fragment_token_unstemmed, tolower = TRUE)
+  dtm.trim_unstemmed <- quanteda::dfm_trim(dtm.unstemmed, min_termfreq = 3)
+
+  return(list(text_corpus = fragment_text_corpus, tokens_stem = fragment_token, tokens_unstem = fragment_token_unstemmed, dtm = dtm, dtm_trim = dtm.trim, dtm_unstemmed = dtm.unstemmed, dtm_trim_unstemmed = dtm.trim_unstemmed))
 }
 
 # Build a pairs data frame - one data frame binding rows from two data frames. .

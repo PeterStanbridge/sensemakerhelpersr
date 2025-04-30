@@ -1111,8 +1111,8 @@ produce_keyness_pair_graphs <- function(keyness_pairs, framework_data, freetext_
 
       df <- framework_data$data[[paste0(from_id, "_", to_id)]]
 
-      corp_list <- build_corpus(df, framework_data,  freetext_id, doc_var = "doc_var", min_term_freq = min_term_freq, languages = languages, stem_text)
-
+      corp_list <- build_corpus(df, framework_data,  freetext_id, doc_var = "doc_var", min_term_freq = min_term_freq, languages = languages)
+      #return(list(text_corpus = fragment_text_corpus, tokens_stem = fragment_token, tokens_unstem = fragment_token_unstemmed, dtm = dtm, dtm_trim = dtm.trim))
       #fragment_text_corpus <- quanteda::corpus(df[[freetext_id]], docvars = data.frame(doc_var = df[["doc_var"]]))
       #tokens <- quanteda::tokens(fragment_text_corpus, remove_punct = TRUE, remove_symbols = TRUE, remove_numbers = TRUE,
       #                           remove_url = TRUE, remove_separators = TRUE, split_hyphens = TRUE, split_tags = TRUE)
@@ -1125,9 +1125,13 @@ produce_keyness_pair_graphs <- function(keyness_pairs, framework_data, freetext_
 
     #  dtm <- quanteda::dfm(fragment_token, tolower = TRUE)
     #  dtm.trim <- quanteda::dfm_trim(dtm, min_termfreq = 3)
+      if (stem_text) {
+        dtm.trim <- corp_list$dtm_trim
+      } else {
+        dtm.trim <- corp_list$dtm_trim_unstemmed
+      }
 
-      dtm.trim <- corp_list$dtm_trim
-      keyness_doc_var <- quanteda.textstats::textstat_keyness(dtm.trim,
+      keyness_doc_var <- quanteda.textstats::textstat_keyness(corp_list$dtm_trim_unstemmed,
                                                               quanteda::docvars(corp_list$text_corpus, "doc_var") == from_id,
                                                               sort = TRUE, measure = "chi2")
 
