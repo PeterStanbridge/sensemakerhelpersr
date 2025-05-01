@@ -284,7 +284,7 @@ calculate_multi_select_correlations <- function(correlation_pairs, fwd, list_ids
     # Now for each list
 
     # The muti-select list results returned as updated to the cp_reults list.
-    ms_results <<- vector("list", length(length(list_ids)))
+    ms_results <<- vector("list", length = length(list_ids))
     names(ms_results) <- list_ids
 
     purrr::walk(names(ms_list_columns), function(list_id) {
