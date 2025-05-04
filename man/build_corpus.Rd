@@ -10,8 +10,7 @@ build_corpus(
   freetext_id,
   doc_var,
   min_term_freq = 3,
-  languages = "en",
-  stem_text = TRUE
+  languages = "en"
 )
 }
 \arguments{
@@ -37,10 +36,6 @@ build_corpus(
 
 \item{languages}{\itemize{
 \item Default "en", a vector of supported 2 character language codes for use in stop words and stemming.
-}}
-
-\item{stem_text}{\itemize{
-\item Default TRUE, whether to stem the text
 }}
 }
 \value{

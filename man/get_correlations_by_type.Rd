@@ -9,6 +9,11 @@ get_correlations_by_type(
   fw,
   from_type,
   to_type,
+  from_signifier_classes = "signifier",
+  to_signifier_classes = "signifier",
+  from_signifier_ids = NULL,
+  to_signifier_ids = NULL,
+  keep_only_include = TRUE,
   round_digits = 0,
   residual_threshold = 4,
   p_threshold = 0.05

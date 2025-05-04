@@ -1071,9 +1071,7 @@ produce_keyness_pair_graphs <- function(keyness_pairs, framework_data, freetext_
   } else {
     freetext_ids <- framework_data$sm_framework$get_freetext_fragments()
   }
-
   build_pair_datasets(framework_data, pairs_definitions = keyness_pairs, doc_var = "auto", plot_col = "auto")
-
    from_ids <- keyness_pairs[, "from_id"]
    to_ids <- keyness_pairs[, "to_id"]
    from_colours <- keyness_pairs[, "from_colour"]
@@ -1131,15 +1129,14 @@ produce_keyness_pair_graphs <- function(keyness_pairs, framework_data, freetext_
       } else {
         dtm.trim <- corp_list$dtm_trim_unstemmed
       }
-
       keyness_doc_var <- quanteda.textstats::textstat_keyness(dtm.trim,
                                                               quanteda::docvars(corp_list$text_corpus, "doc_var") == from_id,
                                                               sort = TRUE, measure = "chi2")
-
       out_plots[[freetext_id]] <<- quanteda.textplots::textplot_keyness(keyness_doc_var, color = c(from_colour, to_colour), show_reference = TRUE, show_legend = FALSE, margin = 0.05, n = 20L, min_count = 2L) +
         ggplot2::scale_fill_discrete(name="", labels= c(from_title, to_title)) +
         ggplot2::ggtitle(paste("KEYNESS PLOT for", from_title, "and", to_title)) +
         ggplot2::theme(legend.position = c(0.6, 0.3)) + ggplot2::ylim(0, 40)
+
 
     })
     out_results[[paste0(from_id, "_", to_id)]] <<- out_plots

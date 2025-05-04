@@ -4,7 +4,12 @@
 \alias{plot_sentiment_bars}
 \title{Plot a bar chart of the sentiment content of the texted passed. .}
 \usage{
-plot_sentiment_bars(sentiment_filters, freetexts_to_plot, framework_data)
+plot_sentiment_bars(
+  sentiment_filters,
+  freetexts_to_plot,
+  framework_data,
+  as_percentages = FALSE
+)
 }
 \arguments{
 \item{sentiment_filters}{\itemize{
@@ -12,11 +17,15 @@ plot_sentiment_bars(sentiment_filters, freetexts_to_plot, framework_data)
 }}
 
 \item{freetexts_to_plot}{\itemize{
-\item default NULL, A vector of freetext signifier ids for textual data If NULL all freetext signifiers set as a fragment are plotted.
+\item Default NULL, A vector of freetext signifier ids for textual data If NULL all freetext signifiers set as a fragment are plotted.
 }}
 
 \item{framework_data}{\itemize{
-\item the sensemakerdatar object for the framwework.
+\item The sensemakerdatar object for the framwework.
+}}
+
+\item{as_percentages}{\itemize{
+\item Default FALSE, graph as counts. TRUE graph as percantages
 }}
 }
 \description{

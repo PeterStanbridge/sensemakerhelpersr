@@ -366,34 +366,80 @@ calculate_multi_select_correlations <- function(correlation_pairs, fwd, list_ids
 #' @param p_threshold - default 0.05, the p-value threshold for null hypothesis test.
 #' @returns Returns a named list. ids_to_output contains the dataframe of signifier id pairs included in the output. sig_residuals a list of length the number of correlation pairs, It contains the "data", "expected", "residuals", "residuals_sqr", "p-value".
 #' @export
-get_correlations_by_type <- function(df, fw, from_type, to_type, round_digits = 0, residual_threshold = 4, p_threshold = 0.05) {
+get_correlations_by_type <- function(df, fw, from_type, to_type, from_signifier_classes = "signifier", to_signifier_classes = "signifier",
+                                     from_signifier_ids = NULL,  to_signifier_ids = NULL, keep_only_include = TRUE, round_digits = 0, residual_threshold = 4, p_threshold = 0.05) {
 
   stopifnot(from_type %in% c("list", fw$get_shape_signifier_types()))
   stopifnot(to_type %in% c("list", fw$get_shape_signifier_types()))
-  # The correlation columns will be coming from lists - e.g. dyad type will use the zone mcq equivalent columns for correlations.
-  all_list_ids <- fw$get_list_ids()
+  if (is.list(from_signifier_classes)) {
+    from_signifier_classes <- unlist(purrr::keep(from_signifier_classes, ~ {!is.null(.x)}))
+  }
+  if (is.list(to_signifier_classes)) {
+    to_signifier_classes <- unlist(purrr::keep(to_signifier_classes, ~ {!is.null(.x)}))
+  }
+  from_signifier_classes <- unlist(purrr::keep(from_signifier_classes, ~ {!is.na(.x)}))
+  to_signifier_classes <- unlist(purrr::keep(to_signifier_classes, ~ {!is.na(.x)}))
+  if (!is.null(from_signifier_classes)) {
+    stopifnot(all(from_signifier_classes %in% fw$get_supported_signifier_classes()))
+  }
+  if (!is.null(from_signifier_classes)) {
+    stopifnot(all(to_signifier_classes %in% fw$get_supported_signifier_classes()))
+  }
 
-  from_ids  <- fw$get_signifier_ids_by_type(from_type, sig_class = "signifier")
-  to_ids  <- fw$get_signifier_ids_by_type(to_type, sig_class = "signifier")
+  if (length(from_signifier_ids) > 0) {
+    sig_types <- unique(unlist(purrr::map(from_signifier_ids, ~ {fw$get_signifier_type_by_id(.x)})))
+    stopifnot(length(sig_type) > 1)
+    stopifnot(sig_types != from_type)
+    if (keep_only_include) {
+    from_signifier_ids <- unlist(purrr::keep(from_signifier_ids, ~ {fw$get_signifier_include(.x)}))
+    }
+  }
+
+  if (length(to_signifier_ids) > 0) {
+    sig_types <- unique(unlist(purrr::map(to_signifier_ids, ~ {fw$get_signifier_type_by_id(.x)})))
+    stopifnot(length(sig_type) > 1)
+    stopifnot(sig_types != to_type)
+    if (keep_only_include) {
+      to_signifier_ids <- unlist(purrr::keep(to_signifier_ids, ~ {fw$get_signifier_include(.x)}))
+    }
+  }
+
+  # The correlation columns will be coming from lists - e.g. dyad type will use the zone mcq equivalent columns for correlations.
+  all_list_ids <- fw$get_list_ids(keep_only_include = keep_only_include)
+  if (is.null(from_signifier_ids)) {
+  from_ids  <- fw$get_signifier_ids_by_type(from_type, sig_class = from_signifier_classes, keep_only_include = keep_only_include)
+  } else {
+    from_ids <- from_signifier_ids
+  }
+  if (is.null(to_signifier_ids)) {
+  to_ids  <- fw$get_signifier_ids_by_type(to_type, sig_class = from_signifier_classes, keep_only_include = keep_only_include)
+  } else {
+    to_ids <- to_signifier_ids
+  }
 
   # If the from type is a shape type, then get the actual columns for the analysis
-
+  done_dates <- FALSE
   if (from_type %in% fw$get_shape_signifier_types()) {
     # get those list signifier ids that have the same start string as the shape signifier ids
     from_col_ids <- unlist(purrr::imap(purrr::map(from_ids, ~ {stringr::str_starts(all_list_ids, .x)}), ~ {all_list_ids[purrr::map(from_ids, ~ {stringr::str_starts(all_list_ids, .x)})[[.y]]]}))
   } else {
-    from_col_ids <- setdiff(fw$get_single_select_list_ids(sig_class = c("signifier", "date")), "EntryYrMthDay")
-    dte_cols <- setdiff(fw$get_single_select_list_ids(sig_class = c("date")), "EntryYrMthDay")
-    purrr::walk(dte_cols, ~ {df[[.x]] <<- as.character(df[[.x]])})
+    from_col_ids <- setdiff(fw$get_single_select_list_ids(sig_class = from_signifier_classes, keep_only_include = keep_only_include), "EntryYrMthDay")
+    if ("date" %in% from_signifier_classes | "date" %in% to_signifier_classes) {
+      dte_cols <- setdiff(fw$get_single_select_list_ids(sig_class = c("date"), keep_only_include = keep_only_include), "EntryYrMthDay")
+      purrr::walk(dte_cols, ~ {df[[.x]] <<- as.character(df[[.x]])})
+      done_dates <- TRUE
+    }
   }
 
   if (to_type %in% fw$get_shape_signifier_types()) {
     # get those list signifier ids that have the same start string as the shape signifier ids
     to_col_ids <- unlist(purrr::imap(purrr::map(to_ids, ~ {stringr::str_starts(all_list_ids, .x)}), ~ {all_list_ids[purrr::map(to_ids, ~ {stringr::str_starts(all_list_ids, .x)})[[.y]]]}))
   } else {
-    to_col_ids <- setdiff(fw$get_single_select_list_ids(sig_class = c("signifier", "date")), "EntryYrMthDay")
-    dte_cols <- setdiff(fw$get_single_select_list_ids(sig_class = c("date")), "EntryYrMthDay")
-    purrr::walk(dte_cols, ~ {df[[.x]] <<- as.character(df[[.x]])})
+    to_col_ids <- setdiff(fw$get_single_select_list_ids(sig_class = c("signifier", "date"), keep_only_include = keep_only_include), "EntryYrMthDay")
+    if (!done_dates & ("date" %in% from_signifier_classes | "date" %in% to_signifier_classes)) {
+      dte_cols <- setdiff(fw$get_single_select_list_ids(sig_class = c("date"), keep_only_include = keep_only_include), "EntryYrMthDay")
+      purrr::walk(dte_cols, ~ {df[[.x]] <<- as.character(df[[.x]])})
+    }
   }
 
   if (from_type != to_type) {
