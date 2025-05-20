@@ -43,7 +43,7 @@ get_palette_colour_count <- function(brew_colour_name) {
 #' @export
 get_triad_standard_canvas <- function() {
   # if the image is not in the global envirionment add it
- # if (!exists("triad_standard_canvas", envir = .GlobalEnv)) {
+  # if (!exists("triad_standard_canvas", envir = .GlobalEnv)) {
   #  assign("triad_standard_canvas", png::readPNG("./data/triad_standard.png"), envir = .GlobalEnv)
   #}
   #return(triad_standard_canvas)
@@ -57,8 +57,8 @@ get_triad_standard_canvas <- function() {
 #' @returns The iso codes in a data frame
 #' @export
 get_iso_codes <- function() {
- iso_codes <- system.file("extdata", "isocodes.csv", package = "sensemakerhelpersr")
-return(assign("isoLanguages", utils::read.csv(iso_codes,  sep = ",", stringsAsFactors = FALSE, encoding = 'UTF-8', na.strings = ""), envir = .GlobalEnv))
+  iso_codes <- system.file("extdata", "isocodes.csv", package = "sensemakerhelpersr")
+  return(assign("isoLanguages", utils::read.csv(iso_codes,  sep = ",", stringsAsFactors = FALSE, encoding = 'UTF-8', na.strings = ""), envir = .GlobalEnv))
 }
 #' @title Get the zone labeled triad canvas used as triad background in a ggplot x,y plot.
 #' @description
@@ -67,9 +67,9 @@ return(assign("isoLanguages", utils::read.csv(iso_codes,  sep = ",", stringsAsFa
 #' @export
 get_triad_zone_canvas <- function() {
   # if the image is not in the global envirionment add it
-#  if (!exists("triad_zone_canvas", envir = .GlobalEnv)) {
+  #  if (!exists("triad_zone_canvas", envir = .GlobalEnv)) {
   #  assign("triad_zone_canvas", png::readPNG("./data/zone_zone.png"), envir = .GlobalEnv)
- # }
+  # }
   #return(triad_zone_canvas)
   triad_zone_canvas_name <- system.file("extdata", "zone_zone.png", package = "sensemakerhelpersr")
   return(assign("triad_zone_canvas", png::readPNG(triad_zone_canvas_name), envir = .GlobalEnv))
@@ -82,8 +82,8 @@ get_triad_zone_canvas <- function() {
 #' @export
 get_triad_count_canvas <- function() {
   # if the image is not in the global envirionment add it
- # if (!exists("triad_count_canvas", envir = .GlobalEnv)) {
- #   assign("triad_count_canvas", png::readPNG("./data/triad_zone.png"), envir = .GlobalEnv)
+  # if (!exists("triad_count_canvas", envir = .GlobalEnv)) {
+  #   assign("triad_count_canvas", png::readPNG("./data/triad_zone.png"), envir = .GlobalEnv)
   #}
   triad_count_canvas_name <- system.file("extdata", "triad_zone.png", package = "sensemakerhelpersr")
   return(assign("triad_count_canvas", png::readPNG(triad_count_canvas_name), envir = .GlobalEnv))
@@ -337,95 +337,95 @@ plot_triad <- function(filtered_data, full_data, sig_id, framework_object, dot_s
 #' @export
 plot_dyad <- function(filtered_data, full_data, dyad_id, framework_object, dyad_title_size = "default",  dyad_x_axis_title_size = "default", dyad_x_axis_title_wrap_length = 35) {
 
-stat_legend_size <- 12
-wrap_point <- 56
-bin_width = 12
-percentage_or_count <- "counts"
-border_colour <- "#000000"
-fill_colour <- "#7084B8"
-dyad_transparency <- 0.4
-dyad_mean_colour <- "#000099"
-dyad_full_range <- TRUE
-use_full_y_range <- TRUE
-return_with_print <- TRUE
+  stat_legend_size <- 12
+  wrap_point <- 56
+  bin_width = 12
+  percentage_or_count <- "counts"
+  border_colour <- "#000000"
+  fill_colour <- "#7084B8"
+  dyad_transparency <- 0.4
+  dyad_mean_colour <- "#000099"
+  dyad_full_range <- TRUE
+  use_full_y_range <- TRUE
+  return_with_print <- TRUE
 
-title_size_multiplier <- 1
-title <- framework_object$get_signifier_title(dyad_id)
-if (dyad_title_size == "default") {
-  if (nchar(title) > 80) {dyad_title_size <- 14 * title_size_multiplier}
-  if (nchar(title) > 100) {dyad_title_size <- 13 * title_size_multiplier}
-  if (nchar(title) > 120) {dyad_title_size <- 12 * title_size_multiplier}
-} else {
-  dyad_title_size <- as.numeric(dyad_title_size)
-}
-
-if (dyad_x_axis_title_size == "default") {
-  dyad_x_axis_title_size <- 12
-} else {
-  dyad_x_axis_title_size <- as.numeric(dyad_x_axis_title_size)
-}
-
-
-
-if (percentage_or_count == "percentages") {
-  testPlot <- test_plot_dyad(dyad_id, filtered_data,  bin_width, percentage_or_count)
-} else {
-  if (use_full_y_range) {
-    testPlot <- test_plot_dyad(dyad_id, full_data, bin_width, percentage_or_count)
+  title_size_multiplier <- 1
+  title <- framework_object$get_signifier_title(dyad_id)
+  if (dyad_title_size == "default") {
+    if (nchar(title) > 80) {dyad_title_size <- 14 * title_size_multiplier}
+    if (nchar(title) > 100) {dyad_title_size <- 13 * title_size_multiplier}
+    if (nchar(title) > 120) {dyad_title_size <- 12 * title_size_multiplier}
   } else {
+    dyad_title_size <- as.numeric(dyad_title_size)
+  }
+
+  if (dyad_x_axis_title_size == "default") {
+    dyad_x_axis_title_size <- 12
+  } else {
+    dyad_x_axis_title_size <- as.numeric(dyad_x_axis_title_size)
+  }
+
+
+
+  if (percentage_or_count == "percentages") {
     testPlot <- test_plot_dyad(dyad_id, filtered_data,  bin_width, percentage_or_count)
-  }
-}
-
-max_Y <- max(ggplot2::ggplot_build(testPlot)$data[[1]]$count) +1
-
-if (percentage_or_count == "percentages") {
-  total_Y_D <- sum(ggplot2::ggplot_build(testPlot)$data[[1]][["count"]])
-  max_Y <- (max_Y / total_Y_D) * 100
-  dyad_full_range <- TRUE # todo fix this in the parameters
-  DyadfullYRange <- FALSE
-  if (!DyadfullYRange) {
-    max_Y <- 105
-  }
-}
-
-colLeftName <- framework_object$get_dyad_left_column_name(dyad_id)
-geometric_mean_x <- robCompositions::gmean(filtered_data[,paste(dyad_id, "XR", sep = "")])
-geometric_mean_y <- robCompositions::gmean(100 - (filtered_data[,paste(dyad_id, "XR", sep = "")]))
-geometric_mean_closed <- compositions::clo(c(geometric_mean_x, geometric_mean_y), total = 100)
-geometric_mean <- geometric_mean_closed[[1]]
-
-if (percentage_or_count == "counts") {
-  r <- ggplot2::ggplot(data = filtered_data, ggplot2::aes_string(x = paste0("`", dyad_id, "XR", "`"))) +
-    ggplot2::geom_histogram(ggplot2::aes(y = ..count..), na.rm = TRUE, colour = border_colour, fill = fill_colour, alpha = dyad_transparency, binwidth = bin_width, boundary = 0) +
-    ggplot2::stat_bin(binwidth = bin_width, boundary = 0, na.rm = TRUE, ggplot2::aes(y=..count.., label=..count..), geom="text", vjust=-.5) +
-    ggplot2::scale_x_continuous(limits = c(0, 100))
-
-  if (dyad_full_range) {
-    r <- r + ggplot2::coord_cartesian(xlim = c(0, 100), ylim = c(0, max_Y + round(max_Y/12, digits = 0)))
   } else {
-    r <- r + ggplot2::scale_y_continuous(limits = c(0, max_Y + round(max_Y/12, digits = 0)))
+    if (use_full_y_range) {
+      testPlot <- test_plot_dyad(dyad_id, full_data, bin_width, percentage_or_count)
+    } else {
+      testPlot <- test_plot_dyad(dyad_id, filtered_data,  bin_width, percentage_or_count)
+    }
   }
 
+  max_Y <- max(ggplot2::ggplot_build(testPlot)$data[[1]]$count) +1
 
-}
-x_left_label <- gsub("  ", " ", clearBetweenHTMLTags(framework_object$get_dyad_left_anchor_text(dyad_id), " "))
-x_right_label <- gsub("  ", " ", clearBetweenHTMLTags(framework_object$get_dyad_right_anchor_text(dyad_id), " "))
-x_left_label <- wrap_text(x_left_label, wrap_length = dyad_x_axis_title_wrap_length)
-x_right_label <- wrap_text(x_right_label, wrap_length = dyad_x_axis_title_wrap_length)
-x_label <- c(x_left_label, x_right_label)
+  if (percentage_or_count == "percentages") {
+    total_Y_D <- sum(ggplot2::ggplot_build(testPlot)$data[[1]][["count"]])
+    max_Y <- (max_Y / total_Y_D) * 100
+    dyad_full_range <- TRUE # todo fix this in the parameters
+    DyadfullYRange <- FALSE
+    if (!DyadfullYRange) {
+      max_Y <- 105
+    }
+  }
+
+  colLeftName <- framework_object$get_dyad_left_column_name(dyad_id)
+  geometric_mean_x <- robCompositions::gmean(filtered_data[,paste(dyad_id, "XR", sep = "")])
+  geometric_mean_y <- robCompositions::gmean(100 - (filtered_data[,paste(dyad_id, "XR", sep = "")]))
+  geometric_mean_closed <- compositions::clo(c(geometric_mean_x, geometric_mean_y), total = 100)
+  geometric_mean <- geometric_mean_closed[[1]]
+
+  if (percentage_or_count == "counts") {
+    r <- ggplot2::ggplot(data = filtered_data, ggplot2::aes_string(x = paste0("`", dyad_id, "XR", "`"))) +
+      ggplot2::geom_histogram(ggplot2::aes(y = ..count..), na.rm = TRUE, colour = border_colour, fill = fill_colour, alpha = dyad_transparency, binwidth = bin_width, boundary = 0) +
+      ggplot2::stat_bin(binwidth = bin_width, boundary = 0, na.rm = TRUE, ggplot2::aes(y=..count.., label=..count..), geom="text", vjust=-.5) +
+      ggplot2::scale_x_continuous(limits = c(0, 100))
+
+    if (dyad_full_range) {
+      r <- r + ggplot2::coord_cartesian(xlim = c(0, 100), ylim = c(0, max_Y + round(max_Y/12, digits = 0)))
+    } else {
+      r <- r + ggplot2::scale_y_continuous(limits = c(0, max_Y + round(max_Y/12, digits = 0)))
+    }
 
 
-r <- r + ggplot2::geom_vline(xintercept = geometric_mean, size = 1.1, colour = dyad_mean_colour, linetype = "dashed")
+  }
+  x_left_label <- gsub("  ", " ", clearBetweenHTMLTags(framework_object$get_dyad_left_anchor_text(dyad_id), " "))
+  x_right_label <- gsub("  ", " ", clearBetweenHTMLTags(framework_object$get_dyad_right_anchor_text(dyad_id), " "))
+  x_left_label <- wrap_text(x_left_label, wrap_length = dyad_x_axis_title_wrap_length)
+  x_right_label <- wrap_text(x_right_label, wrap_length = dyad_x_axis_title_wrap_length)
+  x_label <- c(x_left_label, x_right_label)
 
-r <- r + ggplot2::theme_bw() + ggplot2::xlab(x_label) + ggplot2::theme_bw()
 
-r <- r +   ggplot2::labs(title = paste(wrap_text(title, wrap_length = ifelse(return_with_print, 130, wrap_point)), "\n", sep = ""))
+  r <- r + ggplot2::geom_vline(xintercept = geometric_mean, size = 1.1, colour = dyad_mean_colour, linetype = "dashed")
+
+  r <- r + ggplot2::theme_bw() + ggplot2::xlab(x_label) + ggplot2::theme_bw()
+
+  r <- r +   ggplot2::labs(title = paste(wrap_text(title, wrap_length = ifelse(return_with_print, 130, wrap_point)), "\n", sep = ""))
 
 
-r <- r + ggplot2::theme(plot.title = ggplot2::element_text(size= ifelse(return_with_print, 14, dyad_title_size), face="bold.italic", hjust = 0), axis.title.x = ggplot2::element_text(size = dyad_x_axis_title_size, hjust = c(0, 1)), plot.caption = ggplot2::element_text(family = "Times", size = stat_legend_size), plot.margin = ggplot2::unit(c(1,1,1,1), "cm"))
+  r <- r + ggplot2::theme(plot.title = ggplot2::element_text(size= ifelse(return_with_print, 14, dyad_title_size), face="bold.italic", hjust = 0), axis.title.x = ggplot2::element_text(size = dyad_x_axis_title_size, hjust = c(0, 1)), plot.caption = ggplot2::element_text(family = "Times", size = stat_legend_size), plot.margin = ggplot2::unit(c(1,1,1,1), "cm"))
 
-return(r)
+  return(r)
 }
 
 
@@ -598,20 +598,20 @@ plot_tern_means <- function(df_list, triad_id, data_titles, framework_object, co
     data_means <- calculate_triad_means(plot_data, triad_id, "geometric", framework_object, zero_logic = mean_zero_logic, for_ggtern = TRUE)
     plot_data[["col_by"]] <- rep_len(data_titles[[i]], length.out = nrow(plot_data))
     p <- p + ggplot2::geom_point(data = plot_data, ggplot2::aes_string(x = paste0("`", framework_object$get_triad_left_column_name(triad_id), "`"),
-                                                     y = paste0("`", framework_object$get_triad_top_column_name(triad_id), "`"),
-                                                     z = paste0("`", framework_object$get_triad_right_column_name(triad_id), "`"), colour = "col_by"), size = dot_size, alpha = dot_transparency)
+                                                                       y = paste0("`", framework_object$get_triad_top_column_name(triad_id), "`"),
+                                                                       z = paste0("`", framework_object$get_triad_right_column_name(triad_id), "`"), colour = "col_by"), size = dot_size, alpha = dot_transparency)
 
     if (show_mean) {
       p <- p + ggplot2::geom_point(data = data_means, ggtern::aes(x = x, y = y, z = z), colour = mean_colour[[i]], size = mean_size, shape =
-                            ifelse(is.null(mean_shape), "circle", mean_shape[[i]]), fill = ifelse(!is.null(mean_colour), mean_colour[[i]],  colour_vector[[i]]))
+                                     ifelse(is.null(mean_shape), "circle", mean_shape[[i]]), fill = ifelse(!is.null(mean_colour), mean_colour[[i]],  colour_vector[[i]]))
     }
 
     if (show_confidence_intervals) {
 
-       p <- p +   ggtern::geom_confidence_tern(data = plot_data, ggplot2::aes_string(x = paste0("`", framework_object$get_triad_left_column_name(triad_id), "`"),
-                                                                            y = paste0("`", framework_object$get_triad_top_column_name(triad_id), "`"),
-                                                                            z = paste0("`", framework_object$get_triad_right_column_name(triad_id), "`"),
-                                                                    colour = 'col_by', inherit.aes = FALSE),
+      p <- p +   ggtern::geom_confidence_tern(data = plot_data, ggplot2::aes_string(x = paste0("`", framework_object$get_triad_left_column_name(triad_id), "`"),
+                                                                                    y = paste0("`", framework_object$get_triad_top_column_name(triad_id), "`"),
+                                                                                    z = paste0("`", framework_object$get_triad_right_column_name(triad_id), "`"),
+                                                                                    colour = 'col_by', inherit.aes = FALSE),
                                               breaks = confidence_value, size = confidence_size)
     }
 
@@ -715,7 +715,7 @@ plot_tern_triad <- function(filtered_data, full_data, triad_id, framework_object
   # Get the anchor means.
   # remove NA from the data and any values < 0 (extremely rare but some legacy)
   data_clean <- filtered_data %>% dplyr::filter(!is.na(!! rlang::sym(col_names[["left"]]))) %>% dplyr::filter(!! rlang::sym(framework_object$get_triad_left_column_name(triad_id)) > 0) %>%
-   dplyr::filter(!! rlang::sym(framework_object$get_triad_top_column_name(triad_id)) > 0) %>% dplyr::filter(!! rlang::sym(framework_object$get_triad_right_column_name(triad_id)) > 0)
+    dplyr::filter(!! rlang::sym(framework_object$get_triad_top_column_name(triad_id)) > 0) %>% dplyr::filter(!! rlang::sym(framework_object$get_triad_right_column_name(triad_id)) > 0)
 
   #full_data_no_na <- full_data %>% dplyr::filter(!is.na(!! rlang::sym(col_names[["left"]]))) %>% dplyr::filter(!! rlang::sym(framework_object$get_triad_left_column_name(triad_id)) > 0) %>%
   #  dplyr::filter(!! rlang::sym(framework_object$get_triad_top_column_name(triad_id)) > 0) %>% dplyr::filter(!! rlang::sym(framework_object$get_triad_right_column_name(triad_id)) > 0)
@@ -749,8 +749,8 @@ plot_tern_triad <- function(filtered_data, full_data, triad_id, framework_object
   font_size <- get_tern_title_size(leftTitle, rightTitle, anchor_label_size, anchor_label_size_print, return_as_print)
 
   p <- ggtern::ggtern(data = data_clean, ggplot2::aes_string(x = paste0("`", left_column_name, "`"),
-                      y = paste0("`", top_column_name, "`"),
-                      z = paste0("`", right_column_name, "`")))
+                                                             y = paste0("`", top_column_name, "`"),
+                                                             z = paste0("`", right_column_name, "`")))
 
   if (is.null(colour_sig_id)) {
     p <- p + ggplot2::geom_point(colour = dot_colour, size = dot_size, alpha = dot_transparency)
@@ -760,8 +760,8 @@ plot_tern_triad <- function(filtered_data, full_data, triad_id, framework_object
     if (!is.null(colour_vector)) {
       p = p +  ggplot2::geom_point(size = dot_size, alpha = dot_transparency, ggplot2::aes_string( colour = paste0("`", colour_sig_id, "`"))) +
         ggplot2::scale_color_manual(values = colour_vector,
-                           breaks = framework_object$get_list_items_ids(colour_sig_id),
-                           labels = framework_object$get_list_items_titles(colour_sig_id)) +
+                                    breaks = framework_object$get_list_items_ids(colour_sig_id),
+                                    labels = framework_object$get_list_items_titles(colour_sig_id)) +
         ggplot2::labs(color = framework_object$get_signifier_title(colour_sig_id))
     } else {
       # nothing provided for colours so use a palette
@@ -775,8 +775,8 @@ plot_tern_triad <- function(filtered_data, full_data, triad_id, framework_object
 
           p = p +  ggplot2::geom_point(size = dot_size, alpha = dot_transparency, ggplot2::aes_string( colour = paste0("`", colour_sig_id, "`"))) +
             ggplot2::scale_color_brewer(palette = package_palette, direction = colour_direction,
-                               breaks = framework_object$get_list_items_ids(colour_sig_id),
-                               labels = framework_object$get_list_items_titles(colour_sig_id)) +
+                                        breaks = framework_object$get_list_items_ids(colour_sig_id),
+                                        labels = framework_object$get_list_items_titles(colour_sig_id)) +
             ggplot2::labs(color = framework_object$get_signifier_title(colour_sig_id))
         }
       }
@@ -825,13 +825,13 @@ plot_tern_triad <- function(filtered_data, full_data, triad_id, framework_object
     if (nrow(data_clean) > 10) {
       fill_bins <- get_palette_colour_count(fill_brewer_palette)
       p <- p + ggtern::stat_density_tern(geom = 'polygon', contour = TRUE,
-                                 n  = 200, bdl = .0450,
-                                 ggplot2::aes_string(z = paste0("`", left_column_name, "`"),
-                                            x = paste0("`", top_column_name, "`"),
-                                            y = paste0("`", right_column_name, "`"), fill  = "..level.."),
-                             #   ggtern::aes(x = .data[[left_column]], y = .data[[top_column]], z = .data[[right_column]], fill = ggplot2::after_stat(level)),
-                                 alpha = fill_transparency, colour = contour_colour, size = countour_size,
-                                 bins = fill_bins, show.legend = show_fill_legend) +
+                                         n  = 200, bdl = .0450,
+                                         ggplot2::aes_string(z = paste0("`", left_column_name, "`"),
+                                                             x = paste0("`", top_column_name, "`"),
+                                                             y = paste0("`", right_column_name, "`"), fill  = "..level.."),
+                                         #   ggtern::aes(x = .data[[left_column]], y = .data[[top_column]], z = .data[[right_column]], fill = ggplot2::after_stat(level)),
+                                         alpha = fill_transparency, colour = contour_colour, size = countour_size,
+                                         bins = fill_bins, show.legend = show_fill_legend) +
         ggplot2::scale_fill_distiller(palette = fill_brewer_palette, direction = -1)
     }
   }
@@ -840,8 +840,8 @@ plot_tern_triad <- function(filtered_data, full_data, triad_id, framework_object
     if (nrow(data_clean) > 10) {
       if (!show_contour_fill) {
         p <- p + ggtern::stat_density_tern(mapping = ggplot2::aes_string(x = paste0("`", left_column_name, "`"),
-                                                        y = paste0("`", top_column_name, "`"),
-                                                        z = paste0("`", right_column_name, "`")),
+                                                                         y = paste0("`", top_column_name, "`"),
+                                                                         z = paste0("`", right_column_name, "`")),
                                            bdl = .0450, n = 200,  bins = 12, size = countour_size, colour = contour_colour)
       }
     }
@@ -1015,21 +1015,21 @@ produce_tern_pair_means_graphs_by_triad <- function(tern_pairs, framework_data, 
     names(out_plots)<- paste0(from_ids, "_", to_ids)
 
 
-  purrr::pwalk(list(from_ids, to_ids, from_colours, to_colours, from_titles, to_titles), function(from_id, to_id, from_colour, to_colour, from_title, to_title) {
+    purrr::pwalk(list(from_ids, to_ids, from_colours, to_colours, from_titles, to_titles), function(from_id, to_id, from_colour, to_colour, from_title, to_title) {
 
 
-    df_list <- vector("list", length = 2)
-    names(df_list) <- c(from_id, to_id)
-    df_list[[1]] <- framework_data$data[[from_id]]
-    df_list[[2]] <- framework_data$data[[to_id]]
-    data_titles <- c(from_title, to_title)
-    colour_vector <- c(from_colour, to_colour)
+      df_list <- vector("list", length = 2)
+      names(df_list) <- c(from_id, to_id)
+      df_list[[1]] <- framework_data$data[[from_id]]
+      df_list[[2]] <- framework_data$data[[to_id]]
+      data_titles <- c(from_title, to_title)
+      colour_vector <- c(from_colour, to_colour)
 
 
 
-    out_plots[[paste0(from_id, "_", to_id)]] <<- plot_tern_means(df_list = df_list, triad_id = triad_id, data_titles = data_titles,
-                                                framework_object = framework_data$sm_framework, colour_vector = colour_vector, dot_size = .08, dot_transparency = .3,
-                                                confidence_size = 2)
+      out_plots[[paste0(from_id, "_", to_id)]] <<- plot_tern_means(df_list = df_list, triad_id = triad_id, data_titles = data_titles,
+                                                                   framework_object = framework_data$sm_framework, colour_vector = colour_vector, dot_size = .08, dot_transparency = .3,
+                                                                   confidence_size = 2)
 
     })
 
@@ -1048,11 +1048,12 @@ produce_tern_pair_means_graphs_by_triad <- function(tern_pairs, framework_data, 
 #' @param keyness_pairs - A data frame with columns "from_id", "to_id", "from_colour" and "to_colour". The from and to ids are data queries stored in the data list (public field). The colours are valid R colour names or codes.
 #' @param framework_data - The framework sensemakerdatar object.
 #' @param freetext_ids - default NULL, A vector of freetext signifier ids for textual data If NULL all freetext signifiers set as a fragment are plotted.
+#' @param filters - named list containing the filters to additionally apply to the appended dataset.
 #' @param min_term_freq - Default 3, number of occurrence of a term before it it is accepted into the corpus.
 #' @param languages - Default "en", a vector of supported 2 character language codes for use in stop words and stemming.
 #' @param stem_text - Default TRUE, whether to stem the text.
 #' @export
-produce_keyness_pair_graphs <- function(keyness_pairs, framework_data, freetext_ids = NULL, min_term_freq = 3, languages = "en", stem_text = TRUE) {
+produce_keyness_pair_graphs <- function(keyness_pairs, framework_data, freetext_ids = NULL, filters = NULL, filter_names = NULL, min_term_freq = 3, languages = "en", stem_text = TRUE) {
 
   if (!(all(languages == "en") & !exists("isoLanguages"))) {
     get_iso_codes()
@@ -1066,18 +1067,24 @@ produce_keyness_pair_graphs <- function(keyness_pairs, framework_data, freetext_
 
   stopifnot(all(c("from_id", "to_id", "from_colour", "to_colour", "from_title", "to_title") %in% colnames(keyness_pairs)))
 
+  if (!is.null(filters)) {
+    stopifnot(is.list(filters))
+    stopifnot(!is.null(names(filters)))
+    stopifnot(length(filters) == length(filter_names))
+  }
+
   if (!is.null(freetext_ids)) {
     stopifnot(all(freetext_ids %in% framework_data$sm_framework$get_freetext_fragments()))
   } else {
     freetext_ids <- framework_data$sm_framework$get_freetext_fragments()
   }
   build_pair_datasets(framework_data, pairs_definitions = keyness_pairs, doc_var = "auto", plot_col = "auto")
-   from_ids <- keyness_pairs[, "from_id"]
-   to_ids <- keyness_pairs[, "to_id"]
-   from_colours <- keyness_pairs[, "from_colour"]
-   to_colours <- keyness_pairs[, "to_colour"]
-   from_titles <- keyness_pairs[, "from_title"]
-   to_titles <- keyness_pairs[, "to_title"]
+  from_ids <- keyness_pairs[, "from_id"]
+  to_ids <- keyness_pairs[, "to_id"]
+  from_colours <- keyness_pairs[, "from_colour"]
+  to_colours <- keyness_pairs[, "to_colour"]
+  from_titles <- keyness_pairs[, "from_title"]
+  to_titles <- keyness_pairs[, "to_title"]
 
   # filters_used <- unique(append(from_ids, to_ids))
   # stopifnot(all(filters_used %in% framework_data$get_data_list_names()))
@@ -1086,7 +1093,7 @@ produce_keyness_pair_graphs <- function(keyness_pairs, framework_data, freetext_
 
   # Add new data-frames that have the from and to values added and appended (bind_rows) for quanteda keyness processing ready.
   # purrr::pwalk(list(from_ids, to_ids, from_colours, to_colours), function(from_id, to_id, from_colour, to_colour) {
-    #tmp_from and with the quanteda keyness processing doc_var added then row-bind into a single data frame and add to the data list. Add colours to it too.
+  #tmp_from and with the quanteda keyness processing doc_var added then row-bind into a single data frame and add to the data list. Add colours to it too.
   #    tmp_from <- framework_data$data[[from_id]]
   #    tmp_from[["doc_var"]] <- rep_len(x = from_id, length.out = nrow(tmp_from))
   #   tmp_from[["plot_col"]] <- rep_len(x = from_colour, length.out = nrow(tmp_from))
@@ -1101,42 +1108,70 @@ produce_keyness_pair_graphs <- function(keyness_pairs, framework_data, freetext_
 
   # perform the keyness processing
   purrr::pwalk(list(from_ids, to_ids, from_colours, to_colours, from_titles, to_titles), function(from_id, to_id, from_colour, to_colour, from_title, to_title) {
+    # Todo this is ugly - there must be a better way of getting the columns.
+    #  out_plots <<- vector("list", length = length(freetext_ids) + ifelse(is.null(filters), 0, length(filters)))
 
-    out_plots <<- vector("list", length = length(freetext_ids))
-    names(out_plots) <- freetext_ids
+    if (is.null(filters)) {
+      filters <- list("full_data")
+      names(filters) <- "full_data"
+      filter_names <- "Full keyness pair dataset"
+    }
+    names_for_list <- tidyr::crossing(freetext_ids, names(filters))
+    colnames(names_for_list) <- c("a", "b")
+    combine_names <- unlist(purrr::map2(names_for_list[["a"]], names_for_list[["b"]], ~ {paste0(.x, "_", .y)}))
+    out_plots <- vector("list", length = length(combine_names))
+    names(out_plots) <- combine_names
 
     purrr::walk(freetext_ids, function(freetext_id) {
 
-      df <- framework_data$data[[paste0(from_id, "_", to_id)]]
+      df_full <- framework_data$data[[paste0(from_id, "_", to_id)]]
 
-      corp_list <- build_corpus(df, framework_data,  freetext_id, doc_var = "doc_var", min_term_freq = min_term_freq, languages = languages)
-      #return(list(text_corpus = fragment_text_corpus, tokens_stem = fragment_token, tokens_unstem = fragment_token_unstemmed, dtm = dtm, dtm_trim = dtm.trim))
+      purrr::walk2(names(filters), filter_names, function(filter_name, filter_title) {
 
-      #fragment_text_corpus <- quanteda::corpus(df[[freetext_id]], docvars = data.frame(doc_var = df[["doc_var"]]))
-      #tokens <- quanteda::tokens(fragment_text_corpus, remove_punct = TRUE, remove_symbols = TRUE, remove_numbers = TRUE,
-      #                           remove_url = TRUE, remove_separators = TRUE, split_hyphens = TRUE, split_tags = TRUE)
+        query_exp <- parse(text = paste0("df_full %>% dplyr::filter(", current_filters[[filter_name]], ")"))
+        df <- eval(query_exp)
 
-     # purrr::walk(languages, ~ {fragment_token <<- quanteda::tokens_wordstem(tokens, language = .x)} )
+        if (nrow(df) > 1 & length(unique(df[["source"]])) == 2) {
 
-     # purrr::walk(languages, ~ {fragment_token <<- quanteda::tokens_remove(fragment_token, quanteda::stopwords(.x))})
+          corp_list <- build_corpus(df, framework_data,  freetext_id, doc_var = "doc_var", min_term_freq = min_term_freq, languages = languages)
 
-    #  fragment_token <- quanteda::tokens_remove(fragment_token, framework_data$stop_words)
+         # print(corp_list)
+          #return(list(text_corpus = fragment_text_corpus, tokens_stem = fragment_token, tokens_unstem = fragment_token_unstemmed, dtm = dtm, dtm_trim = dtm.trim))
 
-    #  dtm <- quanteda::dfm(fragment_token, tolower = TRUE)
-    #  dtm.trim <- quanteda::dfm_trim(dtm, min_termfreq = 3)
-      if (stem_text) {
-        dtm.trim <- corp_list$dtm_trim_stemmed
-      } else {
-        dtm.trim <- corp_list$dtm_trim_unstemmed
-      }
-      keyness_doc_var <- quanteda.textstats::textstat_keyness(dtm.trim,
-                                                              quanteda::docvars(corp_list$text_corpus, "doc_var") == from_id,
-                                                              sort = TRUE, measure = "chi2")
-      out_plots[[freetext_id]] <<- quanteda.textplots::textplot_keyness(keyness_doc_var, color = c(from_colour, to_colour), show_reference = TRUE, show_legend = FALSE, margin = 0.05, n = 20L, min_count = 2L) +
-        ggplot2::scale_fill_discrete(name="", labels= c(from_title, to_title)) +
-        ggplot2::ggtitle(paste("KEYNESS PLOT for", from_title, "and", to_title)) +
-        ggplot2::theme(legend.position = c(0.6, 0.3)) + ggplot2::ylim(0, 40)
+          #fragment_text_corpus <- quanteda::corpus(df[[freetext_id]], docvars = data.frame(doc_var = df[["doc_var"]]))
+          #tokens <- quanteda::tokens(fragment_text_corpus, remove_punct = TRUE, remove_symbols = TRUE, remove_numbers = TRUE,
+          #                           remove_url = TRUE, remove_separators = TRUE, split_hyphens = TRUE, split_tags = TRUE)
 
+          # purrr::walk(languages, ~ {fragment_token <<- quanteda::tokens_wordstem(tokens, language = .x)} )
+
+          # purrr::walk(languages, ~ {fragment_token <<- quanteda::tokens_remove(fragment_token, quanteda::stopwords(.x))})
+
+          #  fragment_token <- quanteda::tokens_remove(fragment_token, framework_data$stop_words)
+
+          #  dtm <- quanteda::dfm(fragment_token, tolower = TRUE)
+          #  dtm.trim <- quanteda::dfm_trim(dtm, min_termfreq = 3)
+          if (stem_text) {
+            dtm.trim <- corp_list$dtm_trim_stemmed
+          } else {
+            dtm.trim <- corp_list$dtm_trim_unstemmed
+          }
+
+          keyness_doc_var <- quanteda.textstats::textstat_keyness(dtm.trim,
+                                                                  quanteda::docvars(corp_list$text_corpus, "doc_var") == from_id,
+                                                                  sort = TRUE, measure = "chi2")
+          if (any(is.nan(keyness_doc_var[["chi2"]]))) {
+            out_plots[[paste0(freetext_id, "_", filter_name)]] <<- "Failed_Chi_Test"
+          } else {
+            out_plots[[paste0(freetext_id, "_", filter_name)]] <<- quanteda.textplots::textplot_keyness(keyness_doc_var, color = c(from_colour, to_colour), show_reference = TRUE, show_legend = FALSE, margin = 0.05, n = 20L, min_count = 2L) +
+              ggplot2::scale_fill_discrete(name="", labels= c(from_title, to_title)) +
+              ggplot2::ggtitle(paste("KEYNESS PLOT for", from_title, "verses", to_title, "\n", "Filter: ", filter_title, " : ", filter_name)) +
+              ggplot2::theme(legend.position = c(0.6, 0.3)) + ggplot2::ylim(0, 40)
+          }
+        } else {
+          out_plots[[paste0(freetext_id, "_", filter_name)]] <<- "No_Data or data for only one source"
+        }
+
+      })
 
     })
     out_results[[paste0(from_id, "_", to_id)]] <<- out_plots
@@ -1174,70 +1209,70 @@ plot_sentiment_bars <- function(sentiment_filters, freetexts_to_plot, framework_
     }
   }
 
-    # so now we have our freetexts_to_plot as a vector of one or more characters - check that they are free texts
-    stopifnot(all(freetexts_to_plot %in% framework_data$sm_framework$get_freetext_fragments()))
+  # so now we have our freetexts_to_plot as a vector of one or more characters - check that they are free texts
+  stopifnot(all(freetexts_to_plot %in% framework_data$sm_framework$get_freetext_fragments()))
 
-    if (class(sentiment_filters) == "data.frame") {
-      stopifnot(nrow(sentiment_filters) > 0)
-      stopifnot("id" %in% colnames(sentiment_filters))
-      stopifnot("title" %in% colnames(sentiment_filters))
-      sentiment_titles <- sentiment_filters[["title"]]
-      sentiment_filters <- sentiment_filters[["id"]]
-    } else {
-      if (stringr::str_ends(string = sentiment_filters, ".csv")) {
-        stopifnot(file.exists(sentiment_filters))
-        df <- utils::read.csv(sentiment_filters, stringsAsFactors = FALSE)
-        stopifnot(nrow(df) > 0)
-        stopifnot("id" %in% colnames(df))
-        stopifnot("title" %in% colnames(df))
-        sentiment_filters <- df[["id"]]
-        sentiment_titles <- df[["title"]]
-      }
+  if (class(sentiment_filters) == "data.frame") {
+    stopifnot(nrow(sentiment_filters) > 0)
+    stopifnot("id" %in% colnames(sentiment_filters))
+    stopifnot("title" %in% colnames(sentiment_filters))
+    sentiment_titles <- sentiment_filters[["title"]]
+    sentiment_filters <- sentiment_filters[["id"]]
+  } else {
+    if (stringr::str_ends(string = sentiment_filters, ".csv")) {
+      stopifnot(file.exists(sentiment_filters))
+      df <- utils::read.csv(sentiment_filters, stringsAsFactors = FALSE)
+      stopifnot(nrow(df) > 0)
+      stopifnot("id" %in% colnames(df))
+      stopifnot("title" %in% colnames(df))
+      sentiment_filters <- df[["id"]]
+      sentiment_titles <- df[["title"]]
     }
+  }
 
-    # we create separate cleaned dataframes for the sentiment analysis so add if they are not already there
-    add_clean_freetext_to_data(framework_data, freetexts_to_plot)
-
-
-    out_results <<- vector("list", length = length(freetexts_to_plot))
-    names(out_results) <- freetexts_to_plot
-
-    purrr::walk(freetexts_to_plot, function(frag_id) {
-      # each column
-
-      out_plots <<- vector("list", length = length(sentiment_filters))
-      names(out_plots) <- sentiment_filters
-
-      purrr::walk2(sentiment_filters, sentiment_titles, function(filter_id, filter_title) {
-        # each data set - this is the data clean for this column filtered by the data filter in use
-        data_use <-  framework_data$data[[paste0("data_clean_", frag_id)]] %>% dplyr::filter(.data[["FragmentID"]] %in% framework_data$data[[filter_id]][["FragmentID"]])
-        # do the sentiment stuff
-        data_to_plot <- apply_standard_emotions(data_use, framework_data$stop_words)
-        # plot
-        if (as_percentages) {
-          data_to_plot <- data_to_plot |> dplyr::mutate(per = (round(((data_to_plot[["n"]] / sum(data_to_plot[["n"]])) * 100), digits = 0)))
-          data_to_plot[["n"]] <- data_to_plot[["per"]]
-        }
-
-        out_plots[[filter_id]] <<- ggplot2::ggplot(data_to_plot, ggplot2::aes(x = sent_emotion, y = n, fill = sent_emotion)) +
-          ggplot2::geom_bar(stat = "identity") +
-          ggplot2::theme_minimal() +
-          ggplot2::labs(title = paste("Sentiment Distribution : ", framework_data$sm_framework$get_signifier_title(frag_id), " : ", filter_title),
-                     x = "Sentiment Category",
-                     y =  ifelse(as_percentages, "Percentage", "Count")) +
-          ggplot2::scale_fill_manual(values = c("Very Positive" = "darkgreen",
-                                             "Positive" = "green",
-                                             "Neutral" = "gray",
-                                             "Negative" = "orange",
-                                             "Very Negative" = "red")) +
-          ggplot2::theme(title = ggplot2::element_text(colour = "black", size = 8, family = "Helvetica"))
+  # we create separate cleaned dataframes for the sentiment analysis so add if they are not already there
+  add_clean_freetext_to_data(framework_data, freetexts_to_plot)
 
 
-      })
+  out_results <<- vector("list", length = length(freetexts_to_plot))
+  names(out_results) <- freetexts_to_plot
 
-      out_results[[frag_id]] <<- out_plots
+  purrr::walk(freetexts_to_plot, function(frag_id) {
+    # each column
+
+    out_plots <<- vector("list", length = length(sentiment_filters))
+    names(out_plots) <- sentiment_filters
+
+    purrr::walk2(sentiment_filters, sentiment_titles, function(filter_id, filter_title) {
+      # each data set - this is the data clean for this column filtered by the data filter in use
+      data_use <-  framework_data$data[[paste0("data_clean_", frag_id)]] %>% dplyr::filter(.data[["FragmentID"]] %in% framework_data$data[[filter_id]][["FragmentID"]])
+      # do the sentiment stuff
+      data_to_plot <- apply_standard_emotions(data_use, framework_data$stop_words)
+      # plot
+      if (as_percentages) {
+        data_to_plot <- data_to_plot |> dplyr::mutate(per = (round(((data_to_plot[["n"]] / sum(data_to_plot[["n"]])) * 100), digits = 0)))
+        data_to_plot[["n"]] <- data_to_plot[["per"]]
+      }
+
+      out_plots[[filter_id]] <<- ggplot2::ggplot(data_to_plot, ggplot2::aes(x = sent_emotion, y = n, fill = sent_emotion)) +
+        ggplot2::geom_bar(stat = "identity") +
+        ggplot2::theme_minimal() +
+        ggplot2::labs(title = paste("Sentiment Distribution : ", framework_data$sm_framework$get_signifier_title(frag_id), " : ", filter_title),
+                      x = "Sentiment Category",
+                      y =  ifelse(as_percentages, "Percentage", "Count")) +
+        ggplot2::scale_fill_manual(values = c("Very Positive" = "darkgreen",
+                                              "Positive" = "green",
+                                              "Neutral" = "gray",
+                                              "Negative" = "orange",
+                                              "Very Negative" = "red")) +
+        ggplot2::theme(title = ggplot2::element_text(colour = "black", size = 8, family = "Helvetica"))
+
 
     })
+
+    out_results[[frag_id]] <<- out_plots
+
+  })
 
   return(out_results)
 
@@ -1317,8 +1352,8 @@ plot_german_sentiment_bars <- function(sentiment_data, freetexts_to_plot, framew
       out_plots[[filter_id]] <<-  ggplot2::ggplot(df_plot, ggplot2::aes(x = emotion, y = per, fill = emotion)) +
         ggplot2::geom_bar(stat = "identity") + scale_fill_manual(values = c(negative = "red", positive = "blue")) +  theme_minimal() +
         ggplot2::labs(title = paste("Sentiment Distribution : ", framework_data$sm_framework$get_signifier_title(frag_id), " : ", filter_title),
-             x = "Sentiment Category",
-             y = "Percentage") +
+                      x = "Sentiment Category",
+                      y = "Percentage") +
         ggplot2::theme(title = ggplot2::element_text(colour = "black", size = 8, family = "Helvetica")) + ggplot2::coord_cartesian(ylim = c(0, 100))
 
 
@@ -1410,8 +1445,8 @@ plot_sentiment_valence <- function(sentiment_filters, freetexts_to_plot, framewo
 
       out_plots[[filter_id]] <<- ggplot2::ggplot(sentiment_scores, ggplot2::aes(x = sentiment)) + ggplot2::geom_density(colour = "blue", size = 1) +
         ggplot2::labs(title = paste("Sentiment Density : ", framework_data$sm_framework$get_signifier_title(frag_id), " : ", filter_title),
-             x = "Sentiment Range",
-             y = "") +
+                      x = "Sentiment Range",
+                      y = "") +
         ggplot2::labs(caption = paste("Data count = ", nrow(data_use))) +
         ggplot2::theme(title = ggplot2::element_text(colour = "black", size = 8, family = "Helvetica"))
 
@@ -1518,8 +1553,8 @@ plot_emotions_over_time <- function(sentiment_filters, freetexts_to_plot, framew
       # Reshape data for plotting
       emotion_long <- emotion_percentages %>%
         tidyr::pivot_longer(cols = -EntryYrMth,
-                     names_to = "Emotion",
-                     values_to = "Percentage")
+                            names_to = "Emotion",
+                            values_to = "Percentage")
 
       emotion_long$Emotion <- factor(emotion_long$Emotion, levels = c("anger", "disgust", "fear", "sadness", "surprise", "anticipation", "trust", "joy"))
       ## myColors <- c("#FF0000", "#b5a82c", "#000000", "#00008B", "#55656F", "#FFA500", "#0000FF","#FFC0CB")
@@ -1542,11 +1577,11 @@ plot_emotions_over_time <- function(sentiment_filters, freetexts_to_plot, framew
         ggplot2::geom_point(size=2) +  # Add points to the lines
         colScale +
         ggplot2::labs(title= paste("%age of emotions over time : ", framework_data$sm_framework$get_signifier_title(frag_id), " : ", filter_title),
-                   x="Time (Year-Month)", y="Percentage of Emotions") +
+                      x="Time (Year-Month)", y="Percentage of Emotions") +
         ggplot2::scale_y_continuous(labels = scales::percent_format()) +
         ggplot2::theme_minimal() +
         ggplot2::scale_x_date(date_labels = "%Y-%m", date_breaks = "1 months") +
-              ggplot2::labs(caption = paste("Data count = ", nrow(data_use))) +
+        ggplot2::labs(caption = paste("Data count = ", nrow(data_use))) +
         ggplot2::theme(axis.text.x = ggplot2::element_text(angle=45, hjust=1), title = ggplot2::element_text(colour = "black", size = 8, family = "Helvetica"))
 
 
@@ -1610,23 +1645,23 @@ word_frequency_plot <- function(frequency_graph_pairs, freetexts_to_plot, framew
     graph_pairs_from_titles <- frequency_graph_pairs[["from_title"]]
     graph_pairs_to_titles <- frequency_graph_pairs[["to_title"]]
   } else {
-  if (stringr::str_ends(string = frequency_graph_pairs, ".csv")) {
-    stopifnot(file.exists(frequency_graph_pairs))
-    df <- utils::read.csv(frequency_graph_pairs, stringsAsFactors = FALSE)
-    stopifnot(nrow(df) > 0)
-    stopifnot(all(c("from_id", "to_id") %in% colnames(df)))
-    graph_pairs_from_ids <- df[["from_id"]]
-    graph_pairs_to_ids <- df[["to_id"]]
-    graph_pairs_from_titles <- frequency_graph_pairs[["from_title"]]
-    graph_pairs_to_titles <- frequency_graph_pairs[["to_title"]]
-  }
+    if (stringr::str_ends(string = frequency_graph_pairs, ".csv")) {
+      stopifnot(file.exists(frequency_graph_pairs))
+      df <- utils::read.csv(frequency_graph_pairs, stringsAsFactors = FALSE)
+      stopifnot(nrow(df) > 0)
+      stopifnot(all(c("from_id", "to_id") %in% colnames(df)))
+      graph_pairs_from_ids <- df[["from_id"]]
+      graph_pairs_to_ids <- df[["to_id"]]
+      graph_pairs_from_titles <- frequency_graph_pairs[["from_title"]]
+      graph_pairs_to_titles <- frequency_graph_pairs[["to_title"]]
+    }
   }
 
   # we create separate cleaned dataframes for the sentiment analysis so add if they are not already there
   add_clean_freetext_to_data(framework_data, freetexts_to_plot)
   # todo - this might not work
 
- # stop_words <- tidytext::stop_words
+  # stop_words <- tidytext::stop_words
   stop_words <- NULL
   purrr::walk(languages, ~ {stop_words <<- dplyr::bind_rows(stop_words, tidytext::get_stopwords(language = .x))})
   remove_tibble <- dplyr::tibble(word = framework_data$stop_words, lexicon = rep_len("CUSTOM", length(framework_data$stop_words)))
@@ -1641,7 +1676,7 @@ word_frequency_plot <- function(frequency_graph_pairs, freetexts_to_plot, framew
     names(out_plots) <- paste0(graph_pairs_from_ids, "_", graph_pairs_to_ids)
 
     purrr::pwalk(list(graph_pairs_from_ids, graph_pairs_to_ids, graph_pairs_from_titles, graph_pairs_to_titles), function(from_id, to_id, from_title, to_title) {
-    #purrr::walk2(graph_pairs_from_ids, graph_pairs_to_ids, fußnction(from_id, to_id) {
+      #purrr::walk2(graph_pairs_from_ids, graph_pairs_to_ids, fußnction(from_id, to_id) {
 
       data_from <- framework_data$get_data_dataframe(from_id, as_tibble = TRUE)
       data_to <- framework_data$get_data_dataframe(to_id, as_tibble = TRUE)
@@ -1658,14 +1693,14 @@ word_frequency_plot <- function(frequency_graph_pairs, freetexts_to_plot, framew
       data_to_plot_corpus <- data_to_plot  %>%  tidytext::unnest_tokens(word, fragment) %>% dplyr::anti_join(dplyr::rows_append(stop_words, remove_tibble))
 
       if (use_stem) {
-       # data_to_plot_corpus <-  data_to_plot_corpus %>% mutate(word = SnowballC::wordStem(word))
+        # data_to_plot_corpus <-  data_to_plot_corpus %>% mutate(word = SnowballC::wordStem(word))
         purrr::walk(languages, ~ {data_to_plot_corpus <<-  data_to_plot_corpus %>% mutate(word = SnowballC::wordStem(word, language = .x))})
       }
 
       data_to_plot_combined <- dplyr::bind_rows(dplyr::mutate(data_from_plot_corpus, data_set = stringr::str_replace_all(from_id, "_", " ")),
-                                   dplyr::mutate(data_to_plot_corpus, data_set = stringr::str_replace_all(to_id, "_", " ")))
+                                                dplyr::mutate(data_to_plot_corpus, data_set = stringr::str_replace_all(to_id, "_", " ")))
 
-        frequency <- data_to_plot_combined %>%
+      frequency <- data_to_plot_combined %>%
         dplyr::mutate(word = str_extract(word, "[a-z']+")) %>%
         dplyr::count(data_set, word) %>%
         dplyr::group_by(data_set) %>%
@@ -1673,26 +1708,26 @@ word_frequency_plot <- function(frequency_graph_pairs, freetexts_to_plot, framew
         dplyr::select(-n) %>%
         tidyr::spread(data_set, proportion)
 
-       #, color = abs(`Actively Use` - `Actively Not`)
-       out_plots[[paste0(from_id, "_", to_id)]] <<- ggplot2::ggplot(frequency, ggplot2::aes(x = .data[[stringr::str_replace_all(from_id, "_", " ")]], y = .data[[stringr::str_replace_all(to_id, "_", " ")]],
-                             color = abs(.data[[stringr::str_replace_all(from_id, "_", " ")]] - .data[[stringr::str_replace_all(to_id, "_", " ")]]))) +
-         ggplot2::geom_abline(color = "gray40", lty = 2) +
-         ggplot2::geom_jitter(alpha = 0.1, size = 2.4, width = 0.3, height = 0.3) +
-         ggplot2::geom_text(aes(label = word), check_overlap = TRUE, vjust = 1.5) +
-         ggplot2::scale_x_log10(labels = scales::percent_format()) +
-         ggplot2::scale_y_log10(labels = scales::percent_format()) +
-         ggplot2::scale_colour_gradient(limits = c(0, 0.001),
-                               low = "darkslategray4", high = "gray75") +
-         ggplot2::theme(legend.position = "none") +
-         ggplot2::ggtitle(paste("Frequency Graph for: ", from_title, "against", to_title)) +
-         ggplot2::xlab(from_title) + ggplot2::ylab(to_title)
+      #, color = abs(`Actively Use` - `Actively Not`)
+      out_plots[[paste0(from_id, "_", to_id)]] <<- ggplot2::ggplot(frequency, ggplot2::aes(x = .data[[stringr::str_replace_all(from_id, "_", " ")]], y = .data[[stringr::str_replace_all(to_id, "_", " ")]],
+                                                                                           color = abs(.data[[stringr::str_replace_all(from_id, "_", " ")]] - .data[[stringr::str_replace_all(to_id, "_", " ")]]))) +
+        ggplot2::geom_abline(color = "gray40", lty = 2) +
+        ggplot2::geom_jitter(alpha = 0.1, size = 2.4, width = 0.3, height = 0.3) +
+        ggplot2::geom_text(aes(label = word), check_overlap = TRUE, vjust = 1.5) +
+        ggplot2::scale_x_log10(labels = scales::percent_format()) +
+        ggplot2::scale_y_log10(labels = scales::percent_format()) +
+        ggplot2::scale_colour_gradient(limits = c(0, 0.001),
+                                       low = "darkslategray4", high = "gray75") +
+        ggplot2::theme(legend.position = "none") +
+        ggplot2::ggtitle(paste("Frequency Graph for: ", from_title, "against", to_title)) +
+        ggplot2::xlab(from_title) + ggplot2::ylab(to_title)
 
     })
 
     out_results[[text_id]] <<- out_plots
 
   })
-return(out_results)
+  return(out_results)
 
 }
 
@@ -1701,7 +1736,7 @@ add_clean_freetext_to_data <- function(framework_data, freetexts_to_plot) {
   purrr::walk(freetexts_to_plot, function(x) {
     if (!(paste0("data_clean_", x) %in% framework_data$get_data_list_names())) {
       framework_data$add_data_data_frame((framework_data$data$df1 %>% dplyr::select(fragment = dplyr::all_of(x), "FragmentID", "EntryYrMth") %>% dplyr::filter(!is.na(fragment))),
-                                      name = paste0("data_clean_", x), add_to_export_list_names = TRUE)
+                                         name = paste0("data_clean_", x), add_to_export_list_names = TRUE)
     }
   })
 

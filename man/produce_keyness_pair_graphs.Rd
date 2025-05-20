@@ -8,6 +8,8 @@ produce_keyness_pair_graphs(
   keyness_pairs,
   framework_data,
   freetext_ids = NULL,
+  filters = NULL,
+  filter_names = NULL,
   min_term_freq = 3,
   languages = "en",
   stem_text = TRUE
@@ -24,6 +26,10 @@ produce_keyness_pair_graphs(
 
 \item{freetext_ids}{\itemize{
 \item default NULL, A vector of freetext signifier ids for textual data If NULL all freetext signifiers set as a fragment are plotted.
+}}
+
+\item{filters}{\itemize{
+\item named list containing the filters to additionally apply to the appended dataset.
 }}
 
 \item{min_term_freq}{\itemize{
