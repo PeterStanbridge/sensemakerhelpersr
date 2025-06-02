@@ -1086,23 +1086,6 @@ produce_keyness_pair_graphs <- function(keyness_pairs, framework_data, freetext_
   from_titles <- keyness_pairs[, "from_title"]
   to_titles <- keyness_pairs[, "to_title"]
 
-  # filters_used <- unique(append(from_ids, to_ids))
-  # stopifnot(all(filters_used %in% framework_data$get_data_list_names()))
-  # stopifnot(all(areColors(from_colours)))
-  # stopifnot(all(areColors(to_colours)))
-
-  # Add new data-frames that have the from and to values added and appended (bind_rows) for quanteda keyness processing ready.
-  # purrr::pwalk(list(from_ids, to_ids, from_colours, to_colours), function(from_id, to_id, from_colour, to_colour) {
-  #tmp_from and with the quanteda keyness processing doc_var added then row-bind into a single data frame and add to the data list. Add colours to it too.
-  #    tmp_from <- framework_data$data[[from_id]]
-  #    tmp_from[["doc_var"]] <- rep_len(x = from_id, length.out = nrow(tmp_from))
-  #   tmp_from[["plot_col"]] <- rep_len(x = from_colour, length.out = nrow(tmp_from))
-  #   tmp_to <- framework_data$data[[to_id]]
-  #   tmp_to[["doc_var"]] <- rep_len(x = to_id, length.out = nrow(tmp_to))
-  #   tmp_to[["plot_col"]] <- rep_len(x = to_colour, length.out = nrow(tmp_to))
-  #   framework_data$add_data_data_frame(dplyr::bind_rows(tmp_from, tmp_to), name = paste0(from_id, "_", to_id), add_to_export_list_names = TRUE)
-  # })
-
   out_results <<- vector("list", length = length(from_ids))
   names(out_results) <- paste0(from_ids, "_", to_ids)
 
@@ -1128,44 +1111,35 @@ produce_keyness_pair_graphs <- function(keyness_pairs, framework_data, freetext_
 
       purrr::walk2(names(filters), filter_names, function(filter_name, filter_title) {
 
-        query_exp <- parse(text = paste0("df_full %>% dplyr::filter(", current_filters[[filter_name]], ")"))
+        query_exp <- parse(text = paste0("df_full %>% dplyr::filter(", filters[[filter_name]], ")"))
         df <- eval(query_exp)
 
         if (nrow(df) > 1 & length(unique(df[["source"]])) == 2) {
 
           corp_list <- build_corpus(df, framework_data,  freetext_id, doc_var = "doc_var", min_term_freq = min_term_freq, languages = languages)
 
-         # print(corp_list)
-          #return(list(text_corpus = fragment_text_corpus, tokens_stem = fragment_token, tokens_unstem = fragment_token_unstemmed, dtm = dtm, dtm_trim = dtm.trim))
-
-          #fragment_text_corpus <- quanteda::corpus(df[[freetext_id]], docvars = data.frame(doc_var = df[["doc_var"]]))
-          #tokens <- quanteda::tokens(fragment_text_corpus, remove_punct = TRUE, remove_symbols = TRUE, remove_numbers = TRUE,
-          #                           remove_url = TRUE, remove_separators = TRUE, split_hyphens = TRUE, split_tags = TRUE)
-
-          # purrr::walk(languages, ~ {fragment_token <<- quanteda::tokens_wordstem(tokens, language = .x)} )
-
-          # purrr::walk(languages, ~ {fragment_token <<- quanteda::tokens_remove(fragment_token, quanteda::stopwords(.x))})
-
-          #  fragment_token <- quanteda::tokens_remove(fragment_token, framework_data$stop_words)
-
-          #  dtm <- quanteda::dfm(fragment_token, tolower = TRUE)
-          #  dtm.trim <- quanteda::dfm_trim(dtm, min_termfreq = 3)
           if (stem_text) {
             dtm.trim <- corp_list$dtm_trim_stemmed
           } else {
             dtm.trim <- corp_list$dtm_trim_unstemmed
           }
 
-          keyness_doc_var <- quanteda.textstats::textstat_keyness(dtm.trim,
-                                                                  quanteda::docvars(corp_list$text_corpus, "doc_var") == from_id,
-                                                                  sort = TRUE, measure = "chi2")
-          if (any(is.nan(keyness_doc_var[["chi2"]]))) {
-            out_plots[[paste0(freetext_id, "_", filter_name)]] <<- "Failed_Chi_Test"
+          if (enough_rows(corp_list$dtm_unstemmed)) {
+
+
+            keyness_doc_var <- quanteda.textstats::textstat_keyness(dtm.trim,
+                                                                    quanteda::docvars(corp_list$text_corpus, "doc_var") == from_id,
+                                                                    sort = TRUE, measure = "chi2")
+            if (any(is.nan(keyness_doc_var[["chi2"]]))) {
+              out_plots[[paste0(freetext_id, "_", filter_name)]] <<- "Failed_Chi_Test"
+            } else {
+              out_plots[[paste0(freetext_id, "_", filter_name)]] <<- quanteda.textplots::textplot_keyness(keyness_doc_var, color = c(from_colour, to_colour), show_reference = TRUE, show_legend = FALSE, margin = 0.05, n = 20L, min_count = 2L) +
+                ggplot2::scale_fill_discrete(name="", labels= c(from_title, to_title)) +
+                ggplot2::ggtitle(paste("KEYNESS PLOT for", from_title, "verses", to_title, "\n", "Filter: ", filter_title, " : ", filter_name)) +
+                ggplot2::theme(legend.position = c(0.6, 0.3)) + ggplot2::ylim(0, 40)
+            }
           } else {
-            out_plots[[paste0(freetext_id, "_", filter_name)]] <<- quanteda.textplots::textplot_keyness(keyness_doc_var, color = c(from_colour, to_colour), show_reference = TRUE, show_legend = FALSE, margin = 0.05, n = 20L, min_count = 2L) +
-              ggplot2::scale_fill_discrete(name="", labels= c(from_title, to_title)) +
-              ggplot2::ggtitle(paste("KEYNESS PLOT for", from_title, "verses", to_title, "\n", "Filter: ", filter_title, " : ", filter_name)) +
-              ggplot2::theme(legend.position = c(0.6, 0.3)) + ggplot2::ylim(0, 40)
+            out_plots[[paste0(freetext_id, "_", filter_name)]] <<- "No_Data or data for only one source"
           }
         } else {
           out_plots[[paste0(freetext_id, "_", filter_name)]] <<- "No_Data or data for only one source"
@@ -1180,7 +1154,6 @@ produce_keyness_pair_graphs <- function(keyness_pairs, framework_data, freetext_
 
   return(out_results)
 }
-
 #' @title Plot a bar chart of the sentiment content of the texted passed. .
 #' @description
 #' This function plots a bar chart of sentiments.

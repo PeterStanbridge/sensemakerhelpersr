@@ -682,3 +682,28 @@ build_pair_datasets <- function(framework_data, pairs_definitions, doc_var = "no
   })
 
 }
+
+# Which rows of a data frame etc are all zero
+#' @title Which rows of a numeric data frame are all zeros
+#' @description
+#' This function takes in an object that can be turned into a numeric matrix and returns for each row, whether they are all zero.
+#' @param dta - The data that can be turned into a numeric matrix, such as a data frame or term frequency matrix
+#' @returns Returns a vector of truth values, TRUE if the whole row is zero otherwise FALSE.
+#' @export
+are_rows_zero <- function(dta) {
+  row_test <- unlist(purrr::imap(unname(as.matrix(dta))[,1], ~ {all((unname(as.matrix(dta))[1:nrow(unname(as.matrix(dta))), ] == 0)[.y,])}))
+  return(row_test)
+}
+
+# Which rows of a data frame etc are all zero
+#' @title Are there sufficient rows to produce a keyness graph
+#' @description
+#' This function takes in an object that can be turned into a numeric matrix and returns TRUE or FALSE as to whether there is sufficient rows in a term document matrix to produce a keyness plot.
+#' @param dta - The data that can be turned into a numeric matrix, such as a data frame or term frequency matrix
+#' @returns TRUE or FALSE, the term document matrix can be printed
+enough_rows <- function(dta) {
+  row_test <- are_rows_zero(dta)
+  true_row_count <- length(which(row_test == TRUE))
+  false_row_count <- length(which(row_test == FALSE))
+  return(false_row_count > true_row_count + 2)
+}
