@@ -10,6 +10,9 @@ produce_keyness_pair_graphs(
   freetext_ids = NULL,
   filters = NULL,
   filter_names = NULL,
+  data_to_use = NULL,
+  source_field = "source",
+  check_enough_rows = FALSE,
   min_term_freq = 3,
   languages = "en",
   stem_text = TRUE
@@ -30,6 +33,22 @@ produce_keyness_pair_graphs(
 
 \item{filters}{\itemize{
 \item named list containing the filters to additionally apply to the appended dataset.
+}}
+
+\item{filter_names}{\itemize{
+\item names for the filters - normally the names R function on the filters.
+}}
+
+\item{data_to_use}{\itemize{
+\item Default NULL, as the data will be the combined pairs from the keyness pairs, but for special data processing using filters, the data data.frame is likely to be a specially constructed one.
+}}
+
+\item{source_field}{\itemize{
+\item Default "source", this is for the corpus creation for separating out the datasets. Normally "source" created in the sensemakerdatar pair dataset creation but when using filters with specific datasets, this could be something different.
+}}
+
+\item{check_enough_rows}{\itemize{
+\item Default FALSE, when using very small data sets especially with small amounts of text and little data records, further checks on the corpus is needed. This is a very slow algorithm so use with care.
 }}
 
 \item{min_term_freq}{\itemize{

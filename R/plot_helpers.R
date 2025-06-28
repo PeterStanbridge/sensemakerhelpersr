@@ -1049,11 +1049,27 @@ produce_tern_pair_means_graphs_by_triad <- function(tern_pairs, framework_data, 
 #' @param framework_data - The framework sensemakerdatar object.
 #' @param freetext_ids - default NULL, A vector of freetext signifier ids for textual data If NULL all freetext signifiers set as a fragment are plotted.
 #' @param filters - named list containing the filters to additionally apply to the appended dataset.
+#' @param filter_names - names for the filters - normally the names R function on the filters.
+#' @param data_to_use - Default NULL, as the data will be the combined pairs from the keyness pairs, but for special data processing using filters, the data data.frame is likely to be a specially constructed one.
+#' @param source_field - Default "source", this is for the corpus creation for separating out the datasets. Normally "source" created in the sensemakerdatar pair dataset creation but when using filters with specific datasets, this could be something different.
+#' @param check_enough_rows - Default FALSE, when using very small data sets especially with small amounts of text and little data records, further checks on the corpus is needed. This is a very slow algorithm so use with care.
 #' @param min_term_freq - Default 3, number of occurrence of a term before it it is accepted into the corpus.
 #' @param languages - Default "en", a vector of supported 2 character language codes for use in stop words and stemming.
 #' @param stem_text - Default TRUE, whether to stem the text.
 #' @export
-produce_keyness_pair_graphs <- function(keyness_pairs, framework_data, freetext_ids = NULL, filters = NULL, filter_names = NULL, min_term_freq = 3, languages = "en", stem_text = TRUE) {
+produce_keyness_pair_graphs <- function(keyness_pairs, framework_data, freetext_ids = NULL, filters = NULL, filter_names = NULL, data_to_use = NULL,
+                                        source_field = "source", check_enough_rows = FALSE, min_term_freq = 3, languages = "en", stem_text = TRUE) {
+
+  if (1 == 3) {
+    framework_data <- fwd
+    filters = NULL
+    filter_names = NULL
+    data_to_use = NULL
+    source_field = "source"
+    min_term_freq = 3
+    languages = "en"
+    stem_text = TRUE
+  }
 
   if (!(all(languages == "en") & !exists("isoLanguages"))) {
     get_iso_codes()
@@ -1079,6 +1095,7 @@ produce_keyness_pair_graphs <- function(keyness_pairs, framework_data, freetext_
     freetext_ids <- framework_data$sm_framework$get_freetext_fragments()
   }
   build_pair_datasets(framework_data, pairs_definitions = keyness_pairs, doc_var = "auto", plot_col = "auto")
+
   from_ids <- keyness_pairs[, "from_id"]
   to_ids <- keyness_pairs[, "to_id"]
   from_colours <- keyness_pairs[, "from_colour"]
@@ -1089,15 +1106,30 @@ produce_keyness_pair_graphs <- function(keyness_pairs, framework_data, freetext_
   out_results <<- vector("list", length = length(from_ids))
   names(out_results) <- paste0(from_ids, "_", to_ids)
 
+  if (1 == 3) {
+    from_id <- from_ids[[1]]
+    to_id <- to_ids[[1]]
+    from_colour <- from_colours[[1]]
+    to_colour <- to_colours[[1]]
+    from_title <- from_titles[[1]]
+    to_title <- to_titles[[1]]
+  }
+
   # perform the keyness processing
   purrr::pwalk(list(from_ids, to_ids, from_colours, to_colours, from_titles, to_titles), function(from_id, to_id, from_colour, to_colour, from_title, to_title) {
     # Todo this is ugly - there must be a better way of getting the columns.
     #  out_plots <<- vector("list", length = length(freetext_ids) + ifelse(is.null(filters), 0, length(filters)))
 
     if (is.null(filters)) {
-      filters <- list("full_data")
-      names(filters) <- "full_data"
-      filter_names <- "Full keyness pair dataset"
+      if (is.null(data_to_use)) {
+        filters <- list("full_data")
+        names(filters) <- "full_data"
+        filter_names <- "Full keyness pair dataset"
+      } else {
+        filters <- list(data_to_use)
+        names(filters) <- data_to_use
+        filter_names <- data_to_use
+      }
     }
     names_for_list <- tidyr::crossing(freetext_ids, names(filters))
     colnames(names_for_list) <- c("a", "b")
@@ -1105,16 +1137,31 @@ produce_keyness_pair_graphs <- function(keyness_pairs, framework_data, freetext_
     out_plots <- vector("list", length = length(combine_names))
     names(out_plots) <- combine_names
 
+    if (1 == 3) {
+      freetext_id <- freetext_ids[[1]]
+    }
+
     purrr::walk(freetext_ids, function(freetext_id) {
 
       df_full <- framework_data$data[[paste0(from_id, "_", to_id)]]
 
       purrr::walk2(names(filters), filter_names, function(filter_name, filter_title) {
 
-        query_exp <- parse(text = paste0("df_full %>% dplyr::filter(", filters[[filter_name]], ")"))
-        df <- eval(query_exp)
+        if (!is.expression(filter_name)) {
 
-        if (nrow(df) > 1 & length(unique(df[["source"]])) == 2) {
+          df <- df_full
+        } else {
+          if (names(filters) == data_to_use) {
+
+            df <- df_full
+          } else {
+
+            query_exp <- parse(text = paste0("df_full %>% dplyr::filter(", filters[[filter_name]], ")"))
+            df <- eval(query_exp)
+          }
+        }
+
+        if (nrow(df) > 1 & length(unique(df[[source_field]])) == 2) {
 
           corp_list <- build_corpus(df, framework_data,  freetext_id, doc_var = "doc_var", min_term_freq = min_term_freq, languages = languages)
 
@@ -1124,18 +1171,19 @@ produce_keyness_pair_graphs <- function(keyness_pairs, framework_data, freetext_
             dtm.trim <- corp_list$dtm_trim_unstemmed
           }
 
-          if (enough_rows(corp_list$dtm_unstemmed)) {
-
+          if (!check_enough_rows || (check_enough_rows & enough_rows(corp_list$dtm_unstemmed))) {
 
             keyness_doc_var <- quanteda.textstats::textstat_keyness(dtm.trim,
                                                                     quanteda::docvars(corp_list$text_corpus, "doc_var") == from_id,
                                                                     sort = TRUE, measure = "chi2")
+
             if (any(is.nan(keyness_doc_var[["chi2"]]))) {
               out_plots[[paste0(freetext_id, "_", filter_name)]] <<- "Failed_Chi_Test"
             } else {
               out_plots[[paste0(freetext_id, "_", filter_name)]] <<- quanteda.textplots::textplot_keyness(keyness_doc_var, color = c(from_colour, to_colour), show_reference = TRUE, show_legend = FALSE, margin = 0.05, n = 20L, min_count = 2L) +
                 ggplot2::scale_fill_discrete(name="", labels= c(from_title, to_title)) +
-                ggplot2::ggtitle(paste("KEYNESS PLOT for", from_title, "verses", to_title, "\n", "Filter: ", filter_title, " : ", filter_name)) +
+                ggplot2::ggtitle(paste("KEYNESS PLOT for", from_title, "verses", to_title, "\n", ifelse(filter_name != "full_data", paste("Filter: ", filter_title, " : ", filter_name), ""),
+                                       "\n", "Freetext:", framework_data$sm_framework$get_signifier_title(freetext_id))) +
                 ggplot2::theme(legend.position = c(0.6, 0.3)) + ggplot2::ylim(0, 40)
             }
           } else {
@@ -1154,6 +1202,8 @@ produce_keyness_pair_graphs <- function(keyness_pairs, framework_data, freetext_
 
   return(out_results)
 }
+
+
 #' @title Plot a bar chart of the sentiment content of the texted passed. .
 #' @description
 #' This function plots a bar chart of sentiments.
