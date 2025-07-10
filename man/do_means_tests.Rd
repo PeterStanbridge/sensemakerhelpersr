@@ -5,7 +5,6 @@
 \title{Do means tests}
 \usage{
 do_means_tests(
-  filters,
   means_tests,
   fwd,
   signifier_ids = NULL,
@@ -16,10 +15,6 @@ do_means_tests(
 )
 }
 \arguments{
-\item{filters}{\itemize{
-\item filters from a filter file. Can be either the file name or the data frame created from it. It have columns (at least) of "name" and "title". Note that the actual filter file will also contain an expression column, an include column and colour column. The function is already expecting the filter to have been executed against the {sensemakerdatar} object. It is used here to pick up titles.
-}}
-
 \item{means_tests}{\itemize{
 \item means tests from a means test file. Can be either the file name or the data frame created from it. It must have columns at least "from_id", "to_id" and "name". The from_id and to_id are names of data filters in the filter parameter.
 }}

@@ -104,7 +104,6 @@ perform_adonis2 <- function(data, control_var, non_parametric = TRUE, b_value = 
 #' @title Do means tests
 #' @description
 #' Do means tests on the data passed into the function.
-#' @param filters - filters from a filter file. Can be either the file name or the data frame created from it. It have columns (at least) of "name" and "title". Note that the actual filter file will also contain an expression column, an include column and colour column. The function is already expecting the filter to have been executed against the {sensemakerdatar} object. It is used here to pick up titles.
 #' @param means_tests - means tests from a means test file. Can be either the file name or the data frame created from it. It must have columns at least "from_id", "to_id" and "name". The from_id and to_id are names of data filters in the filter parameter.
 #' @param fwd - The sensemakerdatar object for the framework being processed.
 #' @param signifier_ids - Default NULL otherwise the signifier ids of the signifiers to be processed. These should be either triad and/or dyad signifier ids. If NULL then the signifier types parameter must be entered.
@@ -114,11 +113,10 @@ perform_adonis2 <- function(data, control_var, non_parametric = TRUE, b_value = 
 #' @param b_value - the bootstrap iteration value for many of the non-parametric tests. Default 1000.
 #' @returns Returns a list, one for each signifier id, of the test results in the standard CE SenseMaker Workbench format.
 #' @export
-do_means_tests <- function(filters, means_tests, fwd, signifier_ids = NULL, signifier_types = NULL, test_type = "hotelling", non_parametric = TRUE, b_value = 1000) {
+do_means_tests <- function(means_tests, fwd, signifier_ids = NULL, signifier_types = NULL, test_type = "hotelling", non_parametric = TRUE, b_value = 1000) {
 
   stopifnot((is.null(signifier_ids) & !is.null(signifier_types) | (!is.null(signifier_ids) & is.null(signifier_types))))
   stopifnot(class(means_tests) %in% c("character", "data.frame"))
-  stopifnot(class(filters) %in% c("character", "data.frame"))
   stopifnot(test_type %in% get_avalable_tests())
   # signifier types must be shape signifier types
   if (!is.null(signifier_types)) {
@@ -131,12 +129,6 @@ do_means_tests <- function(filters, means_tests, fwd, signifier_ids = NULL, sign
     means_tests <- read.csv("means_tests.csv", check.names = FALSE, stringsAsFactors = FALSE)
   }
   stopifnot(all(c("from_id",	"to_id","from_title", "to_title") %in% colnames(means_tests)))
-
-  if (is.character(filters)) {
-    stopifnot(file.exists(filters))
-    filters <- read.csv("filters", check.names = FALSE, stringsAsFactors = FALSE)
-  }
-  stopifnot(all(c("name", "title") %in% colnames(filters)))
 
   k <- 0
 

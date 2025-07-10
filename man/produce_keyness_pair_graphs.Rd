@@ -15,7 +15,8 @@ produce_keyness_pair_graphs(
   check_enough_rows = FALSE,
   min_term_freq = 3,
   languages = "en",
-  stem_text = TRUE
+  stem_text = TRUE,
+  title_size = 10
 )
 }
 \arguments{
@@ -61,6 +62,10 @@ produce_keyness_pair_graphs(
 
 \item{stem_text}{\itemize{
 \item Default TRUE, whether to stem the text.
+}}
+
+\item{title_size}{\itemize{
+\item Default 10, the size of the graph title.
 }}
 }
 \description{

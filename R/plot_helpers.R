@@ -942,7 +942,7 @@ produce_tern_pair_means_graphs <- function(tern_pairs, framework_data, triads_to
 
 
   out_results <- vector("list", length = length(from_ids))
-  names(out_results) <<- paste0(from_ids, "_", to_ids)
+  names(out_results) <- paste0(from_ids, "_", to_ids)
 
   purrr::pwalk(list(from_ids, to_ids, from_colours, to_colours, from_titles, to_titles), function(from_id, to_id, from_colour, to_colour, from_title, to_title) {
 
@@ -1056,9 +1056,10 @@ produce_tern_pair_means_graphs_by_triad <- function(tern_pairs, framework_data, 
 #' @param min_term_freq - Default 3, number of occurrence of a term before it it is accepted into the corpus.
 #' @param languages - Default "en", a vector of supported 2 character language codes for use in stop words and stemming.
 #' @param stem_text - Default TRUE, whether to stem the text.
+#' @param title_size - Default 10, the size of the graph title.
 #' @export
 produce_keyness_pair_graphs <- function(keyness_pairs, framework_data, freetext_ids = NULL, filters = NULL, filter_names = NULL, data_to_use = NULL,
-                                        source_field = "source", check_enough_rows = FALSE, min_term_freq = 3, languages = "en", stem_text = TRUE) {
+                                        source_field = "source", check_enough_rows = FALSE, min_term_freq = 3, languages = "en", stem_text = TRUE, title_size = 10) {
 
   if (1 == 3) {
     framework_data <- fwd
@@ -1184,7 +1185,7 @@ produce_keyness_pair_graphs <- function(keyness_pairs, framework_data, freetext_
                 ggplot2::scale_fill_discrete(name="", labels= c(from_title, to_title)) +
                 ggplot2::ggtitle(paste("KEYNESS PLOT for", from_title, "verses", to_title, "\n", ifelse(filter_name != "full_data", paste("Filter: ", filter_title, " : ", filter_name), ""),
                                        "\n", "Freetext:", framework_data$sm_framework$get_signifier_title(freetext_id))) +
-                ggplot2::theme(legend.position = c(0.6, 0.3)) + ggplot2::ylim(0, 40)
+                ggplot2::theme(legend.position = c(0.6, 0.3), plot.title = element_text(size = title_size)) + ggplot2::ylim(0, 40)
             }
           } else {
             out_plots[[paste0(freetext_id, "_", filter_name)]] <<- "No_Data or data for only one source"
@@ -1492,7 +1493,7 @@ plot_sentiment_valence <- function(sentiment_filters, freetexts_to_plot, framewo
 #' @export
 plot_emotions_over_time <- function(sentiment_filters, freetexts_to_plot, framework_data) {
 
-  # freetexts_to_plot can be either a vector of 1 or more free text ids, a file name of a csv file containing the freetext ids or a parsed version (data.frame)
+  # freetextst_to_plot can be either a vector of 1 or more free text ids, a file name of a csv file containing the freetext ids or a parsed version (data.frame)
   if (stringr::str_ends(string = freetexts_to_plot, ".csv")) {
     stopifnot(file.exists(freetexts_to_plot))
     df <- utils::read.csv(freetexts_to_plot, stringsAsFactors = FALSE)
@@ -1638,7 +1639,7 @@ word_frequency_plot <- function(frequency_graph_pairs, freetexts_to_plot, framew
 
 
   # freetexts_to_plot can be either a vector of 1 or more free text ids, a file name of a csv file containing the freetext ids or a parsed version (data.frame)
-  if (stringr::str_ends(string = freetexts_to_plot, ".csv")) {
+  if (all(stringr::str_ends(string = freetexts_to_plot, ".csv"))) {
     stopifnot(file.exists(freetexts_to_plot))
     df <- utils::read.csv(freetexts_to_plot, stringsAsFactors = FALSE)
     stopifnot(nrow(df) > 0)
