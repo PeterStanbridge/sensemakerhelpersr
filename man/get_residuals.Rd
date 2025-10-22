@@ -11,7 +11,8 @@ get_residuals(
   to_col,
   round_digits = 0,
   residual_threshold = 4,
-  p_threshold = 0.05
+  p_threshold = 0.05,
+  keep_only_include = TRUE
 )
 }
 \arguments{
@@ -41,6 +42,10 @@ get_residuals(
 
 \item{p_threshold}{\itemize{
 \item default 0.05, the p-value threshold for null hypothesis test.
+}}
+
+\item{keep_only_incude}{\itemize{
+\item default TRUE, retrieve signifiers with keep_only set to TRUE, otherwise all signifiers.
 }}
 }
 \value{

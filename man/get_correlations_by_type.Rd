@@ -36,6 +36,26 @@ get_correlations_by_type(
 \item Either "list" or one of the shape types ("dyad", "triad", "stones").
 }}
 
+\item{from_signifier_classes}{\itemize{
+\item default "signifier" - a vector of classes of signifiers to include in the from type (e.g. for a "list" one may select "date")
+}}
+
+\item{to_signifier_classes}{\itemize{
+\item default "signifier" - a vector of classes of signifiers to include in the to type (e.g. for a "list" one may select "date")
+}}
+
+\item{from_signifier_ids}{\itemize{
+\item default NULL - further qualify the from signifiers to include by providing a vector of signifier ids (of type "from_type")
+}}
+
+\item{to_signifier_ids}{\itemize{
+\item default NULL - further qualify the to signifiers to include by providing a vector of signifier ids (of type "to_type")
+}}
+
+\item{keep_only_include}{\itemize{
+\item default TRUE, to exclude any signifier that has include FALSE.
+}}
+
 \item{round_digits}{\itemize{
 \item default 0, z, z^2, expected value table rounding digits.
 }}

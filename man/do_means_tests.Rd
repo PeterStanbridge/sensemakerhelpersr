@@ -11,7 +11,8 @@ do_means_tests(
   signifier_types = NULL,
   test_type = "hotelling",
   non_parametric = TRUE,
-  b_value = 1000
+  b_value = 1000,
+  keep_only_include = TRUE
 )
 }
 \arguments{
@@ -41,6 +42,10 @@ do_means_tests(
 
 \item{b_value}{\itemize{
 \item the bootstrap iteration value for many of the non-parametric tests. Default 1000.
+}}
+
+\item{keep_only_include}{\itemize{
+\item Default TRUE, keep only those signifiers that have the keep_only set to TRUE otherwise retrieve all signifiers.
 }}
 }
 \value{

@@ -111,9 +111,10 @@ perform_adonis2 <- function(data, control_var, non_parametric = TRUE, b_value = 
 #' @param test_type - default "hotelling". Must be one of the supported test types, which can be found by calling sensemakerhelpersr::get_avalable_tests()
 #' @param non_parametric - default TRUE, otherwise FALSE. Only applicable (for now) in the hotelling test, the other supported tests are all non-parametric.
 #' @param b_value - the bootstrap iteration value for many of the non-parametric tests. Default 1000.
+#' @param keep_only_include - Default TRUE, keep only those signifiers that have the keep_only set to TRUE otherwise retrieve all signifiers.
 #' @returns Returns a list, one for each signifier id, of the test results in the standard CE SenseMaker Workbench format.
 #' @export
-do_means_tests <- function(means_tests, fwd, signifier_ids = NULL, signifier_types = NULL, test_type = "hotelling", non_parametric = TRUE, b_value = 1000) {
+do_means_tests <- function(means_tests, fwd, signifier_ids = NULL, signifier_types = NULL, test_type = "hotelling", non_parametric = TRUE, b_value = 1000, keep_only_include = TRUE) {
 
   stopifnot((is.null(signifier_ids) & !is.null(signifier_types) | (!is.null(signifier_ids) & is.null(signifier_types))))
   stopifnot(class(means_tests) %in% c("character", "data.frame"))
@@ -121,7 +122,7 @@ do_means_tests <- function(means_tests, fwd, signifier_ids = NULL, signifier_typ
   # signifier types must be shape signifier types
   if (!is.null(signifier_types)) {
     stopifnot(all(signifier_types %in% fwd$sm_framework$get_shape_signifier_types()))
-    signifier_ids <- unlist(unname(purrr::map(signifier_types, ~ {fwd$sm_framework$get_signifier_ids_by_type(.x)})))
+    signifier_ids <- unlist(unname(purrr::map(signifier_types, ~ {fwd$sm_framework$get_signifier_ids_by_type(.x , keep_only_include = keep_only_include)})))
   }
 
   if (is.character(means_tests)) {
@@ -353,6 +354,11 @@ calculate_multi_select_correlations <- function(correlation_pairs, fwd, list_ids
 #' @param fw - The framework definition object.
 #' @param from_type - Either "list" or one of the shape types ("dyad", "triad", "stones").
 #' @param to_type - Either "list" or one of the shape types ("dyad", "triad", "stones").
+#' @param from_signifier_classes - default "signifier" - a vector of classes of signifiers to include in the from type (e.g. for a "list" one may select "date")
+#' @param to_signifier_classes - default "signifier" - a vector of classes of signifiers to include in the to type (e.g. for a "list" one may select "date")
+#' @param from_signifier_ids - default NULL - further qualify the from signifiers to include by providing a vector of signifier ids (of type "from_type")
+#' @param to_signifier_ids - default NULL - further qualify the to signifiers to include by providing a vector of signifier ids (of type "to_type")
+#' @param keep_only_include - default TRUE, to exclude any signifier that has include FALSE.
 #' @param round_digits - default 0, z, z^2, expected value table rounding digits.
 #' @param residual_threshold - default 4, the threshold for residual calculation on residual squared values.
 #' @param p_threshold - default 0.05, the p-value threshold for null hypothesis test.
@@ -380,8 +386,8 @@ get_correlations_by_type <- function(df, fw, from_type, to_type, from_signifier_
 
   if (length(from_signifier_ids) > 0) {
     sig_types <- unique(unlist(purrr::map(from_signifier_ids, ~ {fw$get_signifier_type_by_id(.x)})))
-    stopifnot(length(sig_type) > 1)
-    stopifnot(sig_types != from_type)
+    stopifnot(length(sig_types) == 1)
+    stopifnot(sig_types == from_type)
     if (keep_only_include) {
     from_signifier_ids <- unlist(purrr::keep(from_signifier_ids, ~ {fw$get_signifier_include(.x)}))
     }
@@ -389,8 +395,8 @@ get_correlations_by_type <- function(df, fw, from_type, to_type, from_signifier_
 
   if (length(to_signifier_ids) > 0) {
     sig_types <- unique(unlist(purrr::map(to_signifier_ids, ~ {fw$get_signifier_type_by_id(.x)})))
-    stopifnot(length(sig_type) > 1)
-    stopifnot(sig_types != to_type)
+    stopifnot(length(sig_types) == 1)
+    stopifnot(sig_types == to_type)
     if (keep_only_include) {
       to_signifier_ids <- unlist(purrr::keep(to_signifier_ids, ~ {fw$get_signifier_include(.x)}))
     }
@@ -465,16 +471,17 @@ get_correlations_by_type <- function(df, fw, from_type, to_type, from_signifier_
 #' @param round_digits - default 0, z, z^2, expected value table rounding digits.
 #' @param residual_threshold - default 4, the threshold for residual calculation on residual squared values.
 #' @param p_threshold - default 0.05, the p-value threshold for null hypothesis test.
+#' @param keep_only_incude - default TRUE, retrieve signifiers with keep_only set to TRUE, otherwise all signifiers.
 #' @returns Returns a named list.containing the residual calculations. z, zsqr  the data count matrix, expected value matrix, p_value, test_result accept null hypothesis TRUE or FALSE, .
 #' @export
-get_residuals <- function(df, fw, from_col, to_col, round_digits = 0, residual_threshold = 4, p_threshold = 0.05) {
+get_residuals <- function(df, fw, from_col, to_col, round_digits = 0, residual_threshold = 4, p_threshold = 0.05, keep_only_include = TRUE) {
 
-  if (!(from_col %in% fw$get_all_signifier_ids())) {
+  if (!(from_col %in% fw$get_all_signifier_ids(keep_only_include = keep_only_include))) {
     from_id <- stringr::str_split_i(from_col, pattern = "_", i = 1)
   } else {
     from_id <- from_col
   }
-  if (!(to_col %in% fw$get_all_signifier_ids())) {
+  if (!(to_col %in% fw$get_all_signifier_ids(keep_only_include = keep_only_include))) {
     to_id <- stringr::str_split_i(to_col, pattern = "_", i = 1)
   } else {
     to_id <- to_col
@@ -498,10 +505,10 @@ get_residuals <- function(df, fw, from_col, to_col, round_digits = 0, residual_t
 
   # For list pull out titles to replace keys
   if (from_type == "list" && fw$get_list_max_responses(from_id) == 1) {
-    t1a[, 1] <- unlist(unname(purrr::map(t1a[, 1], ~ {fw$get_list_item_title(from_id, .x)})))
+    t1a[, 1] <- unlist(unname(purrr::map(t1a[, 1], ~ {fw$get_list_item_title(from_id, as.character(.x))})))
   }
   if (to_type == "list" && fw$get_list_max_responses(to_id) == 1) {
-    t1a[, 2] <- unlist(unname(purrr::map(t1a[, 2], ~ {fw$get_list_item_title(to_id, .x)})))
+    t1a[, 2] <- unlist(unname(purrr::map(t1a[, 2], ~ {fw$get_list_item_title(to_id, as.character(.x))})))
   }
 
   t1 <- as.array(table(t1a))
