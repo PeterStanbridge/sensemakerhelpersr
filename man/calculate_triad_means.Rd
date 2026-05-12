@@ -10,7 +10,7 @@ calculate_triad_means(
   mean_type,
   framework_object,
   zero_logic = "small_value",
-  for_ggtern = FALSE
+  for_ternary = FALSE
 )
 }
 \arguments{
@@ -34,7 +34,7 @@ calculate_triad_means(
 \item either "small_value" or "remove". Small value means to take a zero value and give it a very small replacement. Otherwise ignore this fragment.
 }}
 
-\item{for_ggtern}{\itemize{
+\item{for_ternary}{\itemize{
 \item Default FALSE, if true, the returned dataframe containing the mean is in a format ready to plot in ggtern.
 }}
 }

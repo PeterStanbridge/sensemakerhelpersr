@@ -404,3 +404,12 @@ areColors <- function(x) {
              error = function(e) FALSE)
   })
 }
+
+#' @title Is a string passed a valid name.
+#' @description Determines whether a character string is a valid R name
+#' @param x A vector character names.
+#' @returns A list of logicals indicating whether each string is a name or not.
+#' @export
+is_valid_name <- function(x) {
+  return(unlist(purrr::map(x, ~ {.x == make.names(.x)})))
+}
