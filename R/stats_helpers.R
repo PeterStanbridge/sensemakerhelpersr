@@ -144,29 +144,31 @@ do_means_tests <- function(means_tests, fwd, signifier_ids = NULL, signifier_typ
 
    # purrr::walk2(means_tests$from_id, means_tests$to_id, function(from_dat, to_dat) {
 
-      purrr::pwalk(list(means_tests$from_id, means_tests$to_id, means_tests$from_title, means_tests$to_title), function(from_dat, to_dat, source1_title, source2_title) {
+    purrr::pwalk(list(means_tests$from_id, means_tests$to_id, means_tests$from_title, means_tests$to_title), function(from_dat, to_dat, source1_title, source2_title) {
 
-    #  source1_title <- as.character(unname(filters |> dplyr::filter(name == from_dat) |> dplyr::select(title)))
-     # source2_title <- as.character(unname(filters |> dplyr::filter(name == to_dat) |> dplyr::select(title)))
-    #  source1_title <- from_dat
-    #  source2_title <- to_dat
+      #  source1_title <- as.character(unname(filters |> dplyr::filter(name == from_dat) |> dplyr::select(title)))
+      # source2_title <- as.character(unname(filters |> dplyr::filter(name == to_dat) |> dplyr::select(title)))
+      #  source1_title <- from_dat
+      #  source2_title <- to_dat
+      if (nrow(fwd$data[[from_dat]]) == 0 | nrow(fwd$data[[to_dat]]) == 0 ) {
 
-      work_df <- dplyr::bind_rows(fwd$data[[from_dat]], fwd$data[[to_dat]])
-      stopifnot("source" %in% colnames(work_df))
-      cols_sel <- c(sig_columns, "source")
-      sig_data <- work_df |> dplyr::select(dplyr::all_of(cols_sel)) |> stats::na.omit()
-      col_contents <- get_sig_stats_names(sig_id, fwd)
-      colnames(sig_data) <- col_contents$col_names
-      filter_string <- paste0("sig_data %>% dplyr::filter(", col_contents$query_string, ")")
-      filter_query <- parse(text = filter_string)
-      sig_data <- eval(filter_query)
-      col_number <- ncol(sig_data) * -1
+      } else {
+        work_df <- dplyr::bind_rows(fwd$data[[from_dat]], fwd$data[[to_dat]])
+        stopifnot("source" %in% colnames(work_df))
+        cols_sel <- c(sig_columns, "source")
+        sig_data <- work_df |> dplyr::select(dplyr::all_of(cols_sel)) |> stats::na.omit()
+        col_contents <- get_sig_stats_names(sig_id, fwd)
+        colnames(sig_data) <- col_contents$col_names
+        filter_string <- paste0("sig_data %>% dplyr::filter(", col_contents$query_string, ")")
+        filter_query <- parse(text = filter_string)
+        sig_data <- eval(filter_query)
+        col_number <- ncol(sig_data) * -1
 
-      total_transformed <- compositions::ilr(sig_data[,col_number])
+        total_transformed <- compositions::ilr(sig_data[,col_number])
 
-      test_results <- perform_required_test(total_transformed, sig_data$source, non_parametric, b_value, test_type, source1_title, source2_title)
-      stats_out <<- dplyr::bind_rows(stats_out, test_results)
-
+        test_results <- perform_required_test(total_transformed, sig_data$source, non_parametric, b_value, test_type, source1_title, source2_title)
+        stats_out <<- dplyr::bind_rows(stats_out, test_results)
+      }
 
 
 
@@ -404,14 +406,14 @@ get_correlations_by_type <- function(df, fw, from_type, to_type, from_signifier_
 
   # The correlation columns will be coming from lists - e.g. dyad type will use the zone mcq equivalent columns for correlations.
 
-  all_list_ids <- fw$get_list_ids(keep_only_include = keep_only_include)
+  all_list_ids <- fw$get_single_select_list_ids(keep_only_include = keep_only_include)
   if (is.null(from_signifier_ids)) {
-    from_ids  <- fw$get_signifier_ids_by_type(from_type, sig_class = from_signifier_classes, keep_only_include = keep_only_include)
+    from_ids  <- fw$get_signifier_ids_by_type(from_type, sig_class = from_signifier_classes, keep_only_include = keep_only_include, only_single_select = TRUE)
   } else {
     from_ids <- from_signifier_ids
   }
   if (is.null(to_signifier_ids)) {
-    to_ids  <- fw$get_signifier_ids_by_type(to_type, sig_class = from_signifier_classes, keep_only_include = keep_only_include)
+    to_ids  <- fw$get_signifier_ids_by_type(to_type, sig_class = to_signifier_classes, keep_only_include = keep_only_include, only_single_select = TRUE)
   } else {
     to_ids <- to_signifier_ids
   }
