@@ -389,6 +389,10 @@ plot_dyad <- function(filtered_data, full_data, dyad_id, framework_object, dyad_
     }
   }
 
+  if (!(paste0(dyad_id, "XR") %in% colnames(filtered_data))) {
+    filtered_data[[paste0(dyad_id, "XR")]] <- filtered_data[[paste0(dyad_id, "X")]] * 100
+  }
+
   colLeftName <- framework_object$get_dyad_left_column_name(dyad_id)
   geometric_mean_x <- robCompositions::gmean(filtered_data[,paste(dyad_id, "XR", sep = "")])
   geometric_mean_y <- robCompositions::gmean(100 - (filtered_data[,paste(dyad_id, "XR", sep = "")]))
@@ -430,7 +434,9 @@ plot_dyad <- function(filtered_data, full_data, dyad_id, framework_object, dyad_
 
 
 test_plot_dyad <- function(sigID, data, numBins, perCount) {
-
+  if (!(paste0(sigID, "XR") %in% colnames(data))) {
+      data[[paste0(sigID, "XR")]] <- data[[paste0(sigID, "X")]] * 100
+  }
   r <- ggplot2::ggplot(data = data, ggplot2::aes_string(x = paste0("`", sigID, "XR", sep = "`"))) +
     ggplot2::geom_histogram(ggplot2::aes_string(y = "..count.."),  na.rm = TRUE, binwidth = numBins, boundary = 0)
 
