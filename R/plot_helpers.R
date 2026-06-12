@@ -389,6 +389,10 @@ plot_dyad <- function(filtered_data, full_data, dyad_id, framework_object, dyad_
     }
   }
 
+  if (!(paste0(dyad_id, "XR") %in% colnames(filtered_data))) {
+    filtered_data[[paste0(dyad_id, "XR")]] <- filtered_data[[paste0(dyad_id, "X")]] * 100
+  }
+
   colLeftName <- framework_object$get_dyad_left_column_name(dyad_id)
   geometric_mean_x <- robCompositions::gmean(filtered_data[,paste(dyad_id, "XR", sep = "")])
   geometric_mean_y <- robCompositions::gmean(100 - (filtered_data[,paste(dyad_id, "XR", sep = "")]))
@@ -430,11 +434,176 @@ plot_dyad <- function(filtered_data, full_data, dyad_id, framework_object, dyad_
 
 
 test_plot_dyad <- function(sigID, data, numBins, perCount) {
-
+  if (!(paste0(sigID, "XR") %in% colnames(data))) {
+      data[[paste0(sigID, "XR")]] <- data[[paste0(sigID, "X")]] * 100
+  }
   r <- ggplot2::ggplot(data = data, ggplot2::aes_string(x = paste0("`", sigID, "XR", sep = "`"))) +
     ggplot2::geom_histogram(ggplot2::aes_string(y = "..count.."),  na.rm = TRUE, binwidth = numBins, boundary = 0)
 
   return(r)
+}
+
+#' @title Plot a list bar chart.
+#' @description
+#'  Plot a SenseMaker defined list (multi-choice question) with ggplot (note requires the sensemakerframeworkr object)
+#' @param filtered_data - Must be supplied. Data frame that includes the triad x and y columns with filtered (if any) signifiers to plot.
+#' @param full_data - Must be supplied. Data frame that includes the triad x and y columns with all signifiers for the capture.
+#' @param sig_id - Must be supplied. The triad_id to be plotted.
+#' @param framework_object - Must be supplied. The framework object from the sensemakerdatar instance object. (this is sensemakerdatar::sm_framework)
+#' @param bar_colour - default "#7084B8". The colour of the graph dots. A Character string of any valid R colour format, such as hex values or colour names.
+#' @param bar_transparency - default 1. The transparency (or alpha) value for the dots. A numeric value between 0 and 1.
+#' @param border_colour - default "black" - any valud R colour for the bar border colour.
+#' @param show_percentages_counts - default "counts" - options "counts", "percentages", "none" to display on the top of each bar.
+#' @param title_size - default NULL. The size of the title. If NULL it is calculated.
+#' @param display_guide - default FALSE - whether to display the colour legend if colour_sig_id set.
+#' @param display_stats - default TRUE - whether to display the stats data at the bottom of the graph.
+#' @param colour_sig_id - default NULL, don't colour by a list signifier, otherwise the signifier id of the list to colour by.
+#' @param colour_vector - default NULL, a vector of valid R colour codes (alpha, hex etc.) of length the number of list items in the signifier id used for the colour.
+#' @param colour_package - default "grDevices" - any package that contains colour palletes that can return a list of colours - this is used if colour vector is NULL.
+#' @param colour_function - default "rainbow", which is a default for grDevices.
+#' @returns A ggplot graph object of the list (multi-choice question)
+#' @export
+plot_list <- function(filtered_data, full_data, sig_id, framework_object, bar_colour = "#7084B8", bar_transparency = 1,
+                      border_colour = "black", show_percentages_counts = "count", title_size = NULL, display_guide = FALSE, display_stats = TRUE,
+                      colour_sig_id = NULL, colour_vector = NULL, colour_package = "grDevices", colour_function = "rainbow") {
+
+  stopifnot(!is.null(sig_id))
+  stopifnot("Signifiers" %in% class(framework_object))
+  stopifnot(is.data.frame(filtered_data))
+  stopifnot(is.data.frame(full_data))
+  stopifnot("FragmentID" %in% colnames(filtered_data))
+  stopifnot("FragmentID" %in% colnames(full_data))
+  stopifnot(sig_id %in% colnames(filtered_data))
+  stopifnot(sig_id %in% colnames(full_data))
+  stopifnot(all(colnames(filtered_data) %in% colnames(full_data)))
+ y_val <- show_percentages_counts
+
+
+  # remove NA from main x variable
+  plot_df <- filtered_data %>%
+    filter(!is.na(.data[[sig_id]]))
+
+  if (nrow(plot_df) == 0) {
+    stop("No non-missing values found in sig_id.")
+  }
+
+  # no fill/grouping variable
+  if (is.null(colour_sig_id)) {
+
+    sum_df <- plot_df %>%
+      count(.data[[sig_id]], name = "n") %>%
+      mutate(
+        plot_value = if (show_percentages_counts == "count") {
+          n
+        } else {
+          n / sum(n)
+        },
+        label = if (show_percentages_counts == "count") {
+          as.character(n)
+        } else {
+          scales::percent(plot_value, accuracy = 0.1)
+        }
+      )
+    break_values <- sort(unique(plot_df[[sig_id]]))
+    label_values <- framework_object$get_list_items_titles(sig_id)[which(break_values %in% framework_object$get_list_items_titles(sig_id))]
+    p <- ggplot(sum_df, aes(x = .data[[sig_id]], y = plot_value)) +
+      geom_col(fill = bar_colour, colour = border_colour) +
+      geom_text(
+        aes(label = label),
+        hjust = -0.15,
+        size = 3
+      ) +
+      scale_x_discrete(drop=FALSE, breaks = break_values, labels = label_values, limits = rev) +
+      scale_y_continuous(
+        labels = if (show_percentages_counts == "count") waiver() else scales::percent,
+        expand = expansion(mult = c(0, 0.15))
+      ) +
+      labs(
+        x = fw$get_signifier_title(sig_id),
+        y = if (show_percentages_counts == "count") "Count" else "Percentage"
+      ) +
+      coord_flip(clip = "off") +
+      theme_minimal() +
+      theme(
+        plot.margin = margin(5.5, 40, 5.5, 5.5)
+      )
+
+  } else {
+
+    sum_df <- plot_df %>%
+      count(.data[[sig_id]], .data[[colour_sig_id]], name = "n")
+
+    grand_total <- sum(sum_df$n)
+
+    sum_df <- sum_df %>%
+      mutate(
+        plot_value = if (show_percentages_counts == "count") {
+          n
+        } else {
+          n / grand_total
+        }
+      )
+
+    label_df <- sum_df %>%
+      group_by(.data[[sig_id]]) %>%
+      summarise(
+        total_n = sum(n),
+        total_plot_value = sum(plot_value),
+        .groups = "drop"
+      ) %>%
+      mutate(
+        label = if (show_percentages_counts == "count") {
+          as.character(total_n)
+        } else {
+          scales::percent(total_plot_value, accuracy = 0.1)
+        }
+      )
+
+    fill_levels <- sort(unique(as.character(sum_df[[colour_sig_id]])))
+    sum_df[[colour_sig_id]] <- factor(sum_df[[colour_sig_id]], levels = fill_levels)
+    #currentposition
+    if (is.null(colour_vector)) {
+      if (colour_package == "grDevices") {
+        fill_vals <- grDevices::rainbow(length(fill_levels))
+        names(fill_vals) <- fill_levels
+      }
+    }
+
+    p <- ggplot(sum_df, aes(x = .data[[sig_id]], y = plot_value, fill = .data[[colour_sig_id]])) +
+      geom_col(colour = border_colour, position = "stack") +
+      geom_text(
+        data = label_df,
+        aes(x = .data[[sig_id]], y = total_plot_value, label = label),
+        inherit.aes = FALSE,
+        hjust = -0.15,
+        size = 3
+      ) +
+      scale_x_discrete(labels = x_labels) +
+      scale_fill_manual(values = fill_vals, labels = fill_labels) +
+      scale_y_continuous(
+        labels = if (show_percentages_counts == "count") waiver() else scales::percent,
+        expand = expansion(mult = c(0, 0.15))
+      ) +
+      labs(
+        x = framework_object$get_signifier_title(sig_id),
+        y = if (show_percentages_counts == "count") "Count" else "Percentage",
+        fill = framework_object$get_signifier_title(colour_sig_id)
+      ) +
+      coord_flip(clip = "off") +
+      theme_minimal() +
+      theme(
+        plot.margin = margin(5.5, 40, 5.5, 5.5)
+      )
+
+  }
+  return(p)
+
+
+
+
+
+
+
 }
 
 #' @title Plot triad means for a list id.

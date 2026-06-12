@@ -176,10 +176,10 @@ calculate_stone_9_zone = function(x, y) {
 #' @param mean_type - either "geometric" or "arithmetic".
 #' @param framework_object - The sensemakerframeworkr object associated with the framework.
 #' @param zero_logic - either "small_value" or "remove". Small value means to take a zero value and give it a very small replacement. Otherwise ignore this fragment.
-#' @param for_ggtern - Default FALSE, if true, the returned dataframe containing the mean is in a format ready to plot in ggtern.
+#' @param for_ternary - Default FALSE, if true, the returned dataframe containing the mean is in a format ready to plot in ggtern.
 #' @returns The triad means as 3 values.
 #' @export
-calculate_triad_means <- function(data, triad_id, mean_type, framework_object, zero_logic = "small_value", for_ggtern = FALSE) {
+calculate_triad_means <- function(data, triad_id, mean_type, framework_object, zero_logic = "small_value", for_ternary = FALSE) {
 
   stopifnot(framework_object$get_signifier_type(triad_id) == "triad")
   stopifnot(is.data.frame(data))
@@ -206,8 +206,8 @@ calculate_triad_means <- function(data, triad_id, mean_type, framework_object, z
                                                              compositions::geometricmean(data_top[!is.na(data_top)]),
                                                              compositions::geometricmean(data_right[!is.na(data_right)])), total = 100))))
 
-    if (for_ggtern) {
-      return(data.frame(x = round(geom_mean[[1]], digits = 0), y = round(geom_mean[[2]], digits = 0), z = round(geom_mean[[3]], digits = 0)))
+    if (for_ternary) {
+      return(c(round(geom_mean[[2]], digits = 0), round(geom_mean[[3]], digits = 0),round(geom_mean[[1]], digits = 0)))
     } else {
     left_mean <- round(geom_mean[[1]], digits = 0)
     top_mean <- round(geom_mean[[2]], digits = 0)
@@ -356,3 +356,134 @@ get_caption_values <- function(filtered_data, full_data, sig_id, framework_objec
   return(list(N = nrow(full_data),  numDataPointsMu = numDataPointsMu, numNADataPointsMu = numNADataPointsMu, numNonEntries = numNonEntries, numNADataPoints = numNADataPoints, perToData = perToData ))
 
 }
+
+# Ternary Helpers
+# These functions, which I hope will build up over time, will help with using the Ternary package for drawing ternary diagrams.
+#' @title normalise ternary data to sum to 1
+#' @description
+#' Code to normalise data to sum to 1 - can also be done with compositions package but this is package neutral.
+#' @param X - the data being normalised. 3 columns, top, right, left - the Ternary package standard.
+#' @returns The input data with each row suming to 1 over the three columns.
+#' @export
+normalize_ternary <- function(X) {
+  X <- as.matrix(X)
+  X / rowSums(X)
+}
+
+#' @title ternary to <x,y>
+#' @description
+#' Take a 3 column ternary data and calculate the x,y values to return for standard plot.
+#' @param X - the data being converted - 3 columns, top, right, left - the Ternary package standard.
+#' @returns The data in two columns, x and y.
+#' @export
+ternary_to_xy <- function(X) {
+  X <- sensemakerhelpersr::normalize_ternary(X)
+  a <- X[, 1]
+  b <- X[, 2]
+  c <- X[, 3]
+
+  x <- b + a / 2
+  y <- a * sqrt(3) / 2
+
+  cbind(x = x, y = y)
+}
+
+#' @title  <x,y> to ternary
+#' @description
+#' Take a 2 column ternary based x,y data set and calculate the three ternary values.
+#' @param X - the data being converted - 2 columns, x and y values.
+#' @returns The data in three columns, top, right, left - the Ternary package standard.
+#' @export
+xy_to_ternary <- function(xy) {
+  x <- xy[, 1]
+  y <- xy[, 2]
+
+  a <- 2 * y / sqrt(3)
+  b <- x - a / 2
+  c <- 1 - a - b
+
+  out <- cbind(A = a, B = b, C = c)
+
+  # Numerical cleanup
+  out[out < 0] <- 0
+  out <- out / rowSums(out)
+
+  out
+}
+
+#' @title  Calculate the confidence region around the meanfor a set of ternary data
+#' @description
+#' Supply a 3 column matrix and return the confidence interval around the mean
+#' @param X - 3 column ternary data.
+#' @param level - default 0.95, the confidence interval to calculate.
+#' @param npoints - default 200, the number of points to use.
+#' @param method - "hotelling" or "normal"
+#' @returns The confidence interval data to graph in Ternary.
+#' @export
+mean_conf_region <- function(X, level = 0.95, npoints = 200,
+                             method = c("hotelling", "normal")) {
+
+   method <- match.arg(method)
+
+  X <- sensemakerhelpersr::normalize_ternary(X)
+  xy <- sensemakerhelpersr::ternary_to_xy(X)
+
+  n <- nrow(xy)
+  p <- 2  # 2D region in the ternary plane
+
+  mu <- colMeans(xy)
+  S <- stats::cov(xy)
+
+  theta <- seq(0, 2 * pi, length.out = npoints)
+  unit_circle <- cbind(cos(theta), sin(theta))
+
+  if (method == "normal") {
+    k <- stats::qchisq(level, df = p)
+    Sigma_region <- S * k / n
+  } else {
+    # Hotelling-style region for the mean
+    k <- p * (n - 1) / (n - p) * stats::qf(level, df1 = p, df2 = n - p)
+    Sigma_region <- S * k / n
+  }
+
+  R <- chol(Sigma_region)
+  ellipse_xy <- sweep(unit_circle %*% R, 2, mu, "+")
+
+  sensemakerhelpersr::xy_to_ternary(ellipse_xy)
+}
+
+
+#' @title  Calculate the mean for the 3 columns of a ternary data matrix
+#' @description
+#' Supply a 3 column matrix and return the means of each column
+#' @param X - 3 column ternary data.
+#' @param mean_type - default "geometric, Use the geometric mean otherwise the arithmetic.
+#' @param zero_logic - default "remove", values "small_value" or "remove". If "remove" all records with a zero value are removed, otherwise they are set to a value of 0.00001
+#' @param total - default 1, values 1 or 100, which sets the 3 return values to sum to 1 or 100.
+#' @returns The confidence interval data to graph in Ternary.
+#' @export
+group_mean_ternary <- function(X, mean_type = "geometric", zero_logic = "remove", total = 1) {
+  X <- sensemakerhelpersr::normalize_ternary(X)
+  if (mean_type == "geometric") {
+    if (zero_logic == "small_value") {
+      X[,1] <- ifelse(X[,1] <= 0, 0.00001, X[,1])
+      X[,2] <- ifelse(X[,2] <= 0, 0.00001, X[,2])
+      X[,3] <- ifelse(X[,3] <= 0, 0.00001, X[,3])
+    } else {
+      if (zero_logic == "remove") {
+        X <- X[rowSums(X == 0) == 0, ]
+      }
+    }
+
+    geom_mean <- compositions::clo(c(compositions::geometricmean(X[,1]), compositions::geometricmean(X[,2]), compositions::geometricmean(X[,3])), total = total)
+    names(geom_mean) <- c("A", "B", "C")
+
+  } else {
+
+    geom_mean <- matrix(colMeans(X), nrow = 1,
+           dimnames = list(NULL, colnames(X)))
+  }
+  return(geom_mean)
+}
+
+

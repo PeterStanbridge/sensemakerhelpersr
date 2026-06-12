@@ -144,29 +144,31 @@ do_means_tests <- function(means_tests, fwd, signifier_ids = NULL, signifier_typ
 
    # purrr::walk2(means_tests$from_id, means_tests$to_id, function(from_dat, to_dat) {
 
-      purrr::pwalk(list(means_tests$from_id, means_tests$to_id, means_tests$from_title, means_tests$to_title), function(from_dat, to_dat, source1_title, source2_title) {
+    purrr::pwalk(list(means_tests$from_id, means_tests$to_id, means_tests$from_title, means_tests$to_title), function(from_dat, to_dat, source1_title, source2_title) {
 
-    #  source1_title <- as.character(unname(filters |> dplyr::filter(name == from_dat) |> dplyr::select(title)))
-     # source2_title <- as.character(unname(filters |> dplyr::filter(name == to_dat) |> dplyr::select(title)))
-    #  source1_title <- from_dat
-    #  source2_title <- to_dat
+      #  source1_title <- as.character(unname(filters |> dplyr::filter(name == from_dat) |> dplyr::select(title)))
+      # source2_title <- as.character(unname(filters |> dplyr::filter(name == to_dat) |> dplyr::select(title)))
+      #  source1_title <- from_dat
+      #  source2_title <- to_dat
+      if (nrow(fwd$data[[from_dat]]) == 0 | nrow(fwd$data[[to_dat]]) == 0 ) {
 
-      work_df <- dplyr::bind_rows(fwd$data[[from_dat]], fwd$data[[to_dat]])
-      stopifnot("source" %in% colnames(work_df))
-      cols_sel <- c(sig_columns, "source")
-      sig_data <- work_df |> dplyr::select(dplyr::all_of(cols_sel)) |> stats::na.omit()
-      col_contents <- get_sig_stats_names(sig_id, fwd)
-      colnames(sig_data) <- col_contents$col_names
-      filter_string <- paste0("sig_data %>% dplyr::filter(", col_contents$query_string, ")")
-      filter_query <- parse(text = filter_string)
-      sig_data <- eval(filter_query)
-      col_number <- ncol(sig_data) * -1
+      } else {
+        work_df <- dplyr::bind_rows(fwd$data[[from_dat]], fwd$data[[to_dat]])
+        stopifnot("source" %in% colnames(work_df))
+        cols_sel <- c(sig_columns, "source")
+        sig_data <- work_df |> dplyr::select(dplyr::all_of(cols_sel)) |> stats::na.omit()
+        col_contents <- get_sig_stats_names(sig_id, fwd)
+        colnames(sig_data) <- col_contents$col_names
+        filter_string <- paste0("sig_data %>% dplyr::filter(", col_contents$query_string, ")")
+        filter_query <- parse(text = filter_string)
+        sig_data <- eval(filter_query)
+        col_number <- ncol(sig_data) * -1
 
-      total_transformed <- compositions::ilr(sig_data[,col_number])
+        total_transformed <- compositions::ilr(sig_data[,col_number])
 
-      test_results <- perform_required_test(total_transformed, sig_data$source, non_parametric, b_value, test_type, source1_title, source2_title)
-      stats_out <<- dplyr::bind_rows(stats_out, test_results)
-
+        test_results <- perform_required_test(total_transformed, sig_data$source, non_parametric, b_value, test_type, source1_title, source2_title)
+        stats_out <<- dplyr::bind_rows(stats_out, test_results)
+      }
 
 
 
@@ -389,7 +391,7 @@ get_correlations_by_type <- function(df, fw, from_type, to_type, from_signifier_
     stopifnot(length(sig_types) == 1)
     stopifnot(sig_types == from_type)
     if (keep_only_include) {
-    from_signifier_ids <- unlist(purrr::keep(from_signifier_ids, ~ {fw$get_signifier_include(.x)}))
+      from_signifier_ids <- unlist(purrr::keep(from_signifier_ids, ~ {fw$get_signifier_include(.x)}))
     }
   }
 
@@ -403,14 +405,15 @@ get_correlations_by_type <- function(df, fw, from_type, to_type, from_signifier_
   }
 
   # The correlation columns will be coming from lists - e.g. dyad type will use the zone mcq equivalent columns for correlations.
-  all_list_ids <- fw$get_list_ids(keep_only_include = keep_only_include)
+
+  all_list_ids <- fw$get_single_select_list_ids(keep_only_include = keep_only_include)
   if (is.null(from_signifier_ids)) {
-  from_ids  <- setdiff(fw$get_signifier_ids_by_type(from_type, sig_class = from_signifier_classes, keep_only_include = keep_only_include), fw$get_multiselect_list_ids())
+    from_ids  <- fw$get_signifier_ids_by_type(from_type, sig_class = from_signifier_classes, keep_only_include = keep_only_include, only_single_select = TRUE)
   } else {
     from_ids <- from_signifier_ids
   }
   if (is.null(to_signifier_ids)) {
-  to_ids  <- setdiff(fw$get_signifier_ids_by_type(to_type, sig_class = to_signifier_classes, keep_only_include = keep_only_include), fw$get_multiselect_list_ids())
+    to_ids  <- fw$get_signifier_ids_by_type(to_type, sig_class = to_signifier_classes, keep_only_include = keep_only_include, only_single_select = TRUE)
   } else {
     to_ids <- to_signifier_ids
   }
@@ -443,7 +446,11 @@ get_correlations_by_type <- function(df, fw, from_type, to_type, from_signifier_
   if (from_type != to_type) {
     ids_to_output <- data.frame(tidyr::crossing(from_col_ids, to_col_ids))
   } else {
+    if (!is.null(from_signifier_ids) & !is.null(to_signifier_ids)) {
+      from_col_ids <- unique(c(from_col_ids, to_col_ids))
+    }
     ids_to_output <- data.frame(t(utils::combn(from_col_ids, m = 2)))
+
   }
 
   colnames(ids_to_output) <- c("from", "to")
@@ -451,12 +458,57 @@ get_correlations_by_type <- function(df, fw, from_type, to_type, from_signifier_
   sig_residuals <- purrr::map2(ids_to_output[["from"]], ids_to_output[["to"]], ~ {get_residuals(df, fw, .x, .y, round_digits, residual_threshold, p_threshold)})
   names(sig_residuals) <- paste0(ids_to_output[["from"]], "_", ids_to_output[["to"]])
   from_ids <- unlist(purrr::map(ids_to_output[["from"]], ~ {stringr::str_split_i(.x, pattern = "_", i = 1)}))
-   to_ids <- unlist(purrr::map(ids_to_output[["to"]], ~ {stringr::str_split_i(.x, pattern = "_", i = 1)}))
+  to_ids <- unlist(purrr::map(ids_to_output[["to"]], ~ {stringr::str_split_i(.x, pattern = "_", i = 1)}))
 
-   ids_out <- data.frame(from = from_ids, to = to_ids)
-    return(list(sig_residuals = sig_residuals, ids_to_output = ids_out))
+  ids_out <- data.frame(from = from_ids, to = to_ids)
+  return(list(sig_residuals = sig_residuals, ids_to_output = ids_out))
 
 }
+#' @title Return correlation data for list class "region" for a given stone id.
+#' @description
+#' This function will perform goodness of fit tests and return the results for a given stone regions for each stone pointer.
+#' @param df - The data to perform the tests - this is a data frame containing at least all the columns needed for the signifier types passed in. .
+#' @param fw - The framework definition object.
+#' @param stones_id - The id for a valid framework stone.
+#' @param stone_ids - Default NULL, optional, a list of at least two stone ids from the region list ids to restrict the stones included in the output.
+#' @param round_digits - default 0, z, z^2, expected value table rounding digits.
+#' @param residual_threshold - default 4, the threshold for residual calculation on residual squared values.
+#' @param p_threshold - default 0.05, the p-value threshold for null hypothesis test.
+#' @returns Returns a named list. ids_to_output contains the dataframe of signifier id pairs included in the output. sig_residuals a list of length the number of correlation pairs, It contains the "data", "expected", "residuals", "residuals_sqr", "p-value".
+#' @export
+get_stones_region_correlations <- function(data_filter, df, fw, stones_id, stone_ids = NULL, round_digits = 4, residual_threshold = 4, p_threshold = 0.05) {
+  stopifnot(stones_id %in% fw$get_stones_ids(keep_only_include = FALSE))
+  stopifnot(is.data.frame(df))
+  stopifnot("Signifiers" %in% class(fw))
+  # Get the region ids associated with this stone
+  list_ids <- fwd$sm_framework$get_list_ids(sig_class = "region")
+  list_ids <- list_ids[str_starts(as.character(list_ids), stones_id)]
+  if (!is.null(stone_ids)) {
+    stopifnot(length(stone_ids) >= 2)
+    stopifnot (all(stone_ids %in% list_ids))
+    list_ids <- stone_ids
+  }
+  stopifnot(length(list_ids) >= 2)
+  # Get the cross tables for the residual tests
+  ids_to_output <- data.frame(t(utils::combn(list_ids, m = 2)))
+  colnames(ids_to_output) <- c("from", "to")
+  data_df <<- NULL
+  # Being regions we have to remove "no_value" and "outside_regions" - there won't be any NA which is what is normally removed.
+  # temp <- purrr::walk2(ids_to_output[["from"]], ids_to_output[["to"]], function(from_id, to_id) {
+  #   data_df <<- df |> filter(.data[[from_id]] %in% fw$get_list_items_ids(from_id))
+  #  data_df <<- data_df |> filter(.data[[to_id]] %in% fw$get_list_items_ids(to_id))
+  #})
+
+  # get residuals and name the list
+  # sig_residuals <- purrr::map2(ids_to_output[["from"]], ids_to_output[["to"]], ~ {get_residuals(data_df, fw, .x, .y, round_digits, residual_threshold, p_threshold)})
+  sig_residuals <- purrr::map2(ids_to_output[["from"]], ids_to_output[["to"]], function(from_id, to_id) {
+    data_df <- df |> filter(.data[[from_id]] %in% fw$get_list_items_ids(from_id))
+    data_df <- data_df |> filter(.data[[to_id]] %in% fw$get_list_items_ids(to_id))
+    get_residuals(data_df, fw, from_id, to_id, round_digits, residual_threshold, p_threshold)})
+  names(sig_residuals) <- paste0(ids_to_output[["from"]], "_", ids_to_output[["to"]])
+  return(sig_residuals)
+}
+
 
 
 # Calculate the goodness of test residual for a from and to column for a from and to types.
@@ -549,7 +601,7 @@ get_residuals <- function(df, fw, from_col, to_col, round_digits = 0, residual_t
       }
     }
   }
-
+  temp_df_sqr <- NULL
   for (i in seq_along(rownames(zsqr))) {
 
     for (j in seq_along(colnames(zsqr))) {
