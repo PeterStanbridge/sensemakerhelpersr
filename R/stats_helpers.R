@@ -382,7 +382,7 @@ get_correlations_by_type <- function(df, fw, from_type, to_type, from_signifier_
   if (!is.null(from_signifier_classes)) {
     stopifnot(all(from_signifier_classes %in% fw$get_supported_signifier_classes()))
   }
-  if (!is.null(from_signifier_classes)) {
+  if (!is.null(to_signifier_classes)) {
     stopifnot(all(to_signifier_classes %in% fw$get_supported_signifier_classes()))
   }
 
@@ -424,15 +424,11 @@ get_correlations_by_type <- function(df, fw, from_type, to_type, from_signifier_
     # get those list signifier ids that have the same start string as the shape signifier ids
     from_col_ids <- unlist(purrr::imap(purrr::map(from_ids, ~ {stringr::str_starts(all_list_ids, .x)}), ~ {all_list_ids[purrr::map(from_ids, ~ {stringr::str_starts(all_list_ids, .x)})[[.y]]]}))
   } else {
-    if (is.null(from_ids)) {
-      from_col_ids <- setdiff(fw$get_single_select_list_ids(sig_class = from_signifier_classes, keep_only_include = keep_only_include), "EntryYrMthDay")
-      if ("date" %in% from_signifier_classes | "date" %in% to_signifier_classes) {
-        dte_cols <- setdiff(fw$get_single_select_list_ids(sig_class = c("date"), keep_only_include = keep_only_include), "EntryYrMthDay")
-        purrr::walk(dte_cols, ~ {df[[.x]] <<- as.character(df[[.x]])})
-        done_dates <- TRUE
-      }
-    } else {
-      from_col_ids <- from_ids
+    from_col_ids <- setdiff(from_ids, "EntryYrMthDay")
+    if ("date" %in% from_signifier_classes | "date" %in% to_signifier_classes) {
+      dte_cols <- setdiff(fw$get_single_select_list_ids(sig_class = c("date"), keep_only_include = keep_only_include), "EntryYrMthDay")
+      purrr::walk(dte_cols, ~ {df[[.x]] <<- as.character(df[[.x]])})
+      done_dates <- TRUE
     }
   }
 
@@ -440,14 +436,10 @@ get_correlations_by_type <- function(df, fw, from_type, to_type, from_signifier_
     # get those list signifier ids that have the same start string as the shape signifier ids
     to_col_ids <- unlist(purrr::imap(purrr::map(to_ids, ~ {stringr::str_starts(all_list_ids, .x)}), ~ {all_list_ids[purrr::map(to_ids, ~ {stringr::str_starts(all_list_ids, .x)})[[.y]]]}))
   } else {
-    if (is.null(to_ids)) {
-      to_col_ids <- setdiff(fw$get_single_select_list_ids(sig_class = c("signifier", "date"), keep_only_include = keep_only_include), "EntryYrMthDay")
-      if (!done_dates & ("date" %in% from_signifier_classes | "date" %in% to_signifier_classes)) {
-        dte_cols <- setdiff(fw$get_single_select_list_ids(sig_class = c("date"), keep_only_include = keep_only_include), "EntryYrMthDay")
-        purrr::walk(dte_cols, ~ {df[[.x]] <<- as.character(df[[.x]])})
-      }
-    } else {
-      to_col_ids <- to_ids
+    to_col_ids <- setdiff(to_ids, "EntryYrMthDay")
+    if (!done_dates & ("date" %in% from_signifier_classes | "date" %in% to_signifier_classes)) {
+      dte_cols <- setdiff(fw$get_single_select_list_ids(sig_class = c("date"), keep_only_include = keep_only_include), "EntryYrMthDay")
+      purrr::walk(dte_cols, ~ {df[[.x]] <<- as.character(df[[.x]])})
     }
   }
 
@@ -564,10 +556,10 @@ get_residuals <- function(df, fw, from_col, to_col, round_digits = 0, residual_t
   colnames(t1a)[[2]] <- fw$get_signifier_title(to_id)
 
   # For list pull out titles to replace keys
-  if (from_type == "list" && fw$get_list_max_responses(from_id) == 1) {
+  if (from_type == "list" && fw$get_list_max_responses(from_id) == 1 & fw$get_signifier_class(to_id) == "signifier") {
     t1a[, 1] <- unlist(unname(purrr::map(t1a[, 1], ~ {fw$get_list_item_title(from_id, as.character(.x))})))
   }
-  if (to_type == "list" && fw$get_list_max_responses(to_id) == 1) {
+  if (to_type == "list" && fw$get_list_max_responses(to_id) == 1 & fw$get_signifier_class(to_id) == "signifier") {
     t1a[, 2] <- unlist(unname(purrr::map(t1a[, 2], ~ {fw$get_list_item_title(to_id, as.character(.x))})))
   }
 
