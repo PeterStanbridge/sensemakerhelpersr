@@ -457,9 +457,10 @@ get_correlations_by_type <- function(df, fw, from_type, to_type, from_signifier_
 
   sig_residuals <- purrr::map2(ids_to_output[["from"]], ids_to_output[["to"]], ~ {get_residuals(df, fw, .x, .y, round_digits, residual_threshold, p_threshold)})
   names(sig_residuals) <- paste0(ids_to_output[["from"]], "_", ids_to_output[["to"]])
-  from_ids <- unlist(purrr::map(ids_to_output[["from"]], ~ {stringr::str_split_i(.x, pattern = "_", i = 1)}))
-  to_ids <- unlist(purrr::map(ids_to_output[["to"]], ~ {stringr::str_split_i(.x, pattern = "_", i = 1)}))
-
+ # from_ids <- unlist(purrr::map(ids_to_output[["from"]], ~ {stringr::str_split_i(.x, pattern = "_", i = 1)}))
+  #to_ids <- unlist(purrr::map(ids_to_output[["to"]], ~ {stringr::str_split_i(.x, pattern = "_", i = 1)}))
+  from_ids <- ids_to_output[["from"]]
+  to_ids <- ids_to_output[["to"]]
   ids_out <- data.frame(from = from_ids, to = to_ids)
   return(list(sig_residuals = sig_residuals, ids_to_output = ids_out))
 
