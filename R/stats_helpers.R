@@ -528,7 +528,6 @@ get_stones_region_correlations <- function(data_filter, df, fw, stones_id, stone
 #' @returns Returns a named list.containing the residual calculations. z, zsqr  the data count matrix, expected value matrix, p_value, test_result accept null hypothesis TRUE or FALSE, .
 #' @export
 get_residuals <- function(df, fw, from_col, to_col, round_digits = 0, residual_threshold = 4, p_threshold = 0.05, keep_only_include = TRUE) {
-
   if (!(from_col %in% fw$get_all_signifier_ids(keep_only_include = keep_only_include))) {
     from_id <- stringr::str_split_i(from_col, pattern = "_", i = 1)
   } else {
@@ -602,15 +601,25 @@ get_residuals <- function(df, fw, from_col, to_col, round_digits = 0, residual_t
       }
     }
   }
+  for (i in seq_along(rownames(zsqr1))) {
+
+    for (j in seq_along(colnames(zsqr1))) {
+      # zero columns or rows can come out as NaN so if this is so, make zero
+      if (is.nan(zsqr1[i, j])) {
+        zsqr1[i, j] <- 0
+      }
+    }
+  }
   temp_df_sqr <- NULL
   for (i in seq_along(rownames(zsqr))) {
 
     for (j in seq_along(colnames(zsqr))) {
-
-      if (zsqr1[i, j] >= residual_threshold) {
-        temp_df_sqr <- data.frame(row_val = rownames(zsqr)[[i]], col_val = colnames(zsqr)[[j]], residual_sqr = zsqr1[i, j], type = ifelse(z1[i, j] < 0, "Negative", "Positive"))
-        test_results_sqr <- dplyr::bind_rows(test_results_sqr, temp_df_sqr)
-      }
+     # if (!is.nan(zsqr1[i, j])) {
+        if (zsqr1[i, j] >= residual_threshold) {
+          temp_df_sqr <- data.frame(row_val = rownames(zsqr)[[i]], col_val = colnames(zsqr)[[j]], residual_sqr = zsqr1[i, j], type = ifelse(z1[i, j] < 0, "Negative", "Positive"))
+          test_results_sqr <- dplyr::bind_rows(test_results_sqr, temp_df_sqr)
+        }
+      #}
     }
 
   }
