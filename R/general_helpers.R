@@ -1,3 +1,23 @@
+#' @title Log debug information
+#' @description
+#' This helper function is very useful when executing helper functions (or any other) from within an rmd file as normal cat/print do not output unless the document output is successful.
+#' It logs a set of properites passed and out to a file named in the out file (otherwise it is appended to the last file)
+#' @param ... A comma separated list of parameters named by the programmer to pass data into the log.
+#' @param file - default "debug_log.txt" File name to use - this can be altered in a loop if a single file for each loop iteration is required otherwise values are appended.
+#' @param replacement_value - A string to use as a replacement in the wrap break - i.e. instead of breaking.
+#' @return NULL - outputs a file.
+#' @export
+debug_log <- function(..., file = "debug_log.txt") {
+  cat(
+    format(Sys.time(), "%Y-%m-%d %H:%M:%S"),
+    " | ",
+    ...,
+    "\n",
+    file = file,
+    append = TRUE
+  )
+}
+
 #' @title wrap a text string at a given length
 #' @param text_string - the string to be wrapped.
 #' @param wrap_length - Default 30, the position length for the text to be wrapped.
