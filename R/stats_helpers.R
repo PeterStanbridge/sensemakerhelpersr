@@ -570,28 +570,52 @@ get_residuals <- function(df, fw, from_col, to_col, round_digits = 0, residual_t
   udfStats <-matrix(unlist(df2),dim(df2));
   dataTabMatrix <- xtabs(as.numeric(udfStats[,3]) ~ udfStats[,1]+udfStats[,2],df2)
 
+  return(return_chisq_test(dataTabMatrix, row_names = rownames(t1), col_names = colnames(t1), round_digits = round_digits, residual_threshold = residual_threshold,
+                           p_threshold = p_threshold))
+
+}
+
+# Calculate the goodness of test residual for a from and to column for a from and to types.
+#' @title Perform and return a chi-square test directly from the count table.
+#' @description
+#' This function will perform goodness of fit tests and return the results for a populated count table.
+#' @param dataTabMatrix - The data in table form, can be matrix, tibble, dataframe but must contain only count columns.
+#' @param row_names - The names of the rows.
+#' @param col_names - The names of the columns. If NULL it is assumed that the columns are alraedy named as named columns can be used in the chi-squared test.
+#' @param round_digits - default 0, z, z^2, expected value table rounding digits.
+#' @param residual_threshold - default 4, the threshold for residual calculation on residual squared values.
+#' @param p_threshold - default 0.05, the p-value threshold for null hypothesis test.
+#' @returns Returns a named list.containing the residual calculations. z, zsqr  the data count matrix, expected value matrix, p_value, test_result accept null hypothesis TRUE or FALSE, .
+#' @export
+return_chisq_test <- function(dataTabMatrix, row_names, col_names = NULL, round_digits = 0, residual_threshold = 4, p_threshold = 0.05) {
+
+  if (is.null(col_names)) {
+    col_names <- colnames(dataTabMatrix)
+  }
+
   chiTest <- chisq.test(dataTabMatrix, simulate.p.value = TRUE)
 
   dta <- chiTest$observed
-  colnames(dta) <- colnames(t1)
-  rownames(dta) <- rownames(t1)
+  colnames(dta) <- col_names
+  rownames(dta) <- row_names
   expected <- round(chiTest$expected, digits = round_digits)
-  colnames(expected) <- colnames(t1)
-  rownames(expected) <- rownames(t1)
+  colnames(expected) <- col_names
+  rownames(expected) <- row_names
   z1 <- chiTest$stdres
   z <- round(z1, digits = round_digits)
-  colnames(z) <- colnames(t1)
-  rownames(z) <- rownames(t1)
+  colnames(z) <- col_names
+  rownames(z) <- row_names
   zsqr1 <- z1^2
   zsqr <- round(zsqr1, digits = round_digits)
-  colnames(zsqr) <- colnames(t1)
-  rownames(zsqr) <- rownames(t1)
+  colnames(zsqr) <- col_names
+  rownames(zsqr) <- row_names
   p_value <- round(chiTest$p.value, digits = 4)
   test_result <- chiTest$p.value < p_threshold
 
   test_results_sqr <- data.frame(row_val = character(0), col_val = character(0), residual_sqr = numeric(), type = character(0))
 
 
+  # ToDo - these blocks can be changed to zsqr[!is.na(zsqr)] <- 0
   for (i in seq_along(rownames(zsqr))) {
 
     for (j in seq_along(colnames(zsqr))) {
@@ -614,18 +638,20 @@ get_residuals <- function(df, fw, from_col, to_col, round_digits = 0, residual_t
   for (i in seq_along(rownames(zsqr))) {
 
     for (j in seq_along(colnames(zsqr))) {
-     # if (!is.nan(zsqr1[i, j])) {
-        if (zsqr1[i, j] >= residual_threshold) {
-          temp_df_sqr <- data.frame(row_val = rownames(zsqr)[[i]], col_val = colnames(zsqr)[[j]], residual_sqr = zsqr1[i, j], type = ifelse(z1[i, j] < 0, "Negative", "Positive"))
-          test_results_sqr <- dplyr::bind_rows(test_results_sqr, temp_df_sqr)
-        }
+      # if (!is.nan(zsqr1[i, j])) {
+      if (zsqr1[i, j] >= residual_threshold) {
+        temp_df_sqr <- data.frame(row_val = rownames(zsqr)[[i]], col_val = colnames(zsqr)[[j]], residual_sqr = zsqr1[i, j], type = ifelse(z1[i, j] < 0, "Negative", "Positive"))
+        test_results_sqr <- dplyr::bind_rows(test_results_sqr, temp_df_sqr)
+      }
       #}
     }
 
   }
 
   return(list(z = z, zsqr = zsqr, data = dta, expected = expected, p_value = p_value, test_result = test_result, test_result_detail = test_results_sqr, z1 = z1, zsqr1 = zsqr1))
+
 }
+
 
 
 # Build a corpus from a list of character data.
