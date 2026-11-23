@@ -1210,6 +1210,161 @@ produce_tern_pair_means_graphs_by_triad <- function(tern_pairs, framework_data, 
 
 }
 
+#' @title Plot a triad graph using ggtern. Equivalent to the TernTriad tab in the Workbench.
+#' @description
+#' Plot triad using ggtern
+#' @param filtered_data - Must be supplied. Data frame that includes the triad x and y columns with filtered (if any) signifiers to plot.
+#' @param full_data - Must be supplied. Data frame that includes the triad x and y columns with all signifiers for the capture.
+#' @param triad_id - Must be supplied. The triad_id to be plotted.
+#' @param framework_object - Must be supplied. The framework object from the sensemakerdatar instance object. (this is sensemakerdatar::sm_framework)
+#' @param dot_size - default 1, the cex (character expansion) size of the graph pointer.
+#' @param dot_colour - default black, the dot colour.
+#' @param dot_transparency - default 1, the transparency (alpha value) of the dots. Numeric between 0 and 1.
+#' @param dot_type - default 16 solid ball. A valid base graphics pch number representing the point symbol type.
+#' @param opaque_filtered - default FALSE, whether the non filtered data is to be displayed as well as the filtered data. TRUE means display the non-filtered data.
+#' @param opaque_filter_dot_size - default 0.7, if opaque filtered TRUE, then the cex (character expansion) size of the unfiltered data points.
+#' @param opaque_filter_dot_transparency - default 1, the transparency (alpha value) of the opaque filtered dots if opaque filtered set to TRUE. Numeric between 0 and 1
+#' @param opaque_filter_dot_colour - default blue, the colour of the unfiltered data points if opaque filtered set to TRUE.
+#' @param opaque_filter_dot_type - default 16 solid ball. A valid base graphics pch number representing the point symbol type.
+#' @param show_mean - default FALSE, show the mean in the graph as a point symbole
+#' @param mean_size - default 2, the cex (character expansion) size of the mean pointer symbol.
+#' @param mean_colour - default blue. The colour of the mean pointer if displayed.
+#' @param mean_shape - default 17 (solid triangle), a valid base graphics pch number representing the point symbol type of the mean.
+#' @param show_confidence_interval - default FALSE, if true, show the confidence interval.
+#' @param confidence_interval_colour - default black, the colour of the confidence interval line. (if colour_sig used, then this is overridden by the palatte)
+#' @param confidence_interrval_size - default 1, the size of the line, a value base graphics cex number.
+#' @param confidence_interval - default 0.05, the numeric value for the confidence interval size. Normally 0.05, 0.01, 0.1
+#' @param colour_sig_id - default NULL, A single select list (multi-choice question) id to use as a colour aesthetic in the graph. Must be present in the data.
+#' @param colour_palette - default NULL, used when colour_sig_id is selected to obtain colours for dots/contours/means/confidence intervals. If NULL, then palette20 defined in the function is used.
+#' @param show_colour_legend - default TRUE, show the colour legend in the graph.
+#' @param title_size - default 1, the cex (character expansion) of the title size.
+#' @param anchor_size - default 1, the cex (character expansion) of the anchor size. Can be a 3 position vector for the top, right, left cex value.
+#' @export
+
+plot_ternary_triad <- function(filtered_data, full_data, triad_id, framework_object, dot_size = 1, dot_colour = "black", dot_transparency = 1, dot_type = 16,
+                               opaque_filtered = FALSE,
+                               opaque_filter_dot_size = 0.7, opaque_filter_dot_transparency = 1, opaque_filter_dot_colour = "blue", opaque_filter_dot_type = 16,
+                               show_mean = FALSE, mean_size = 2, mean_colour = "blue", mean_shape, show_confidence_interval = FALSE, confidence_interval_colour = "black",
+                               confidence_interrval_size = 1, confidence_interval = 0.05, colour_sig_id = NULL, colour_palette = NULL, show_colour_legend = TRUE,
+                               title_size = 1, anchor_size = 1, title_colour = "black", show_axis_labels = FALSE, show_axis_ticks =FALSE) {
+
+  #' @title Plot a triad graph using ggtern. Equivalent to the TernTriad tab in the Workbench.
+  #' @description
+  #' Plot triad using ggtern
+
+  #' @param dot_size - default 0.5, the size of the graph dots
+  #' @param dot_colour - default black, the dot colour.
+  #' @param dot_transparency - default 1, the transparency (alpha value) of the dots. Numeric between 0 and 1.
+  #' @param opaque_filtered -  default FALSE. If TRUE, the graph will display filtered out data as well as the current filtered data.
+  #' @param opaque_filter_dot_size - default 0.4. The size of the filtered out data displayed if opaque_filtered set to TRUE.
+  #' @param opaque_filter_dot_transparency - default 0.5. The transparency (or alpha) value for the filtered out data displayed if opaque_filtered set to TRUE. A numeric value between 0 and 1.
+  #' @param opaque_filter_dot_colour - default "blue". The colour of the filtered out data displayed if the opaque_filtered set to TRUE. A character string of any valid R colour format, such as hex values or colour names.
+  #' @param anchor_label_size - default "default" otherwise a numeric value to specify the size of the anchor labels. If "default" the size is calculated based on the length of the text.
+  #' @param anchor_label_size_print - default "default" otherwise a numeric value to specify the size of the anchor labels on a print. If "default" the size is calculated based on the length of the text.
+  #' @param show_mean - default TRUE, otherwse FALSE. If TRUE, displays the geometric mean in the ternary graph.
+  #' @param mean_size - default 2, the dot size of the mean.
+  #' @param mean_colour - default "blue", the colour of the mean if displayed.
+  #' @param mean_shape - default "circle", otherwise "diamond", the shope of the mean being displayed.
+  #' @param mean_zero_logic - default "small_value" otherwise "remove" can be specified to remove NA records. "small_value" sets zero anchors to a very small value.
+  #' @param graph_title - default NULL, if NULL the signifier title is used for the graph title, otherwise the value passed here.
+  #' @param title_colour - default black, The colour of the graph title. A Character string of any valid R colour format, such as hex values or colour names.
+  #' @param title_size - default NULL, the size of the graph title.
+  #' @param show_confidence_intervals = default FALSE, if TRUE, show confidence intervals in the graph.
+  #' @param confidence_interval_colour - default blue, a Character string of any valid R colour format, such as hex values or colour names.
+  #' @param confidence_interval_Size - default 0.55, the size of the confidence interval lines.
+  #' @param confidence_intervals - default 0.05, a vector of confidence intervals to display with each value between 0 and 1.
+  #' @param show_variance - default FALSE, if TRUE, show the variance around the mean as a shaded area.
+  #' @param variance_colour - default hex "#08E5F5",  a character string of any valid R colour format, such as hex values or colour names.
+  #' @param variance_transparency - default 0.3, the transparency (alpha value) of the variance shaded area. A value between 0 and 1.
+  #' @param show_contours - default FALSE, if TRUE show contour lines based on kernel smoothing function.
+  #' @param countour_size - default 0.5, the size of the contour lines.
+  #' @param contour_colour - defaykt "blue", the colour of the contour lines, a character string of any valid R colour format, such as hex values or colour names.
+  #' @param show_contour_fill - default FALSE, show heat map, or filled contour based on kernel smoothing function.
+  #' @param fill_transparency - default 0.5, the transparency (alpha value) of the contour fill regions.
+  #' @param show_fill_legend - default FALSE, if TRUE, show the legend with the probability values for the contour/fill levels.
+  #' @param fill_brewer_palette - default "Spectral", the RColorBrewer palette used to colour the contour fills. Use sensemakerhelpersr::get_colour_palette_names() to see all the palette names available.
+
+  #' @param colour_vector - default NULL, a vector of length the number of list items providing the colours to use for each item in the colour_sig_id colouring.
+  #' @param colour_package - default "RColorBrewer". Can also use "viridis". If the colour_vector is null then the plot function will assign values from the colour package.
+  #' @param package_palette - default "Set1" for the RColorBrewer Set1 palette. values of "Dark2", "Set1", "Set2" or "Set3" recommended but others can also work. Viridis has "A" - "H".
+  #' @param colour_direction - default 1. 1 for left to right colour selection from the palette, -1 for reverse.
+  #' @param viridis_default_start - default 0, A value between 0-1 for start colour value in the selected viridis palette. Only applicable if "viridis" selected as the colour package.
+  #' @param viridis_default_end - default 0.6. A value between 0-1 for end colour value in the selected viridis palette. Only applicable if "viridis" selected as the colour package.
+  #' @param show_colour_legend - default TRUE, show the colour legend.
+  #' @param legend_title_colour - default "black", the colour of the colour legend title, a character string of any valid R colour format, such as hex values or colour names.
+  #' @param legend_title_size - default 8. The size of the colour legend title.
+  #' @param legend_text_colour - default "black". The colour legend text A Character string of any valid R colour format, such as hex values or colour names.
+  #' @param legend_text_size - default 8. The size of the legend text.
+  #' @param return_as_print - default FALSE, returns the ggtern object otherwise a print of the object.
+  #' @param put_title_in_top - default FALSE, if TRUE will place the graph title 2 lines above the triad top. This will reduce the space between the title and the top label.
+  #' @returns A ggtern graph object of the triad either as a plot object or printed object (depending on the return_as_print parameter value).
+  #' @export
+
+  # Default palette
+  palette20 <- c(
+    "#1F77B4", # blue
+    "#FF7F0E", # orange
+    "#2CA02C", # green
+    "#D62728", # red
+    "#9467BD", # purple
+    "#8C564B", # brown
+    "#E377C2", # pink
+    "#7F7F7F", # grey
+    "#BCBD22", # olive
+    "#17BECF", # cyan
+    "#AEC7E8", # light blue
+    "#FFBB78", # light orange
+    "#98DF8A", # light green
+    "#FF9896", # light red
+    "#C5B0D5", # light purple
+    "#C49C94", # light brown
+    "#F7B6D2", # light pink
+    "#C7C7C7", # light grey
+    "#DBDB8D", # light olive
+    "#9EDAE5"  # light cyan
+  )
+
+  if (!is.null(colour_palette)) {
+    palette20 <- colour_palette
+  }
+  stopifnot(all(areColors(palette20)))
+
+  # process data
+  stopifnot(triad_id %in% framework_object$get_triad_ids())
+
+  Ternary::TernaryPlot(
+    atip = NULL,
+    btip = right_title,
+    ctip = left_title,
+    axis.labels = FALSE,
+    axis.tick = FALSE
+  )
+  graphics::text(
+    x = 0,
+    y = sqrt(3) / 2 + 0.04,
+    labels = top_title,
+    adj = c(0.5, 0),
+    font = 2,
+    xpd = NA
+  )
+
+  Ternary::TernaryPoints(
+    points_data[, plot_cols],
+    col =  grDevices::adjustcolor(palette20[1: length(as.character(levels(points_data[["source"]])))],
+                                  alpha.f = 1),
+    pch = 16,
+    cex = 0.7)
+
+  Ternary::TernaryPoints(
+    witness_data[, plot_cols],
+    col =  col_witness,
+
+    pch = 19,
+    cex = 0.7)
+
+
+
+}
 
 #' @title Plot keyness bar charts for pairs of data queries.
 #' @description
